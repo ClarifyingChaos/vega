@@ -88,6 +88,8 @@ struct SpacesSideBarView: View {
     }
 
     @ObservedObject private var dragSession = NookDragSessionManager.shared
+    @State private var downloadMenuTracking = false
+    @State private var downloadDragging = false
 
     private var mainSidebarContent: some View {
         return VStack(spacing: NookDesign.Spacing.sectionGap) {
@@ -293,6 +295,21 @@ struct SpacesSideBarView: View {
 
     private var downloadsMenuOverlay: some View {
         SidebarMenuHoverDownloads(isVisible: animateDownloadsMenu)
+            // FORK: a drag out of the list keeps it up until the button is released; the drag's source
+            // view would otherwise be removed a second after the pointer left it.
+            .onReceive(NotificationCenter.default.publisher(for: .downloadDragBegan)) { _ in
+                downloadDragging = true
+                Task { @MainActor in
+                    while NSEvent.pressedMouseButtons & 1 != 0 { try? await Task.sleep(for: .milliseconds(200)) }
+                    downloadDragging = false
+                    if !isDownloadsHovered { hideMenuAfterDelay() }
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSMenu.didBeginTrackingNotification)) { _ in downloadMenuTracking = true }
+            .onReceive(NotificationCenter.default.publisher(for: NSMenu.didEndTrackingNotification)) { _ in
+                downloadMenuTracking = false
+                if !isDownloadsHovered { hideMenuAfterDelay() }
+            }
             .onHoverTracking { isHovered in
                 isDownloadsHovered = isHovered
                 if isHovered {
@@ -385,7 +402,9 @@ struct SpacesSideBarView: View {
 
     private func hideMenuAfterDelay() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            if !isMenuButtonHovered, !isDownloadsHovered {
+            // FORK: not while a context menu is open on a download row; the pointer is on the menu,
+            // not the list, and hiding the list would close the menu with it.
+            if !isMenuButtonHovered, !isDownloadsHovered, !downloadMenuTracking, !downloadDragging {
                 animateDownloadsMenu = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     showDownloadsMenu = false

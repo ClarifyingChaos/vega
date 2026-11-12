@@ -7,6 +7,8 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
+import AppKit
 import NookDesign
 import NookUI
 
@@ -176,7 +178,51 @@ struct SidebarMenuHoverDownloadItem: View {
             if download.completedFile != nil { DownloadManager.shared.previewing = download }
         }
         .onDrag {
-            download.dragItemProvider()
+            // FORK: tells the sidebar to keep this list up until the mouse button is released.
+            NotificationCenter.default.post(name: .downloadDragBegan, object: nil)
+            return download.dragItemProvider()
+        }
+        // FORK: Arc's menu for a downloaded file.
+        .contextMenu { contextMenu }
+    }
+
+    // MARK: - Context menu
+
+    private var file: URL? { download.completedFile }
+
+    private var isImage: Bool {
+        file.flatMap { UTType(filenameExtension: $0.pathExtension) }?.conforms(to: .image) ?? false
+    }
+
+    @ViewBuilder
+    private var contextMenu: some View {
+        if let file {
+            Button(isImage ? "Copy Image" : "Copy") {
+                let pasteboard = NSPasteboard.general
+                pasteboard.clearContents()
+                if isImage, let image = NSImage(contentsOf: file) { pasteboard.writeObjects([image]) }
+                else { pasteboard.writeObjects([file as NSURL]) }
+            }
+            Divider()
+            Button("Send via iMessage") { NSSharingService(named: .composeMessage)?.perform(withItems: [file]) }
+            Button("AirDrop") { NSSharingService(named: .sendViaAirDrop)?.perform(withItems: [file]) }
+            Divider()
+            if let preview = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Preview") {
+                Button("Open in Preview") {
+                    NSWorkspace.shared.open([file], withApplicationAt: preview, configuration: NSWorkspace.OpenConfiguration())
+                }
+            }
+            Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([file]) }
+            Divider()
+        }
+        Button("Hide from Vega") { DownloadManager.shared.removeDownload(download.id) }
+        if file != nil {
+            Button("Move to Trash") { DownloadManager.shared.moveToTrash(download) }
         }
     }
+}
+
+extension Notification.Name {
+    /// A download row started a drag out of the hover list.
+    static let downloadDragBegan = Notification.Name("VegaDownloadDragBegan")
 }

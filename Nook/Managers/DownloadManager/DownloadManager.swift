@@ -741,7 +741,12 @@ private class DownloadDelegate: NSObject, WKDownloadDelegate {
         }
 
         DispatchQueue.main.async {
-            savePanel.begin { result in
+            // FORK: a sheet on the window, as in Arc, rather than a floating panel.
+            let present: (@escaping (NSApplication.ModalResponse) -> Void) -> Void = { handler in
+                if let window = NSApp.keyWindow ?? NSApp.mainWindow { savePanel.beginSheetModal(for: window, completionHandler: handler) }
+                else { savePanel.begin(completionHandler: handler) }
+            }
+            present { result in
                 guard self.download.state == .pending else {
                     completion(.cancel)
                     return

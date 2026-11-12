@@ -242,14 +242,18 @@ extension BrowserManager {
 
     /// Arc's Cast: the system AirPlay picker, for the page's video or audio. WebKit routes media
     /// to the chosen device (allowsAirPlayForMediaPlayback is on). The picker is AVKit's own
-    /// button, placed under the window's top-right corner and clicked for the person.
+    /// button, placed at the top centre of the window and clicked for the person.
     func castPage() {
         guard let content = activeWindowState?.window?.contentView else { return }
-        let picker = AVRoutePickerView(frame: NSRect(x: content.bounds.maxX - 60, y: content.bounds.maxY - 40, width: 28, height: 28))
+        // The hosting view is flipped, so its top edge is y = 0; the first version used maxY and the
+        // picker opened at the window's bottom edge, off where anyone looks.
+        let top = content.isFlipped ? 48 : content.bounds.maxY - 76
+        let picker = AVRoutePickerView(frame: NSRect(x: content.bounds.midX, y: top, width: 28, height: 28))
         picker.alphaValue = 0.01
         content.addSubview(picker)
         // The button is built lazily inside the picker, so click on the next turn of the run loop.
-        DispatchQueue.main.async {
+        // After the menu has closed; a popup opened during menu tracking is dismissed with it.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             (picker.subviews.first { $0 is NSButton } as? NSButton)?.performClick(nil)
             DispatchQueue.main.asyncAfter(deadline: .now() + 30) { picker.removeFromSuperview() }
         }

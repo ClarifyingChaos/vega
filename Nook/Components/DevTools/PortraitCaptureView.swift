@@ -235,7 +235,7 @@ struct PortraitComposition: View {
     enum Mark {
         /// The preview: the icon alone in the corner, as Arc's preview shows its logo.
         case corner
-        /// The copied image: icon and "Captured with Nook" centered at the foot.
+        /// The copied image: icon and "Captured with Vega" centered at the foot.
         case footer
     }
 
@@ -294,7 +294,7 @@ struct PortraitComposition: View {
                         Image(nsImage: NSApp.applicationIconImage)
                             .resizable()
                             .frame(width: unit * 0.014, height: unit * 0.014)
-                        Text("Captured with Nook")
+                        Text("Captured with Vega")
                             .font(.system(size: max(9, unit * 0.0085), weight: .semibold))
                             .foregroundStyle(.white.opacity(0.85))
                     }

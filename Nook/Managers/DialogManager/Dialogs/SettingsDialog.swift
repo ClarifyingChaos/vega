@@ -38,7 +38,7 @@ struct SettingsDialog: DialogPresentable {
         DialogHeader(
             icon: "gear",
             title: "Settings",
-            subtitle: "Customize your Nook experience"
+            subtitle: "Customize your Vega experience"
         )
     }
 

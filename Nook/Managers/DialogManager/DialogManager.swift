@@ -84,7 +84,7 @@ class DialogManager {
                             .scaledToFit()
                             .frame(width: 50, height: 50)
                             .nookElevation(.raised)
-                        Text("Quit Nook?")
+                        Text("Quit Vega?")
                             .font(NookDesign.Font.heading)
                             .foregroundStyle(AppColors.textPrimary)
                         Text("You may lose unsaved work in your tabs.")

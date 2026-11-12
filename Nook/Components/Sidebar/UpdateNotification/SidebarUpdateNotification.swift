@@ -51,7 +51,7 @@ struct SidebarUpdateNotification: View {
         if let availability, shouldShowNotification {
             VStack(spacing: 0) {
                 VStack(spacing: 0) {
-                    Text("New version of Nook available")
+                    Text("New version of Vega available")
                         .font(NookDesign.Font.secondary)
                         .foregroundStyle(.primary)
                         .offset(y: isExpanded ? -25 : 0)

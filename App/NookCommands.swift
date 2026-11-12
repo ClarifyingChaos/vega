@@ -108,7 +108,7 @@ struct NookCommands: Commands {
         // Replace the standard Quit menu item to route through showQuitDialog(),
         // which respects the "warn before quitting" setting
         CommandGroup(replacing: .appTermination) {
-            Button("Quit Nook") {
+            Button("Quit Vega") {
                 browserManager.showQuitDialog()
             }
             .keyboardShortcut("q", modifiers: .command)
@@ -117,11 +117,11 @@ struct NookCommands: Commands {
         // App Menu Section (under Nook)
         CommandGroup(after: .appInfo) {
             Divider()
-            Button("Make Nook Default Browser") {
+            Button("Make Vega Default Browser") {
                 browserManager.setAsDefaultBrowser()
             }
 
-            // FORK: off until the fork has its own appcast feed and key (see AppDelegate).
+            // FORK: off until the appcast at SUFeedURL exists and the first release is signed with the key kept in the login Keychain (see AppDelegate).
             Button("Check for Updates…") {
                 browserManager.appDelegate?.updaterController.checkForUpdates(nil)
             }

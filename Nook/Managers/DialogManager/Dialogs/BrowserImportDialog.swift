@@ -73,7 +73,7 @@ struct BrowserImportDialog: DialogPresentable {
                 alert.informativeText = summary
             } else {
                 alert.messageText = "Couldn't import from Arc"
-                alert.informativeText = "Nook didn't find any Arc spaces on this Mac."
+                alert.informativeText = "Vega didn't find any Arc spaces on this Mac."
             }
             alert.runModal()
         }

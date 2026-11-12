@@ -31,7 +31,7 @@ struct SidebarWhatsNewCard: View {
                 browserManager.whatsNewVersion = nil
             } label: {
                 VStack(spacing: NookDesign.Spacing.xxs) {
-                    Text("What's new in Nook \(version)")
+                    Text("What's new in Vega \(version)")
                         .font(NookDesign.Font.secondary)
                         .foregroundStyle(.primary)
                     Text("See what changed")

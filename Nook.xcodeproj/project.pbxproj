@@ -505,7 +505,8 @@
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Nook/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Nook;
+				INFOPLIST_KEY_CFBundleDisplayName = Vega;
+				INFOPLIST_KEY_CFBundleName = Vega;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -553,7 +554,8 @@
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Nook/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Nook;
+				INFOPLIST_KEY_CFBundleDisplayName = Vega;
+				INFOPLIST_KEY_CFBundleName = Vega;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -591,7 +593,8 @@
 				DEVELOPMENT_TEAM = ZHB786H6YN;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NookiOS/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Nook;
+				INFOPLIST_KEY_CFBundleDisplayName = Vega;
+				INFOPLIST_KEY_CFBundleName = Vega;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -622,7 +625,8 @@
 				DEVELOPMENT_TEAM = ZHB786H6YN;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NookiOS/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Nook;
+				INFOPLIST_KEY_CFBundleDisplayName = Vega;
+				INFOPLIST_KEY_CFBundleName = Vega;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (

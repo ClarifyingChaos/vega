@@ -73,7 +73,7 @@ struct HistoryPageView: View {
             }
             .padding(.bottom, NookDesign.Spacing.lg)
 
-            navRow("Nook History", symbol: "clock", isSelected: true) {}
+            navRow("History", symbol: "clock", isSelected: true) {}
             navRow("Clear Browsing Data…", symbol: "trash", isSelected: false) {
                 browserManager.openSettings(tab: .privacy)
             }

@@ -83,7 +83,7 @@ struct ExtensionPermissionView: View {
     private var title: String {
         if isRuntimeRequest { return "\"\(extensionName)\" wants additional permissions" }
         if isUpdate { return "The new version of \"\(extensionName)\" needs more permissions" }
-        return "Add the \"\(extensionName)\" extension to Nook?"
+        return "Add the \"\(extensionName)\" extension to Vega?"
     }
 
     /// One line summarizing site access, Chrome-style.

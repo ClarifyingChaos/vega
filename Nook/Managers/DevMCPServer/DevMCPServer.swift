@@ -8,7 +8,7 @@
 //  holds a GET stream open for as long as it runs, so the last one closing ends the agent's tabs.
 //
 //  claude mcp add --transport http nook http://127.0.0.1:47823/mcp \
-//    --header "Authorization: Bearer $(cat ~/Library/Application\ Support/com.gstudios.nook/dev-mcp-token)"
+//    --header "Authorization: Bearer $(cat ~/Library/Application\ Support/com.vega.browser/dev-mcp-token)"
 //
 
 import AppKit
@@ -45,7 +45,7 @@ final class DevMCPServer {
     /// Each session's open GET stream, which carries nothing but keep-alives.
     private var streams: [String: NWConnection] = [:]
     private var keepAlive: Task<Void, Never>?
-    private let queue = DispatchQueue(label: "com.gstudios.nook.devmcp")
+    private let queue = DispatchQueue(label: "com.vega.browser.devmcp")
 
     /// Remember the browser and start only if the user has turned the server on.
     /// Off is the default: see NookSettingsService.browserControlServerEnabled.

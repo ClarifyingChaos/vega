@@ -92,7 +92,7 @@ struct URLBarView: View {
         }
         // FORK: the load tint, in the space's colour (see PageLoadingProgressBar).
         .background(alignment: .leading) {
-            if splitItemID == nil { PageLoadingProgressBar(session: session, color: browserManager.gradientColorManager.accentColor) }
+            PageLoadingProgressBar(session: session, color: browserManager.gradientColorManager.accentColor)
         }
         // Report the frame in the window space so we can overlay the mini palette above all content
         .background {

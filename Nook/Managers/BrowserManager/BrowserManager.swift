@@ -757,7 +757,7 @@ class BrowserManager: ObservableObject {
     func showQuitDialog() {
         if self.nookSettings?.askBeforeQuit == true {
             // FORK: a system alert; "Always Quit" becomes the standard suppression checkbox.
-            let alert = SystemAlert.make("Quit Nook?", "You may lose unsaved work in your tabs.", buttons: ["Quit", "Cancel"])
+            let alert = SystemAlert.make("Quit Vega?", "You may lose unsaved work in your tabs.", buttons: ["Quit", "Cancel"])
             alert.showsSuppressionButton = true
             alert.suppressionButton?.title = "Don't ask again"
             SystemAlert.present(alert) { response in
@@ -1049,7 +1049,7 @@ class BrowserManager: ObservableObject {
         }
 
         let windowState = BrowserWindowState()
-        let newWindow = makeBrowserNSWindow(title: "Nook")
+        let newWindow = makeBrowserNSWindow(title: "Vega")
 
         if let frame {
             newWindow.setFrame(frame, display: false)
@@ -1141,7 +1141,7 @@ class BrowserManager: ObservableObject {
         windowRegistry.register(windowState)
         tabs.open(url: TabsController.homeURL, in: windowState, placement: .newTab)
 
-        let newWindow = makeBrowserNSWindow(title: "Private - Nook")
+        let newWindow = makeBrowserNSWindow(title: "Private - Vega")
         let contentView = windowContent(ContentView(windowState: windowState), windowRegistry: windowRegistry, webViewCoordinator: webViewCoordinator)
         newWindow.contentView = NSHostingView(rootView: contentView)
         newWindow.center()

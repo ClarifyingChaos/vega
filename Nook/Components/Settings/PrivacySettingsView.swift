@@ -49,7 +49,7 @@ struct PrivacySettingsView: View {
             Section("Security") {
                 settingToggle(
                     "Warn before opening a site over HTTP",
-                    detail: "Nook always tries HTTPS first. Ask before opening a site that only works over HTTP.",
+                    detail: "Vega always tries HTTPS first. Ask before opening a site that only works over HTTP.",
                     isOn: $settings.warnBeforeHTTP
                 )
             }

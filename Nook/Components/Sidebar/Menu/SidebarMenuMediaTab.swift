@@ -40,7 +40,7 @@ struct SidebarMenuMediaTab: View {
         VStack(spacing: 0) {
             SidebarMenuSearchField(prompt: "Search Media...", text: $text)
                 .padding(.horizontal, NookDesign.Spacing.md)
-                .padding(.top, NookDesign.Spacing.sidebarTop)
+                .padding(.top, NookDesign.Spacing.md)
                 .padding(.bottom, NookDesign.Spacing.md)
 
             ScrollView {

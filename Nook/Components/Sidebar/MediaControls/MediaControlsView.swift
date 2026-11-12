@@ -39,6 +39,8 @@ struct MediaControlsView: View {
     @State private var overrideIsMuted: Bool? = nil
     @State private var mediaControlsManager: MediaControlsManager?
     @State private var updateTask: Task<Void, Never>?
+    /// Page whose bar the person closed; it returns when that page plays again.
+    @State private var dismissedItemID: UUID?
 
     // Width thresholds for collapsing behavior
     private var effectiveWidth: CGFloat {
@@ -77,11 +79,19 @@ struct MediaControlsView: View {
     var body: some View {
         Group {
             // The tab just returned to is in view; its bar would pop back for one debounce.
-            if hasActiveMedia, !isVideoShowing, let tab = activeMediaTab, tab.itemID != windowState.selectedItemID {
+            if hasActiveMedia, !isVideoShowing, let tab = activeMediaTab, tab.itemID != windowState.selectedItemID, tab.itemID != dismissedItemID {
                 VStack(spacing: 8) {
                     // Tab name (shows on hover)
                     if isHovering {
-                        MediaControlsTabTitle(tab: tab)
+                        HStack(spacing: 6) {
+                            MediaControlsTabTitle(tab: tab)
+                            Spacer(minLength: 0)
+                            Button("Close", systemImage: "xmark") { close(tab) }
+                                .labelStyle(.iconOnly)
+                                .buttonStyle(NookIconButtonStyle(size: 20))
+                                .foregroundStyle(Color.white)
+                                .help("Stop and close")
+                        }
                     }
                     HStack(spacing: 0) {
                         // Tab favicon (collapses first)
@@ -274,6 +284,13 @@ struct MediaControlsView: View {
         }
     }
 
+    /// Arc's close on the docked player: pause the page and hide the bar until it plays again.
+    private func close(_ tab: PageSession) {
+        dismissedItemID = tab.itemID
+        guard isPlaying, let manager = mediaControlsManager else { return }
+        Task { _ = await manager.playPause(tab: tab) }
+    }
+
     private func updateMediaState() {
         // Cancel any previous update task to debounce rapid calls
         updateTask?.cancel()
@@ -335,6 +352,7 @@ struct MediaControlsView: View {
 
             if let resolvedTab {
                 let liveState = resolvedTab.hasPlayingAudio || resolvedTab.hasPlayingVideo
+                if liveState, dismissedItemID == resolvedTab.itemID, overrideIsPlaying == nil { dismissedItemID = nil }
                 if let override = overrideIsPlaying, override == liveState {
                     overrideIsPlaying = nil
                 }

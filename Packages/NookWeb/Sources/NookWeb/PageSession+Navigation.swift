@@ -123,6 +123,11 @@ extension PageSession: WKNavigationDelegate {
 
         }
 
+        // FORK: sites that block favicon requests still show their icon links to the page.
+        if !hasFavicon, !faviconFetchInFlight, let finalURL = webView.url {
+            Task { @MainActor [weak self] in _ = await self?.fetchFaviconFromDOM(for: finalURL) }
+        }
+
         // CRITICAL: Update navigation state after back/forward navigation
         updateNavigationStateEnhanced(source: "didFinish")
 

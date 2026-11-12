@@ -44,15 +44,24 @@ public struct ItemFavicon: View {
     }
 
     public var body: some View {
-        (session?.favicon ?? cached ?? Image(systemName: "globe"))
+        // FORK: a session's placeholder globe must not hide the cached icon.
+        ((session?.hasLoadedFavicon == true ? session?.favicon : nil) ?? cached ?? session?.favicon ?? Image(systemName: "globe"))
             .resizable()
             .scaledToFit()
             // Keyed on the session too: closing a pinned tab or favorite ends its page but keeps
             // the row, and the cached icon must be loaded then.
-            .task(id: "\(item.url.flatMap(FaviconCache.key) ?? "")|\(session == nil)") {
+            .task(id: "\(item.url.flatMap(FaviconCache.key) ?? "")|\(session == nil)|\(session?.hasLoadedFavicon == true)") {
                 session?.ensureFaviconLoaded()
-                guard let host = item.url.flatMap(FaviconCache.key),
-                      let image = await FaviconCache.shared.cachedImage(for: host) else { return }
+                guard let url = item.url, let host = FaviconCache.key(for: url) else { return }
+                // FORK: a pin whose address redirects (gmail.com to mail.google.com) keeps the icon its page loaded.
+                if let session, session.hasLoadedFavicon, FaviconCache.shared.image(for: host) == nil,
+                   let live = FaviconCache.key(for: session.url).flatMap({ FaviconCache.shared.image(for: $0) }) {
+                    FaviconCache.shared.store(live, for: host)
+                }
+                if let image = await FaviconCache.shared.cachedImage(for: host) { cached = Image(platformImage: image) }
+                // FORK: an unloaded favorite or pinned tab has no page to fetch its icon, so fetch it here.
+                guard session?.hasLoadedFavicon != true,
+                      let image = await FaviconCache.shared.loadOrFetch(for: url) else { return }
                 cached = Image(platformImage: image)
             }
     }

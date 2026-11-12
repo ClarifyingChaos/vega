@@ -740,6 +740,9 @@ public final class PageSession: NSObject, Identifiable {
 
     // MARK: - Favicon
 
+    /// FORK: false while `favicon` is still the placeholder globe.
+    public var hasLoadedFavicon: Bool { hasFavicon }
+
     /// Starts a favicon fetch when none has loaded yet, up to `maxFaviconRetries` failures.
     public func ensureFaviconLoaded() {
         guard !hasFavicon, !faviconFetchInFlight else { return }
@@ -798,12 +801,17 @@ public final class PageSession: NSObject, Identifiable {
             return
         }
 
+        // FORK: the loaded page's own <link> tags, for sites that block the requests above.
+        if await fetchFaviconFromDOM(for: url) { return }
+
         // A failed refresh keeps the cached icon; otherwise hasFavicon stays false so
         // ensureFaviconLoaded() can retry.
         if cached == nil { favicon = defaultFavicon }
     }
 
     private static func fetchFaviconImage(for url: URL) async -> PlatformImage? {
+        // FORK: prefer the sharpest icon the site offers (see FaviconCache+Fetch.swift).
+        if let best = await FaviconCache.bestIcon(for: url) { return best }
         do {
             let favicon = try await FaviconFinder(url: url)
                 .fetchFaviconURLs()
@@ -829,7 +837,7 @@ public final class PageSession: NSObject, Identifiable {
         return URLSession(configuration: config)
     }()
 
-    private static func downloadImage(from url: URL, isPrivate: Bool) async -> PlatformImage? {
+    static func downloadImage(from url: URL, isPrivate: Bool) async -> PlatformImage? {
         do {
             let session = isPrivate ? privateFaviconSession : URLSession.shared
             let (data, response) = try await session.data(from: url)

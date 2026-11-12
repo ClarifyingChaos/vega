@@ -130,6 +130,12 @@ extension BrowserManager {
         externalMiniWindowManager.present(url: startPageURL)
     }
 
+    /// Arc's Blank Window: a new window with the sidebar hidden, so the page has the whole frame.
+    /// shortcut: assumes Arc's blank window is sidebar-less; verify against Arc and adjust.
+    func openBlankWindow() {
+        createNewWindow()?.isSidebarVisible = false
+    }
+
     /// Arc's Stay On Top: the active window floats above other apps' windows.
     func toggleStayOnTop() {
         guard let window = activeWindowState?.window else { return }

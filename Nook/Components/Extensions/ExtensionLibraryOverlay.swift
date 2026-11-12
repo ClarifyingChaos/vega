@@ -29,7 +29,7 @@ struct ExtensionLibraryOverlay: View {
     @State private var isShowingMoreMenu = false
     @State private var appeared = false
 
-    private let menuWidth: CGFloat = 300
+    private let menuWidth: CGFloat = 232 // FORK: Arc's panel is about 232 pt wide (was 300)
     private let gap: CGFloat = 10
     private let notchWidth: CGFloat = 18
     private let notchHeight: CGFloat = 8
@@ -55,8 +55,14 @@ struct ExtensionLibraryOverlay: View {
                             onShowMoreMenu: { isShowingMoreMenu.toggle() }
                         )
                         .frame(width: menuWidth)
-                        // FORK: glass instead of a solid card; the solid notch no longer matches it, so it is dropped.
-                        .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xl))
+                        .padding(.top, notchHeight)
+                        // FORK: Arc's dark panel with its notch pointing at the button, as one glass
+                        // shape; the panel stays dark in a light theme, as Arc's does.
+                        .environment(\.colorScheme, .dark)
+                        .nookGlassSurface(
+                            in: NotchedPanel(radius: NookDesign.Radius.xl, notchX: buttonFrame.midX - originX(buttonFrame: buttonFrame, container: proxy.size),
+                                             notchWidth: notchWidth, notchHeight: notchHeight),
+                            tint: .black.opacity(0.45))
                         // Grows out of the button rather than appearing whole.
                         .scaleEffect(appeared ? 1 : 0.88, anchor: UnitPoint(
                             x: (buttonFrame.midX - originX(buttonFrame: buttonFrame, container: proxy.size)) / menuWidth, y: 0))
@@ -78,7 +84,7 @@ struct ExtensionLibraryOverlay: View {
                     }
                     .fixedSize()
                     .offset(x: originX(buttonFrame: buttonFrame, container: proxy.size),
-                            y: buttonFrame.maxY + gap)
+                            y: buttonFrame.maxY + 2)
                 }
                 .animation(NookDesign.Motion.quick, value: isShowingMoreMenu)
                 .transition(.opacity)
@@ -106,14 +112,39 @@ struct ExtensionLibraryOverlay: View {
     }
 }
 
-/// A small rounded triangle pointing up.
-private struct PanelNotch: Shape {
+/// A rounded panel with a notch on its top edge, drawn as one path so glass fills it whole.
+struct NotchedPanel: InsettableShape {
+    var radius: CGFloat
+    /// The notch's centre, in the panel's own coordinates.
+    var notchX: CGFloat
+    var notchWidth: CGFloat
+    var notchHeight: CGFloat
+    var insetAmount: CGFloat = 0
+
     func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addQuadCurve(to: CGPoint(x: rect.midX, y: rect.minY), control: CGPoint(x: rect.midX - rect.width * 0.18, y: rect.minY))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.maxY), control: CGPoint(x: rect.midX + rect.width * 0.18, y: rect.minY))
-        path.closeSubpath()
-        return path
+        let r = rect.insetBy(dx: insetAmount, dy: insetAmount)
+        let top = r.minY + notchHeight, rad = radius
+        let cx = min(max(notchX, r.minX + rad + notchWidth / 2), r.maxX - rad - notchWidth / 2)
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX + rad, y: top))
+        p.addLine(to: CGPoint(x: cx - notchWidth / 2, y: top))
+        p.addQuadCurve(to: CGPoint(x: cx, y: r.minY), control: CGPoint(x: cx - notchWidth * 0.18, y: r.minY))
+        p.addQuadCurve(to: CGPoint(x: cx + notchWidth / 2, y: top), control: CGPoint(x: cx + notchWidth * 0.18, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX - rad, y: top))
+        p.addArc(tangent1End: CGPoint(x: r.maxX, y: top), tangent2End: CGPoint(x: r.maxX, y: top + rad), radius: rad)
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY - rad))
+        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY), tangent2End: CGPoint(x: r.maxX - rad, y: r.maxY), radius: rad)
+        p.addLine(to: CGPoint(x: r.minX + rad, y: r.maxY))
+        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY), tangent2End: CGPoint(x: r.minX, y: r.maxY - rad), radius: rad)
+        p.addLine(to: CGPoint(x: r.minX, y: top + rad))
+        p.addArc(tangent1End: CGPoint(x: r.minX, y: top), tangent2End: CGPoint(x: r.minX + rad, y: top), radius: rad)
+        p.closeSubpath()
+        return p
+    }
+
+    func inset(by amount: CGFloat) -> NotchedPanel {
+        var copy = self
+        copy.insetAmount += amount
+        return copy
     }
 }

@@ -170,12 +170,12 @@ struct SpacesSideBarView: View {
                 titleRow
                     .frame(height: NookDesign.Spacing.sidebarTop)
                     .padding(.leading, NookDesign.SidebarChrome.trafficLightsInset)
-                    .padding(.trailing, NookDesign.Spacing.sidebarInset)
+                    .padding(.trailing, 6) // FORK: Arc's reload button ends 6 pt from the edge
                     // FORK: in the hover overlay, cancel its inset so the icons stay level with the window buttons.
                     .offset(x: -overlayInset.width, y: -overlayInset.height)
             }
         }
-        .padding(.bottom, NookDesign.Spacing.sidebarInset)
+        .padding(.bottom, 5) // FORK: Arc's bottom bar ends 9 pt from the window edge (40 pt bar, 32 pt buttons)
         .background(
             GeometryReader { geo in
                 Color.clear

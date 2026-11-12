@@ -402,7 +402,7 @@ struct WindowView: View {
                     .allowsHitTesting(false)
             }
         }
-        .padding(.bottom, bordered ? NookDesign.Chrome.pageInset : 0)
+        .padding(.bottom, bordered ? NookDesign.Chrome.pageInsetBottom : 0)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
@@ -484,6 +484,12 @@ final class TrafficLightsView: NSView {
         guard let window else { return }
         let center = NotificationCenter.default
         observers = [
+            center.addObserver(forName: NSWindow.didResizeNotification, object: window, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.place() }
+            },
+            center.addObserver(forName: NSWindow.didBecomeKeyNotification, object: window, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.place() }
+            },
             center.addObserver(forName: NSWindow.willExitFullScreenNotification, object: window, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated { self?.setExiting(true) }
             },
@@ -507,6 +513,20 @@ final class TrafficLightsView: NSView {
         for type in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
             window?.standardWindowButton(type)?.isHidden = !visible || exitingFullScreen
             window?.standardWindowButton(type)?.alphaValue = alpha
+        }
+        place()
+    }
+
+    /// FORK: Arc's window button position, 12 pt from the left and 16 pt from the top (13 and 15 in this view's coordinates) with 23 pt
+    /// between them (the system puts them at 18 and 18). Absolute targets, so a layout pass that
+    /// moves them back is simply corrected again and there is no loop.
+    private func place() {
+        guard let window, !window.styleMask.contains(.fullScreen) else { return }
+        let columns: [(NSWindow.ButtonType, CGFloat)] = [(.closeButton, 13), (.miniaturizeButton, 36), (.zoomButton, 59)]
+        for (type, x) in columns {
+            guard let button = window.standardWindowButton(type), let parent = button.superview else { continue }
+            let target = NSPoint(x: x, y: parent.bounds.height - 15 - button.frame.height)
+            if button.frame.origin != target { button.setFrameOrigin(target) }
         }
     }
 }

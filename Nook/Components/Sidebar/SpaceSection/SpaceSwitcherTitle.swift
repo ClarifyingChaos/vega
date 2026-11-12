@@ -45,8 +45,11 @@ struct SpaceSwitcherTitle: View {
                     // As in Arc: the row folds the pinned section, the ellipsis holds the space menu.
                     Button(action: { toggleCollapsed(space) }) {
                         HStack(spacing: NookDesign.Spacing.md) {
-                            leadingIcon(space)
-                                .frame(width: NookDesign.Size.favicon)
+                            // FORK: as in Arc, a plain dot is not drawn; the name stands alone.
+                            if showsLeadingIcon(space) {
+                                leadingIcon(space)
+                                    .frame(width: NookDesign.Size.favicon)
+                            }
                             title(space)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -90,6 +93,10 @@ struct SpaceSwitcherTitle: View {
         }
     }
 
+    private func showsLeadingIcon(_ space: SpaceRecord) -> Bool {
+        (isHovering && hasPinned(space)) || space.isAgent || !SpaceIcon.isDot(space.icon)
+    }
+
     /// The space icon, a chevron on hover when there are pinned tabs to fold.
     @ViewBuilder
     private func leadingIcon(_ space: SpaceRecord) -> some View {
@@ -110,8 +117,8 @@ struct SpaceSwitcherTitle: View {
 
     private func title(_ space: SpaceRecord) -> some View {
         let title = Text(space.name)
-            .foregroundStyle(.primary)
-            .font(NookDesign.Font.label)
+            .foregroundStyle(.secondary) // FORK: Arc's quiet gray space name
+            .font(NookDesign.Font.body)
             .lineLimit(1)
             .fixedSize()
         // A name too long for the title row fades out, the way a tab row's title does.

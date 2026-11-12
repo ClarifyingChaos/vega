@@ -49,7 +49,7 @@ public enum NookDesign {
         public static let sidebarInset: CGFloat = 8
         public static let favoriteGap: CGFloat = 8     // between favorite tiles
         public static let rowGap: CGFloat = 2
-        public static let sectionGap: CGFloat = 10
+        public static let sectionGap: CGFloat = 8   // FORK: Arc's 8 pt between the address field and the favorites (was 10)
         public static let rowPadding: CGFloat = 8
         #if os(iOS)
         // Depth 5 at 20 would eat 100 of a 390pt phone row.
@@ -57,7 +57,7 @@ public enum NookDesign {
         #else
         public static let folderIndent: CGFloat = 20
         #endif
-        public static let sidebarTop: CGFloat = 52     // the unified title band; the lights sit centred in it
+        public static let sidebarTop: CGFloat = 46     // FORK: Arc's title band (was 52); its buttons are centred at 23 pt
         public static let trafficLights: CGFloat = 88  // leading space the traffic lights take in the title row
         public static let titleFade: CGFloat = 20      // trailing fade on long row titles
     }
@@ -67,6 +67,9 @@ public enum NookDesign {
     public enum Chrome {
         /// Window inset around web content. FORK: 8 pt, measured in Arc 1.172 (right, top, bottom; was 10).
         public static let pageInset: CGFloat = 8
+        /// Arc's measured top and bottom (9 and 7 px in its window; the top reads 1 px less here, so 10).
+        public static let pageInsetTop: CGFloat = 10
+        public static let pageInsetBottom: CGFloat = 7
         public static let splitGap: CGFloat = pageInset
     }
 
@@ -79,7 +82,7 @@ public enum NookDesign {
         public static let row: CGFloat = 32
         #endif
         public static let iconButton: CGFloat = 28
-        public static let favoriteTile: CGFloat = 48   // a favorite tile's height; at the default sidebar width tiles are 55 pt wide
+        public static let favoriteTile: CGFloat = 47   // FORK: Arc's tile height (was 48); at the default 247 pt sidebar tiles are 52 pt wide
         public static let favoriteBorder: CGFloat = 2  // the selected favorite's edge
         public static let favoriteGlowScale: CGFloat = 2   // pixels per point of the blurred favicon behind a tile
         public static let favoriteGlowBlur: CGFloat = 0.25 // its blur radius as a fraction of the tile
@@ -140,7 +143,7 @@ public enum NookDesign {
         public static let icon: CGFloat = 15
         public static let button: CGFloat = 32   // FORK: Arc's 32 pt title-row and bottom-bar buttons (was 30)
         public static let gap: CGFloat = 2
-        public static let trafficLightsInset: CGFloat = 84   // 12pt past the zoom button, as in Arc
+        public static let trafficLightsInset: CGFloat = 77   // FORK: Arc's toggle starts 3 pt past the zoom button, which ends at 74
         public static let footerSideReserve: CGFloat = 66
     }
 

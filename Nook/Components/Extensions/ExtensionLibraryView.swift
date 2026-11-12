@@ -40,7 +40,7 @@ struct ExtensionLibraryView: View {
         return host.isEmpty ? nil : host
     }
 
-    private let width: CGFloat = 300
+    private let width: CGFloat = 232
     private let columns = Array(repeating: GridItem(.flexible(), spacing: NookDesign.Spacing.sm), count: 4)
 
     var body: some View {
@@ -75,7 +75,7 @@ struct ExtensionLibraryView: View {
             }
             .menuStyle(.button)
             .menuIndicator(.hidden)
-            .buttonStyle(ActionTileStyle())
+            .buttonStyle(ActionTileStyle(solid: true))
             .help("Share")
             .disabled(currentTab == nil)
 
@@ -85,7 +85,7 @@ struct ExtensionLibraryView: View {
             } label: {
                 ActionTileLabel(systemImage: "paintbrush.pointed")
             }
-            .buttonStyle(ActionTileStyle())
+            .buttonStyle(ActionTileStyle(solid: true))
             .help("Boost")
             .disabled(boostHost == nil)
 
@@ -95,7 +95,7 @@ struct ExtensionLibraryView: View {
             } label: {
                 ActionTileLabel(systemImage: "camera")
             }
-            .buttonStyle(ActionTileStyle())
+            .buttonStyle(ActionTileStyle(solid: true))
             .help("Capture")
             .disabled(currentTab == nil)
 
@@ -108,7 +108,8 @@ struct ExtensionLibraryView: View {
     private var extensionsSection: some View {
         VStack(alignment: .leading, spacing: NookDesign.Spacing.sm) {
             Text("Extensions")
-                .font(NookDesign.Font.title)
+                .font(NookDesign.Font.label)
+                .foregroundStyle(.secondary)
 
             let extensions = browserManager.extensionManager?.installedExtensions.filter { $0.isEnabled } ?? []
             LazyVGrid(columns: columns, spacing: NookDesign.Spacing.sm) {
@@ -137,7 +138,8 @@ struct ExtensionLibraryView: View {
     private var settingsSection: some View {
         VStack(alignment: .leading, spacing: NookDesign.Spacing.xs) {
             Text("Settings")
-                .font(NookDesign.Font.title)
+                .font(NookDesign.Font.label)
+                .foregroundStyle(.secondary)
                 .padding(.bottom, NookDesign.Spacing.xxs)
 
             if let host = currentHost {
@@ -299,6 +301,8 @@ struct ExtensionLibraryView: View {
 
 /// Arc's square action tile: a raised dark key with a soft top light, pressing in a touch.
 private struct ActionTileStyle: ButtonStyle {
+    /// FORK: Arc's top row is near-black keys; the extension tiles stay translucent.
+    var solid = false
     @Environment(\.isEnabled) private var isEnabled
     @State private var isHovering = false
 
@@ -307,8 +311,9 @@ private struct ActionTileStyle: ButtonStyle {
             .foregroundStyle(isEnabled ? AnyShapeStyle(.primary) : AnyShapeStyle(.tertiary))
             .background {
                 NookDesign.Radius.shape(NookDesign.Radius.lg)
-                    .fill(configuration.isPressed ? NookDesign.Surface.fillPressed
-                          : isHovering && isEnabled ? NookDesign.Surface.fillPressed : NookDesign.Surface.fill)
+                    .fill(solid ? Color.black.opacity(configuration.isPressed || (isHovering && isEnabled) ? 0.78 : 0.62)
+                          : (configuration.isPressed ? NookDesign.Surface.fillPressed
+                             : isHovering && isEnabled ? NookDesign.Surface.fillPressed : NookDesign.Surface.fill))
                     .overlay(alignment: .top) {
                         // The light catching the key's top edge.
                         NookDesign.Radius.shape(NookDesign.Radius.lg)
@@ -332,7 +337,7 @@ private struct ActionTileLabel: View {
             .font(.system(size: compact ? NookDesign.Size.spaceIcon : NookDesign.Size.spaceIcon + 4, weight: .regular))
             .contentTransition(.symbolEffect(.replace))
             .frame(maxWidth: .infinity)
-            .frame(height: NookDesign.Size.essentialsTile)
+            .frame(height: 34) // FORK: Arc's compact key height (was 44)
     }
 }
 
@@ -348,7 +353,7 @@ private struct MuteButton: View {
         } label: {
             ActionTileLabel(systemImage: muted ? "speaker.slash" : "speaker.wave.2")
         }
-        .buttonStyle(ActionTileStyle())
+        .buttonStyle(ActionTileStyle(solid: true))
         .help(muted ? "Unmute" : "Mute")
         .disabled(tab == nil)
     }

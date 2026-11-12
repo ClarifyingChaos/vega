@@ -28,7 +28,7 @@ struct WebsiteLoadingIndicator: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .frame(height: NookDesign.Chrome.pageInset)
+        .frame(height: NookDesign.Chrome.pageInsetTop)
         
         
     }

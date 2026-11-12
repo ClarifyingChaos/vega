@@ -26,8 +26,8 @@ public enum NookDesign {
         public static let lg: CGFloat = 12     // essentials tile, card, settings group
         public static let xl: CGFloat = 16     // dialog, toast
         public static let xxl: CGFloat = 24    // command palette
-        /// The website frame. Concentric with the macOS window corner (about 22) across the 8pt inset.
-        public static let page: CGFloat = 14
+        /// The website frame. Concentric with the macOS window corner (about 22) across the page inset.
+        public static let page: CGFloat = 16  // FORK: 22 minus the 6 pt inset
 
         public static func shape(_ radius: CGFloat) -> RoundedRectangle {
             RoundedRectangle(cornerRadius: radius, style: .continuous)
@@ -65,8 +65,8 @@ public enum NookDesign {
     // MARK: - Browser Frame
 
     public enum Chrome {
-        /// Window inset around web content (20px on Retina).
-        public static let pageInset: CGFloat = 10
+        /// Window inset around web content. FORK: 6 pt, Dia's thin frame (was 10).
+        public static let pageInset: CGFloat = 6
         public static let splitGap: CGFloat = pageInset
     }
 

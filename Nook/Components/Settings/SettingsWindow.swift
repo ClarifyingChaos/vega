@@ -154,6 +154,17 @@ private struct SettingsSidebar: View {
 
     var body: some View {
         VStack(spacing: NookDesign.Spacing.md) {
+            // FORK: a large title with the app under it, as in Apple Music's sidebar.
+            VStack(alignment: .leading, spacing: NookDesign.Spacing.xxs) {
+                Text("Settings")
+                    .font(.system(size: 28, weight: .bold))
+                Text("Vega")
+                    .font(NookDesign.Font.body)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, NookDesign.Spacing.rowPadding)
+            .padding(.top, NookDesign.Spacing.sm)
             SidebarMenuSearchField(prompt: "Search", text: $query)
             ScrollView {
                 VStack(alignment: .leading, spacing: NookDesign.Spacing.rowGap) {
@@ -213,7 +224,7 @@ private struct SettingsSidebarRow: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, NookDesign.Spacing.rowPadding)
-            .frame(height: NookDesign.Size.row)
+            .frame(height: 38) // FORK: roomier than a tab row, as in Apple Music's sidebar
             .contentShape(NookDesign.Radius.shape(NookDesign.Radius.md))
             .background(!isSelected && isHovering ? NookDesign.Surface.fill : .clear, in: NookDesign.Radius.shape(NookDesign.Radius.md))
             .nookRowSelection(isSelected)
@@ -259,10 +270,23 @@ private struct SettingsDetailPane: View {
                 if let pane = path.last {
                     pane.view(browserManager)
                 } else {
-                    tabPage
-                        // FORK: room to breathe: taller rows on every page.
-                        .environment(\.defaultMinListRowHeight, 40)
-                        .navigationTitle(tab.name)
+                    VStack(alignment: .leading, spacing: 0) {
+                        // FORK: a large title and a line under it, as in Apple Music's content pane.
+                        VStack(alignment: .leading, spacing: NookDesign.Spacing.xxs) {
+                            Text(tab.name)
+                                .font(.system(size: 28, weight: .bold))
+                            Text(tab.subtitle)
+                                .font(NookDesign.Font.body)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, NookDesign.Spacing.xxl)
+                        .padding(.top, NookDesign.Spacing.lg)
+                        .padding(.bottom, NookDesign.Spacing.sm)
+                        tabPage
+                            // FORK: room to breathe: taller rows on every page.
+                            .environment(\.defaultMinListRowHeight, 40)
+                    }
+                    .navigationTitle(tab.name)
                 }
             }
             .environment(\.showSettingsSubPane) { path.append($0) }

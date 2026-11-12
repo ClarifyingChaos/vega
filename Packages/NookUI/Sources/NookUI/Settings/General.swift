@@ -108,8 +108,6 @@ public struct SettingsGeneralTab: View {
                 #if os(macOS)
                 // Quitting and Sparkle updates are both macOS-only concepts.
                 Toggle("Warn before quitting Vega", isOn: $settings.askBeforeQuit)
-                Toggle("Automatically update Vega", isOn: .constant(true))
-                    .disabled(true)
                 #endif
             } header: {
                 Text("Startup")

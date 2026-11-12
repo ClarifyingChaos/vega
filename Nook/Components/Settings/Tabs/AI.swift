@@ -484,9 +484,12 @@ struct SettingsAITab: View {
                         }
                     }
 
-                    Text(provider.providerType.displayName)
-                        .font(NookDesign.Font.caption)
-                        .foregroundStyle(.secondary)
+                    // FORK: no second line that only repeats the name above it.
+                    if provider.providerType.displayName != provider.displayName {
+                        Text(provider.providerType.displayName)
+                            .font(NookDesign.Font.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 Spacer()

@@ -4,6 +4,7 @@
 //  Nook
 //
 
+import Foundation
 import Observation
 
 /// Which settings tab the Settings window shows. Window navigation state, not a setting:
@@ -11,5 +12,9 @@ import Observation
 @MainActor @Observable
 final class SettingsNavigation {
     static let shared = SettingsNavigation()
-    var currentSettingsTab: SettingsTabs = .general
+    private static let key = "fork.lastSettingsPane"
+    /// HIG (Settings, macOS): the window reopens on the pane last viewed, also after a relaunch.
+    var currentSettingsTab: SettingsTabs = SettingsTabs(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .general {
+        didSet { UserDefaults.standard.set(currentSettingsTab.rawValue, forKey: Self.key) }
+    }
 }

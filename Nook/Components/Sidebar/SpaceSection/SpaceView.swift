@@ -280,7 +280,7 @@ struct SpaceView: View {
         let hasPinned = tabs.rows(space: spaceID).contains { $0.section == .pinned }
         return VStack(spacing: NookDesign.Spacing.xs) {
             // FORK: as in Arc, the rule appears only when there are pinned tabs to separate.
-            if hasPinned { SpaceSeparator(
+            if false && hasPinned { SpaceSeparator( // FORK: the rule is gone; Clear Today is in the Tabs menu
                 isHovering: $isSidebarHovered,
                 // Clear keeps the window's current tabs; a tab goes with its whole trail.
                 onClear: { clearable.forEach(tabs.remove) },

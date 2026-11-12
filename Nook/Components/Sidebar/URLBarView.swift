@@ -170,13 +170,13 @@ struct URLBarView: View {
                             // Two texts so a narrow sidebar cuts the path first and then the
                             // host's head: `accounts.google.com.x.evil.tld` must keep `evil.tld`.
                             HStack(spacing: 0) {
-                                Text(displayHost(for: session)).foregroundStyle(.primary)
+                                Text(displayHost(for: session)).foregroundStyle(.primary.opacity(0.8))
                                     .truncationMode(.head)
                                     .layoutPriority(1)
                                 Text(displayPath(for: session)).foregroundStyle(.tertiary)
                                     .truncationMode(.tail)
                             }
-                            .font(.system(size: 13, weight: .regular)) // FORK: Arc's address text (was 12 medium)
+                            .font(.system(size: 13, weight: .regular)) // FORK: Arc's address text (was 12 medium); a lighter color reads as Arc's lighter weight
                             .lineLimit(1)
                             if let errors = devErrorCount(for: session) {
                                 Button {
@@ -257,7 +257,8 @@ struct URLBarView: View {
                         }
                 }
             }
-            .padding(.horizontal, NookDesign.Spacing.rowPadding)
+            // FORK: Arc's address text starts 13 pt in (measured: 21 pt from the window edge, field at 8)
+            .padding(.horizontal, 13)
     }
 
     private var controlHeight: CGFloat {

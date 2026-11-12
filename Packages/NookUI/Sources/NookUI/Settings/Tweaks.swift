@@ -54,7 +54,7 @@ public struct SettingsTweaksTab: View {
             } header: {
                 Text("Facebook")
             } footer: {
-                Text("Hide Reels removes the Reels carousel from the news feed. Hide suggested posts removes posts from groups, pages, and people you don't follow, and People You May Know. Friends, followed pages, and groups stay.")
+                Text("Removes the Reels carousel, and posts from pages and people you don't follow. Friends and followed pages stay.")
             }
 
             Section {

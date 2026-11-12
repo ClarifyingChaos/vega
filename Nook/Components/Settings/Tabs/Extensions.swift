@@ -219,16 +219,6 @@ private struct ExtensionRowView: View {
                             .lineLimit(1)
                     }
                 }
-
-                Toggle(
-                    "Allow in Private Browsing",
-                    isOn: Binding(
-                        get: { `extension`.allowsPrivateBrowsing },
-                        set: { browserManager.extensionManager?.setAllowsPrivateBrowsing(`extension`.id, allowed: $0) }
-                    )
-                )
-                .toggleStyle(.checkbox)
-                .font(NookDesign.Font.caption)
             }
 
             Spacer()
@@ -250,11 +240,25 @@ private struct ExtensionRowView: View {
                 )
                 .labelsHidden()
 
-                Button("Remove") {
-                    browserManager.uninstallExtension(`extension`.id)
+                // FORK: the secondary actions sit in a menu so each row is a name, a switch and one control.
+                Menu {
+                    Toggle(
+                        "Allow in Private Browsing",
+                        isOn: Binding(
+                            get: { `extension`.allowsPrivateBrowsing },
+                            set: { browserManager.extensionManager?.setAllowsPrivateBrowsing(`extension`.id, allowed: $0) }
+                        )
+                    )
+                    Divider()
+                    Button("Remove", systemImage: "trash", role: .destructive) {
+                        browserManager.uninstallExtension(`extension`.id)
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
-                .buttonStyle(.bordered)
-                .foregroundStyle(.red)
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .accessibilityLabel("More options for \(`extension`.name)")
             }
         }
     }

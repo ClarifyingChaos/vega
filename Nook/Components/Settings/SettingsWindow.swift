@@ -15,7 +15,7 @@ struct SettingsWindow: View {
     @EnvironmentObject var gradientColorManager: GradientColorManager
     @Environment(\.nookSettings) var nookSettings
 
-    private let windowSize = CGSize(width: 780, height: 540)
+    private let windowSize = CGSize(width: 860, height: 600)
     @State private var query = ""
 
     // Back/forward walk every place visited, sidebar picks and sub-pane pushes alike.
@@ -256,6 +256,8 @@ private struct SettingsDetailPane: View {
                     pane.view(browserManager)
                 } else {
                     tabPage
+                        // FORK: room to breathe: taller rows on every page.
+                        .environment(\.defaultMinListRowHeight, 40)
                         .navigationTitle(tab.name)
                 }
             }

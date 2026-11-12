@@ -36,73 +36,6 @@ public struct SettingsGeneralTab: View {
     public var body: some View {
         @Bindable var settings = nookSettings
         Form {
-            #if os(macOS)
-            // Quitting and Sparkle updates are both macOS-only concepts.
-            Section {
-                Toggle("Warn before quitting Nook", isOn: $settings.askBeforeQuit)
-                Toggle("Automatically update Nook", isOn: .constant(true))
-                    .disabled(true)
-            }
-
-            Section {
-                Toggle("Keep videos playing in the sidebar", isOn: $settings.autoPictureInPicture)
-            } footer: {
-                Text("Leaving a tab with a playing video moves it into a small window above the sidebar media controls.")
-            }
-            #endif
-
-            Section {
-                Toggle("Nest tabs opened from links", isOn: $settings.nestTabsFromLinks)
-            } footer: {
-                Text("A tab opened from a link sits under the page that opened it, and Back returns to that page.")
-            }
-
-            Section {
-                Picker("Tab Management", selection: Binding(
-                    get: { nookSettings.tabManagementMode },
-                    set: { nookSettings.tabManagementMode = $0 }
-                )) {
-                    ForEach(TabManagementMode.allCases) { mode in
-                        Text(mode.displayName).tag(mode)
-                    }
-                }
-
-                Picker("On Startup", selection: Binding(
-                    get: { nookSettings.startupLoadMode },
-                    set: { nookSettings.startupLoadMode = $0 }
-                )) {
-                    ForEach(StartupLoadMode.allCases) { mode in
-                        Text(mode.displayName).tag(mode)
-                    }
-                }
-
-                Button("Unload All Inactive Tabs") {
-                    tabs.unloadAllHidden()
-                }
-            } header: {
-                Text("Performance")
-            } footer: {
-                VStack(alignment: .leading, spacing: NookDesign.Spacing.xs) {
-                    Label(
-                        nookSettings.tabManagementMode.description,
-                        systemImage: nookSettings.tabManagementMode.icon
-                    )
-                    Label(nookSettings.startupLoadMode.description, systemImage: "power")
-                }
-            }
-
-            Section {
-                Picker("Archive tabs after", selection: $settings.archiveAfter) {
-                    Text("12 hours").tag(12)
-                    Text("24 hours").tag(24)
-                    Text("7 days").tag(168)
-                    Text("30 days").tag(720)
-                    Text("Never").tag(0)
-                }
-            } footer: {
-                Text("Tabs you haven't opened in that long move to the Archive. Pinned tabs and favorites stay put.")
-            }
-
             Section {
                 #if os(macOS)
                 LabeledContent("Default search engine") {
@@ -142,6 +75,64 @@ public struct SettingsGeneralTab: View {
                 }
             } header: {
                 Text("Search")
+            }
+
+            // FORK: grouped by what they are about, most-used first: search, tabs, startup, performance.
+            Section {
+                Toggle("Nest tabs opened from links", isOn: $settings.nestTabsFromLinks)
+                #if os(macOS)
+                Toggle("Keep videos playing in the sidebar", isOn: $settings.autoPictureInPicture)
+                #endif
+                Picker("Archive tabs after", selection: $settings.archiveAfter) {
+                    Text("12 hours").tag(12)
+                    Text("24 hours").tag(24)
+                    Text("7 days").tag(168)
+                    Text("30 days").tag(720)
+                    Text("Never").tag(0)
+                }
+            } header: {
+                Text("Tabs")
+            } footer: {
+                Text("A link's tab sits under the page that opened it. A video left playing moves into a small window above the sidebar controls. Tabs you haven't opened in the archive time move to the Archive; pinned tabs and favorites stay put.")
+            }
+
+            Section {
+                Picker("On Startup", selection: Binding(
+                    get: { nookSettings.startupLoadMode },
+                    set: { nookSettings.startupLoadMode = $0 }
+                )) {
+                    ForEach(StartupLoadMode.allCases) { mode in
+                        Text(mode.displayName).tag(mode)
+                    }
+                }
+                #if os(macOS)
+                // Quitting and Sparkle updates are both macOS-only concepts.
+                Toggle("Warn before quitting Vega", isOn: $settings.askBeforeQuit)
+                Toggle("Automatically update Vega", isOn: .constant(true))
+                    .disabled(true)
+                #endif
+            } header: {
+                Text("Startup")
+            } footer: {
+                Text(nookSettings.startupLoadMode.description)
+            }
+
+            Section {
+                Picker("Tab Management", selection: Binding(
+                    get: { nookSettings.tabManagementMode },
+                    set: { nookSettings.tabManagementMode = $0 }
+                )) {
+                    ForEach(TabManagementMode.allCases) { mode in
+                        Text(mode.displayName).tag(mode)
+                    }
+                }
+                Button("Unload All Inactive Tabs") {
+                    tabs.unloadAllHidden()
+                }
+            } header: {
+                Text("Performance")
+            } footer: {
+                Text(nookSettings.tabManagementMode.description)
             }
 
             Section {

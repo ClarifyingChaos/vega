@@ -8,7 +8,8 @@
 //
 
 import AppKit
-import AVKit
+import SwiftUI
+import NookDesign
 import Observation
 import NookTabsCore
 import NookWeb
@@ -240,26 +241,12 @@ extension BrowserManager {
         }
     }
 
-    /// Arc's Cast: the system AirPlay picker, for the page's video or audio. WebKit routes media
-    /// to the chosen device (allowsAirPlayForMediaPlayback is on). The picker is AVKit's own
-    /// button, placed in the sidebar and clicked for the person.
+    /// Arc's Cast: a bar in the sidebar with the system AirPlay picker. It opens the device list
+    /// on its own and goes away when the list closes (a device picked, or a click elsewhere).
     func castPage() {
-        guard let content = activeWindowState?.window?.contentView else { return }
-        // Anchored in the sidebar, under the address field, so the list opens beside the tabs.
-        // The hosting view is flipped, so its top edge is y = 0.
-        let top = content.isFlipped ? 64 : content.bounds.maxY - 92
-        let width = activeWindowState?.sidebarWidth ?? 247
-        let onRight = nookSettings?.sidebarPosition == .right
-        let x = onRight ? content.bounds.maxX - width / 2 : width / 2
-        let picker = AVRoutePickerView(frame: NSRect(x: x - 14, y: top, width: 28, height: 28))
-        picker.alphaValue = 0.01
-        content.addSubview(picker)
-        // The button is built lazily inside the picker, so click on the next turn of the run loop.
-        // After the menu has closed; a popup opened during menu tracking is dismissed with it.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            (picker.subviews.first { $0 is NSButton } as? NSButton)?.performClick(nil)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 30) { picker.removeFromSuperview() }
-        }
+        guard let window = activeWindowState else { return }
+        if !window.isSidebarVisible { toggleSidebar(for: window) }
+        withAnimation(NookDesign.Motion.standard) { window.isCastBarVisible = true }
     }
 
     /// Arc's Copy URL as Quote: the selected text as a Markdown quote, with the page's link.

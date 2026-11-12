@@ -12,7 +12,7 @@ struct HelloStage: View {
 
     var body: some View {
         VStack(spacing: 24){
-            Text("Say Hi to Nook")
+            Text("Say Hi to Vega")
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundStyle(.white)
             Image("nook-logo-1024")

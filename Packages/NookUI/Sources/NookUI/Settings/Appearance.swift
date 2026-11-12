@@ -36,10 +36,16 @@ public struct SettingsAppearanceTab: View {
                     }
                 }
                 Toggle("Show URL bar in the web view", isOn: $settings.topBarAddressView)
-                Toggle("Preview link URL on hover", isOn: $settings.showLinkStatusBar)
-                Toggle("Show previews when hovering favorites", isOn: $settings.favoritePreviews)
+            }
+
+            Section("Spaces") {
                 Toggle("Translucent space themes", isOn: $settings.themeTranslucency)
-                Toggle("Hide border", isOn: $settings.hideWebContentBorder)
+                Toggle("Hide border around the page", isOn: $settings.hideWebContentBorder)
+            }
+
+            Section("Previews") {
+                Toggle("Show link address on hover", isOn: $settings.showLinkStatusBar)
+                Toggle("Show previews when hovering favorites", isOn: $settings.favoritePreviews)
             }
             #endif
         }

@@ -153,6 +153,13 @@ struct SpacesSideBarView: View {
                 .padding(.horizontal, NookDesign.Spacing.sidebarInset)
             }
 
+            // FORK: Arc's Cast, as a bar in the sidebar.
+            if windowState.isCastBarVisible {
+                CastBar()
+                    .environment(windowState)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+
             // Media controls. Hides itself while the video is showing above it.
             MediaControlsView()
                 .environmentObject(browserManager)

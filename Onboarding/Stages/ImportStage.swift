@@ -23,7 +23,7 @@ struct ImportStage: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Text("Transition to Nook")
+            Text("Transition to Vega")
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundStyle(.white)
             HStack(spacing: 24) {

@@ -72,7 +72,7 @@ public struct LinksSettingsView: View {
             } header: {
                 Text("Air Traffic Control")
             } footer: {
-                Text("Open matching sites in a chosen Space, whether the link comes from another app or a page in Nook.")
+                Text("Open matching sites in a chosen Space, whether the link comes from another app or a page in Vega.")
             }
         }
         .formStyle(.grouped)

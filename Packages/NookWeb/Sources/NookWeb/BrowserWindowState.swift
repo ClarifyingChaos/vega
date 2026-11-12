@@ -81,6 +81,9 @@ public class BrowserWindowState {
     /// Whether the extension library panel is visible in this window
     public var isExtensionLibraryVisible: Bool = false
 
+    /// FORK: the sidebar's Cast bar (File > Cast…) is up; it leaves when the AirPlay list closes.
+    public var isCastBarVisible: Bool = false
+
     /// Whether the Boost panel for the selected page is open in this window
     public var isBoostPanelVisible: Bool = false
 

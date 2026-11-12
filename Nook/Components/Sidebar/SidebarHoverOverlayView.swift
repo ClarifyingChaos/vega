@@ -49,6 +49,7 @@ struct SidebarHoverOverlayView: View {
                         .environment(windowState)
                         .environment(commandPalette)
                         .environmentObject(browserManager.gradientColorManager)
+                        .environment(\.sidebarOverlayInset, CGSize(width: nookSettings.sidebarPosition == .left ? horizontalInset : 0, height: verticalInset))
                         .frame(maxHeight: .infinity)
                         // Clip the floating surface, not descendants: the expanded address
                         // panel is anchored here but deliberately extends over the page.

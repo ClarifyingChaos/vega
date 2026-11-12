@@ -24,6 +24,7 @@ struct SpacesSideBarView: View {
     @Environment(\.nookBaseColorScheme) private var baseColorScheme
     @Environment(WindowRegistry.self) private var windowRegistry
     @Environment(\.nookSettings) var nookSettings
+    @Environment(\.sidebarOverlayInset) private var overlayInset
     @Environment(CommandPalette.self) var commandPalette
     @Environment(TabOrganizerManager.self) var tabOrganizerManager
 
@@ -170,6 +171,8 @@ struct SpacesSideBarView: View {
                     .frame(height: NookDesign.Spacing.sidebarTop)
                     .padding(.leading, NookDesign.SidebarChrome.trafficLightsInset)
                     .padding(.trailing, NookDesign.Spacing.sidebarInset)
+                    // FORK: in the hover overlay, cancel its inset so the icons stay level with the window buttons.
+                    .offset(x: -overlayInset.width, y: -overlayInset.height)
             }
         }
         .padding(.bottom, NookDesign.Spacing.sidebarInset)

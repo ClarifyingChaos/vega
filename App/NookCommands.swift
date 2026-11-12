@@ -121,9 +121,11 @@ struct NookCommands: Commands {
                 browserManager.setAsDefaultBrowser()
             }
 
+            // FORK: off until the fork has its own appcast feed and key (see AppDelegate).
             Button("Check for Updates…") {
                 browserManager.appDelegate?.updaterController.checkForUpdates(nil)
             }
+            .disabled(true)
         }
         
 
@@ -246,7 +248,8 @@ struct NookCommands: Commands {
         // View commands. FORK: in the View menu, as Safari and Dia have them (they sat in Window).
         CommandGroup(after: .toolbar) {
             // FORK: Arc's View items.
-            Button(nookSettings.topBarAddressView ? "Hide Toolbar" : "Show Toolbar") {
+            // The app's own settings object: in Commands, @Environment(\.nookSettings) is a separate default copy.
+            Button(browserManager.nookSettings?.topBarAddressView == true ? "Hide Toolbar" : "Show Toolbar") {
                 browserManager.toggleTopBarAddressView()
             }
             .modifier(dynamicShortcut(.toggleTopBarAddressView))
@@ -265,10 +268,10 @@ struct NookCommands: Commands {
                 .disabled(windowRegistry.activeWindow?.selectedItemID == nil)
             Button("Close This Split Pane") { browserManager.closeActiveSplitPane() }
                 .disabled(windowRegistry.activeWindow?.split == nil)
-            Button("Focus Next Split Pane") { browserManager.focusSplitPane(next: true) }
+            Button("Focus Next Split Pane") { browserManager.focusSplitPane() }
                 .keyboardShortcut("]", modifiers: [.command, .option])
                 .disabled(windowRegistry.activeWindow?.split == nil)
-            Button("Focus Previous Split Pane") { browserManager.focusSplitPane(next: false) }
+            Button("Focus Previous Split Pane") { browserManager.focusSplitPane() }
                 .keyboardShortcut("[", modifiers: [.command, .option])
                 .disabled(windowRegistry.activeWindow?.split == nil)
             Button("Separate Page from Split View") {

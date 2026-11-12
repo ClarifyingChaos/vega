@@ -20,12 +20,17 @@ extension FaviconCache {
     /// The cached icon for `url`'s host, fetched and stored when missing or older than `maxAge`.
     /// Nil when the site offers none. Concurrent calls for one host share one request.
     public func loadOrFetch(for url: URL) async -> PlatformImage? {
-        guard url.scheme == "http" || url.scheme == "https", let key = Self.key(for: url) else { return nil }
+        guard let key = Self.key(for: url) else { return nil }
         let cached = await cachedImage(for: key)
         if cached != nil, !(await isStale(key)) { return cached }
-        guard await FaviconFetches.shared.begin(key) else { return cached }
+        // A background fetch for a row nobody opened: public https hosts only, so launching never
+        // contacts a router page or a dev server, and a site with no icon is not retried for a day.
+        guard Self.isPublicHTTPS(url), await FaviconFetches.shared.begin(key) else { return cached }
         defer { Task { await FaviconFetches.shared.end(key) } }
-        guard let fresh = await Self.bestIcon(for: url) else { return cached }
+        guard let fresh = await Self.bestIcon(for: url) else {
+            await FaviconFetches.shared.markFailed(key)
+            return cached
+        }
         store(fresh, for: key)
         return image(for: key) ?? fresh
     }
@@ -56,9 +61,14 @@ extension FaviconCache {
 private actor FaviconFetches {
     static let shared = FaviconFetches()
     private var inFlight = Set<String>()
-    /// False when another call is already fetching `key`.
-    func begin(_ key: String) -> Bool { inFlight.insert(key).inserted }
+    private var failedUntil: [String: Date] = [:]
+    /// False when another call is already fetching `key`, or a fetch for it failed in the last day.
+    func begin(_ key: String) -> Bool {
+        if let until = failedUntil[key], until > Date() { return false }
+        return inFlight.insert(key).inserted
+    }
     func end(_ key: String) { inFlight.remove(key) }
+    func markFailed(_ key: String) { failedUntil[key] = Date().addingTimeInterval(24 * 60 * 60) }
 }
 
 #endif

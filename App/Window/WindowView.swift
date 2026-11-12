@@ -526,7 +526,7 @@ final class TrafficLightsView: NSView {
         place()
     }
 
-    /// FORK: Arc's window button position, 12 pt from the left and 16 pt from the top (13 and 15 in this view's coordinates) with 23 pt
+    /// FORK: Arc's window button position, 12 pt from the left and 16 pt from the top (13 and 17 in this view's coordinates, which read back as x=12, y=16) with 23 pt
     /// between them (the system puts them at 18 and 18). Absolute targets, so a layout pass that
     /// moves them back is simply corrected again and there is no loop.
     private func place() {
@@ -534,7 +534,7 @@ final class TrafficLightsView: NSView {
         let columns: [(NSWindow.ButtonType, CGFloat)] = [(.closeButton, 13), (.miniaturizeButton, 36), (.zoomButton, 59)]
         for (type, x) in columns {
             guard let button = window.standardWindowButton(type), let parent = button.superview else { continue }
-            let target = NSPoint(x: x, y: parent.bounds.height - 15 - button.frame.height)
+            let target = NSPoint(x: x, y: parent.bounds.height - 17 - button.frame.height)
             if button.frame.origin != target { button.setFrameOrigin(target) }
         }
     }

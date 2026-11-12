@@ -14,6 +14,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # FORK: unit tests and the check scripts, which no workflow ran. The sync gate depends on them.
+  tests:
+    name: Unit tests and checks
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: NookTabsCore unit tests
+        working-directory: Packages/NookTabsCore
+        run: swift test
+
+      - name: Check scripts
+        run: SKIP_GUI_CHECKS=1 python3 scripts/run-checks.py
+
   build:
     name: Build on macOS 26
     # Same runner and default Xcode as the release workflow.

@@ -23,7 +23,9 @@ private struct NookReduceMotion: ViewModifier {
 
     func body(content: Content) -> some View {
         content.transaction { transaction in
-            if reduceMotion { transaction.animation = nil }
+            // disablesAnimations also stops `.animation(_:value:)` modifiers below this view, which
+            // a nil animation alone does not.
+            if reduceMotion { transaction.animation = nil; transaction.disablesAnimations = true }
         }
     }
 }

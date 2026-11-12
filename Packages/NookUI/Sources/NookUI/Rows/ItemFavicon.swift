@@ -61,13 +61,14 @@ public struct ItemFavicon: View {
                 session?.ensureFaviconLoaded()
                 guard let url = item.url, let host = FaviconCache.key(for: url) else { return }
                 // FORK: a pin whose address redirects (gmail.com to mail.google.com) keeps the icon its page loaded.
-                if let session, session.hasLoadedFavicon, FaviconCache.shared.image(for: host) == nil,
+                if let session, !session.isPrivate, session.hasLoadedFavicon, FaviconCache.shared.image(for: host) == nil,
                    let live = FaviconCache.key(for: session.url).flatMap({ FaviconCache.shared.image(for: $0) }) {
                     FaviconCache.shared.store(live, for: host)
                 }
                 if let image = await FaviconCache.shared.cachedImage(for: host) { cached = Image(platformImage: image); cachedPlatform = image }
                 // FORK: an unloaded favorite or pinned tab has no page to fetch its icon, so fetch it here.
-                guard session?.hasLoadedFavicon != true,
+                // Never for a private tab: it would reach the network and the disk cache.
+                guard session?.hasLoadedFavicon != true, session?.isPrivate != true,
                       let image = await FaviconCache.shared.loadOrFetch(for: url) else { return }
                 cached = Image(platformImage: image)
                 cachedPlatform = image

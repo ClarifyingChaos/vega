@@ -164,6 +164,8 @@ public enum NookDesign {
     public enum Tab {
         // FORK: row height and title size follow System Settings > Appearance > Sidebar icon
         // size (HIG, Sidebars: macOS). Medium, the default, keeps Nook's own 36 pt card.
+        // shortcut: read when a row lays out and never observed, so a change shows once rows redraw
+        // (hover, scroll, relaunch). Upgrade by observing the key if people change it while running.
         public static var height: CGFloat { SidebarSize.current.rowHeight }
         public static let verticalInset: CGFloat = 2
         public static var stride: CGFloat { height + verticalInset * 2 }
@@ -201,18 +203,28 @@ public enum NookDesign {
     // MARK: - Motion
 
     public enum Motion {
-        public static let tabReorder = Animation.easeOut(duration: 0.10)
+        /// With Reduce Motion on, every animation here is instant (HIG, Motion). Read each time one
+        /// is used, so turning the setting on or off applies at once.
+        private static func adapt(_ animation: Animation) -> Animation {
+            #if os(macOS)
+            NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? .linear(duration: 0) : animation
+            #else
+            animation
+            #endif
+        }
+
+        public static var tabReorder: Animation { adapt(Animation.easeOut(duration: 0.10)) }
         public static let tabCloseDuration: TimeInterval = 0.20
-        public static let tabClose = Animation.easeOut(duration: tabCloseDuration)
+        public static var tabClose: Animation { adapt(Animation.easeOut(duration: tabCloseDuration)) }
         public static let tabLandingDuration: TimeInterval = 0.10
-        public static let quick = Animation.easeOut(duration: 0.12)      // hover, press
+        public static var quick: Animation { adapt(Animation.easeOut(duration: 0.12)) }      // hover, press
         public static let standardDuration: TimeInterval = 0.22          // `standard`, for AppKit animations
-        public static let standard = Animation.smooth(duration: standardDuration)    // selection, reveal, fold
-        public static let settle = Animation.smooth(duration: 0.6)       // the separator wave rising and flattening
+        public static var standard: Animation { adapt(Animation.smooth(duration: standardDuration)) }    // selection, reveal, fold
+        public static var settle: Animation { adapt(Animation.smooth(duration: 0.6)) }       // the separator wave rising and flattening
         public static let wavePeriod: TimeInterval = 1.6                 // seconds for the wave to travel one cycle
-        public static let flight = Animation.easeIn(duration: 0.6)       // a download flying from the page to its button
-        public static let spring = Animation.snappy(duration: 0.3)      // palette, dialog, toast, drag reorder, gesture-tracked motion
-        public static let pageSettle = Animation.spring(response: 0.25, dampingFraction: 1)  // the space pager's settle, so the dots land with the pages
+        public static var flight: Animation { adapt(Animation.easeIn(duration: 0.6)) }       // a download flying from the page to its button
+        public static var spring: Animation { adapt(Animation.snappy(duration: 0.3)) }      // palette, dialog, toast, drag reorder, gesture-tracked motion
+        public static var pageSettle: Animation { adapt(Animation.spring(response: 0.25, dampingFraction: 1)) }  // the space pager's settle, so the dots land with the pages
         public static let librarySpring = Spring(response: 0.25, dampingRatio: 1)   // library open, close and release, the pager's spring
         public static let libraryRubberBand: CGFloat = 0.55              // resistance past fully open
         public static let libraryVelocityWindow: TimeInterval = 0.1      // swipe samples older than this are dropped from the velocity

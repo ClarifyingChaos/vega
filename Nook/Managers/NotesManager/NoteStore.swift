@@ -8,6 +8,7 @@
 //  model and its sync code.
 //
 
+import AppKit
 import Foundation
 import Observation
 import OSLog
@@ -46,6 +47,7 @@ final class NoteStore {
             .appendingPathComponent(Bundle.main.bundleIdentifier ?? "com.gstudios.nook").appendingPathComponent("Notes")
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         url = base.appendingPathComponent("notes.json")
+        writeOnQuit()
         if let data = try? Data(contentsOf: url) {
             do { notes = try JSONDecoder().decode([Note].self, from: data) }
             // A file that does not decode is kept aside, never overwritten, so nothing is lost.
@@ -54,6 +56,23 @@ final class NoteStore {
                 try? FileManager.default.moveItem(at: url, to: base.appendingPathComponent("notes-unreadable-\(Int(Date().timeIntervalSince1970)).json"))
             }
         }
+    }
+
+    /// Quitting inside the save delay must not lose the last keystrokes.
+    private func writeOnQuit() {
+        NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.writeNow() }
+        }
+    }
+
+    /// Deletes notes whose space is gone and that nobody has touched for `days`. Does nothing when
+    /// `validSpaceIDs` is empty, so a space list that has not loaded yet cannot wipe the notes.
+    func purgeOrphans(validSpaceIDs: Set<UUID>, days: Double = 30, now: Date = Date()) {
+        guard !validSpaceIDs.isEmpty else { return }
+        let cutoff = now.addingTimeInterval(-days * 86_400)
+        let before = notes.count
+        notes.removeAll { !validSpaceIDs.contains($0.spaceID) && $0.modifiedAt < cutoff }
+        if notes.count != before { save() }
     }
 
     func notes(in spaceID: UUID?) -> [Note] {

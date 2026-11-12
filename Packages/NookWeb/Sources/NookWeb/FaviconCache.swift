@@ -44,16 +44,35 @@ public final class FaviconCache: @unchecked Sendable {
         return "\(host)_\(port)"
     }
 
+    /// https, with a dotted host name that is not an IP address, `localhost` or `.local`.
+    static func isPublicHTTPS(_ url: URL) -> Bool {
+        guard url.scheme == "https", let host = url.host?.lowercased(), host.contains("."),
+              !host.hasSuffix(".local"), !host.contains(":"),
+              host.contains(where: { $0.isLetter }) else { return false }
+        return true
+    }
+
     // MARK: - Lookup
 
-    /// Memory cache only, synchronous.
+    /// Memory cache only, synchronous. A read counts as use, so the entries evicted first are the
+    /// ones nobody looks at, not the ones stored first (favorites are stored first).
     public func image(for key: String) -> PlatformImage? {
-        lock.withLock { memory[key]?.nsImage }
+        lock.withLock { touch(key)?.nsImage }
     }
 
     /// Memory cache only, as a SwiftUI image.
     public func swiftUIImage(for key: String) -> SwiftUI.Image? {
-        lock.withLock { memory[key]?.image }
+        lock.withLock { touch(key)?.image }
+    }
+
+    /// Caller holds `lock`.
+    private func touch(_ key: String) -> Entry? {
+        guard let entry = memory[key] else { return nil }
+        if let index = order.lastIndex(of: key), index != order.count - 1 {
+            order.remove(at: index)
+            order.append(key)
+        }
+        return entry
     }
 
     /// Memory first, then disk off the main thread. A disk hit is promoted to memory.
@@ -103,7 +122,10 @@ public final class FaviconCache: @unchecked Sendable {
         guard let png = image.pngData() else { return }
         let url = fileURL(key)
         queue.async(flags: .barrier) {
-            try? png.write(to: url)
+            // Atomic, so a crash mid-write cannot leave a cut-off PNG.
+            try? png.write(to: url, options: .atomic)
+            self.storesSinceTrim += 1
+            if self.storesSinceTrim >= 50 { self.storesSinceTrim = 0; self.trimDisk() }
         }
     }
 
@@ -135,23 +157,31 @@ public final class FaviconCache: @unchecked Sendable {
 
     // MARK: - Private
 
+    /// How many icons the disk keeps. Memory holds fewer; leaving memory no longer deletes a file.
+    public static let maxDiskEntries = 1000
+    private var storesSinceTrim = 0
+
+    /// Deletes the oldest-written files beyond the cap. Runs on `queue` with the barrier.
+    private func trimDisk() {
+        let keys: [URLResourceKey] = [.contentModificationDateKey]
+        guard let files = try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: keys),
+              files.count > Self.maxDiskEntries else { return }
+        func written(_ url: URL) -> Date { (try? url.resourceValues(forKeys: Set(keys)).contentModificationDate) ?? .distantPast }
+        for url in files.sorted(by: { written($0) < written($1) }).prefix(files.count - Self.maxDiskEntries + 50) {
+            try? FileManager.default.removeItem(at: url)
+        }
+    }
+
     private func insert(_ entry: Entry, for key: String) {
-        var evicted: [String] = []
         lock.withLock {
             memory[key] = entry
             order.removeAll { $0 == key }
             order.append(key)
             if memory.count > Self.maxMemoryEntries {
                 let count = memory.count - Self.maxMemoryEntries + 20
-                evicted = Array(order.prefix(count))
-                for old in evicted { memory.removeValue(forKey: old) }
+                for old in order.prefix(count) { memory.removeValue(forKey: old) }
                 order.removeFirst(min(count, order.count))
             }
-        }
-        guard !evicted.isEmpty else { return }
-        let urls = evicted.map(fileURL)
-        queue.async(flags: .barrier) {
-            for url in urls { try? FileManager.default.removeItem(at: url) }
         }
     }
 

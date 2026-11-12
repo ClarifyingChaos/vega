@@ -102,12 +102,11 @@ extension BrowserManager {
     // MARK: - Split focus and windows (from Dia)
 
     /// Moves focus to the other split pane by selecting its tab.
-    func focusSplitPane(next: Bool) {
+    func focusSplitPane() {
         guard let window = activeWindowState, let split = window.split else { return }
         let current = splitManager.activeSide(for: window.id) ?? .left
         // Two panes: next and previous both mean the other one.
         let target = current == .left ? split.rightItemID : split.leftItemID
-        _ = next
         tabs.select(target, in: window)
     }
 
@@ -165,7 +164,18 @@ extension BrowserManager {
         panel.beginSheetModal(for: window) { response in
             guard response == .OK, let url = panel.url else { return }
             webView.createWebArchiveData { result in
-                if case .success(let data) = result { try? data.write(to: url) }
+                // FORK: a failed save says so; before, a full disk or a protected folder was silent.
+                let failure: Error?
+                switch result {
+                case .success(let data):
+                    do { try data.write(to: url, options: .atomic); failure = nil } catch { failure = error }
+                case .failure(let error):
+                    failure = error
+                }
+                guard let failure else { return }
+                Task { @MainActor in
+                    SystemAlert.present(SystemAlert.make("Couldn't save the page", failure.localizedDescription, style: .warning, buttons: ["OK"])) { _ in }
+                }
             }
         }
     }

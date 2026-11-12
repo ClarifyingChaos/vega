@@ -154,6 +154,9 @@ struct NookApp: App {
             return
         }
 
+        // FORK: notes of spaces deleted a month ago or more are dropped.
+        NoteStore.shared.purgeOrphans(validSpaceIDs: Set(browserManager.tabs.orderedSpaces.map(\.id)))
+
         // Connect AppDelegate for termination and updates
         appDelegate.windowRegistry = windowRegistry
         appDelegate.mcpManager = mcpManager

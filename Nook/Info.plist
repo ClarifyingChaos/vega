@@ -63,7 +63,7 @@
 	<key>SUAutomaticallyUpdate</key>
 	<true/>
 	<key>SUEnableAutomaticChecks</key>
-	<true/>
+	<false/>
 	<key>SUEnableDowngrade</key>
 	<false/>
 	<key>SUFeedURL</key>

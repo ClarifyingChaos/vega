@@ -991,8 +991,13 @@ extension ExtensionManager {
 
         if changed {
             if let updatedData = try? JSONSerialization.data(withJSONObject: manifest, options: [.prettyPrinted, .sortedKeys]) {
-                try? updatedData.write(to: manifestURL)
-                Self.logger.warning("Extension manifest written to disk for \(extensionDirName, privacy: .public)")
+                // FORK: atomic, so a crash mid-write cannot leave a cut-off manifest, and a failure is logged.
+                do {
+                    try updatedData.write(to: manifestURL, options: .atomic)
+                    Self.logger.warning("Extension manifest written to disk for \(extensionDirName, privacy: .public)")
+                } catch {
+                    Self.logger.error("Extension manifest write failed for \(extensionDirName, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                }
             }
         }
     }

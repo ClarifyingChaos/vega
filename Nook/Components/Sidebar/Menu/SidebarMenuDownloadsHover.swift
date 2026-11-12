@@ -59,8 +59,10 @@ struct SidebarMenuHoverDownloads: View {
     }
 
     private func updateItemsVisible(count: Int) {
+        // FORK: rows added or removed while the list is up stay shown; resetting to false made the
+        // whole list fade away after a Move to Trash, with nothing to bring it back.
         if itemsVisible.count != count {
-            itemsVisible = Array(repeating: false, count: count)
+            itemsVisible = Array(repeating: isVisible, count: count)
         }
     }
 

@@ -90,6 +90,10 @@ struct URLBarView: View {
                       ? Color.white.opacity(splitItemID == nil ? (isHovering ? 0.10 : 0.15) : 0)
                       : Color.black.opacity(splitItemID == nil ? 0.08 : 0))
         }
+        // FORK: the load tint, in the space's colour (see PageLoadingProgressBar).
+        .background(alignment: .leading) {
+            if splitItemID == nil { PageLoadingProgressBar(session: session, color: browserManager.gradientColorManager.accentColor) }
+        }
         // Report the frame in the window space so we can overlay the mini palette above all content
         .background {
             if splitItemID == nil {

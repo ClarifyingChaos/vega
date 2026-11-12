@@ -15,16 +15,9 @@ struct WebsiteLoadingIndicator: View {
     @Environment(BrowserWindowState.self) private var windowState
     
     var body: some View {
+        // FORK: the loading pill is gone; loading shows as a tint in the address field. This keeps the page inset.
         HStack {
             Spacer()
-            // FORK: Arc's loading pill above the page: a visible capsule that grows with the load
-            // and fades out when it ends (was 3 pt of 30% white, invisible on light chrome).
-            Capsule()
-                .fill(Color.black.opacity(0.5)) // dark pill on the colored chrome, as in Arc
-                .overlay(Capsule().strokeBorder(Color.white.opacity(0.15), lineWidth: 0.5))
-                .frame(width: indicatorWidth, height: 4)
-                .opacity(indicatorWidth > 0 ? 1 : 0)
-                .animation(NookDesign.Motion.spring, value: indicatorWidth)
             Spacer()
         }
         .frame(maxWidth: .infinity)

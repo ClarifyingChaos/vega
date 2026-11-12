@@ -12,35 +12,24 @@ import WebKit
 import NookDesign
 import NookWeb
 
+/// FORK: the load shows as a tint in the space's colour that sweeps across the address field and
+/// fades when the page is ready. It replaces the 2.5 pt bar that sat on the field's lower edge.
 struct PageLoadingProgressBar: View {
     let session: PageSession?
+    let color: Color
 
     @StateObject private var observer = WebViewLoadingObserver()
 
     var body: some View {
         GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                // Track background
-                Rectangle()
-                    .fill(NookDesign.Surface.fillPressed)
-                    .opacity(observer.isLoading ? 1 : 0)
-
-                // Progress fill
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.blue.opacity(0.7), .cyan.opacity(0.5)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(width: geo.size.width * observer.progress)
-                    .animation(NookDesign.Motion.quick, value: observer.progress)
-                    .opacity(observer.isLoading ? 1 : 0)
-            }
+            // Starts at a visible 12% so a fast load still shows, then follows the page's progress.
+            Rectangle()
+                .fill(LinearGradient(colors: [color.opacity(0.34), color.opacity(0.18)], startPoint: .leading, endPoint: .trailing))
+                .frame(width: geo.size.width * max(observer.progress, observer.isLoading ? 0.12 : 0))
+                .animation(NookDesign.Motion.standard, value: observer.progress)
+                .opacity(observer.isLoading ? 1 : 0)
+                .animation(.easeOut(duration: 0.45), value: observer.isLoading)
         }
-        .frame(height: 2.5)
-        .animation(NookDesign.Motion.quick, value: observer.isLoading)
         // Observation tracks the session's web view, so a view created later attaches too.
         .onChange(of: session?.webView) { _, webView in
             observer.attach(to: webView)
@@ -48,6 +37,7 @@ struct PageLoadingProgressBar: View {
         .onAppear {
             observer.attach(to: session?.webView)
         }
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .allowsHitTesting(false)
     }
 }

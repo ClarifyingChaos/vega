@@ -210,6 +210,7 @@ public enum SidebarMenuTab: Hashable, Sendable {
     case downloads
     case spaces
     case archive
+    case media   // FORK: Arc's Media view
 }
 
 /// Toast information specific to a window

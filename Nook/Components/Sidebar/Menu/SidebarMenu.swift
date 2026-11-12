@@ -35,6 +35,8 @@ struct SidebarMenu: View {
                     SidebarMenuSpacesTab(onOpenSpace: openSpace, onNewSpace: newSpace)
                 case .archive:
                     SidebarMenuArchiveTab(onRestore: close)
+                case .media:
+                    SidebarMenuMediaTab()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -96,6 +98,15 @@ struct SidebarMenu: View {
                     isActive: windowState.sidebarMenuSelectedTab == .spaces,
                     action: {
                         windowState.sidebarMenuSelectedTab = .spaces
+                    }
+                )
+                SidebarMenuTab(
+                    image: "photo.on.rectangle",
+                    activeImage: "photo.on.rectangle.fill",
+                    title: "Media",
+                    isActive: windowState.sidebarMenuSelectedTab == .media,
+                    action: {
+                        windowState.sidebarMenuSelectedTab = .media
                     }
                 )
                 SidebarMenuTab(

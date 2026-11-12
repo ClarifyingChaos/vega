@@ -475,6 +475,7 @@ struct NookCommands: Commands {
                 .disabled(windowRegistry.activeWindow == nil)
             Divider()
             Button("Open Library…") { browserManager.openLibrary(.history) }
+            Button("View Media…") { browserManager.openLibrary(.media) }
             Button("View Downloads…") { shortcutManager.executeAction(.viewDownloads) }
                 .modifier(dynamicShortcut(.viewDownloads))
             Divider()

@@ -44,7 +44,7 @@ struct WindowView: View {
             // In its own view, so a swipe re-renders the push and not this whole window.
             // The window buttons sit in the sidebar's header, so they come and go with it, and
             // with the library while it is out (the container knows how far that is).
-            LibraryPushContainer(lightsVisible: windowState.isSidebarVisible || hoverSidebarManager.isOverlayVisible) {
+            LibraryPushContainer(lightsVisible: windowState.isSidebarVisible || hoverSidebarManager.isOverlayVisible || nookSettings.topBarAddressView) { // FORK: the toolbar has room for them
                 SidebarWebViewStack()
             }
             .environmentObject(browserManager)

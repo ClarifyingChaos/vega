@@ -34,6 +34,17 @@ struct TopBarView: View {
             // Main content
             ZStack {
                 HStack(spacing: 8) {
+                    // FORK: with the sidebar collapsed the window buttons sit here, so the toggle
+                    // goes beside them and the navigation buttons start after both.
+                    if !windowState.isSidebarVisible {
+                        Button("Show Sidebar", systemImage: nookSettings.sidebarPosition == .left ? "sidebar.left" : "sidebar.right") {
+                            browserManager.toggleSidebar(for: windowState)
+                        }
+                        .labelStyle(.iconOnly)
+                        .buttonStyle(NookIconButtonStyle())
+                        .foregroundStyle(navButtonColor)
+                    }
+
                     navigationControls
 
                     urlBar
@@ -49,7 +60,8 @@ struct TopBarView: View {
                 }
 
             }
-            .padding(.horizontal, TopBarMetrics.horizontalPadding)
+            .padding(.leading, windowState.isSidebarVisible ? TopBarMetrics.horizontalPadding : NookDesign.SidebarChrome.trafficLightsInset - TopBarMetrics.horizontalPadding)
+            .padding(.trailing, TopBarMetrics.horizontalPadding)
             .padding(.vertical, TopBarMetrics.verticalPadding)
             .frame(maxWidth: .infinity)
             .frame(height: TopBarMetrics.height)

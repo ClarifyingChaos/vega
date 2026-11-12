@@ -37,32 +37,30 @@ struct SidebarMenuMediaTab: View {
 
     var body: some View {
         let items = items
-        VStack(spacing: 0) {
-            SidebarMenuSearchField(prompt: "Search Media...", text: $text)
-                .padding(.horizontal, NookDesign.Spacing.md)
-                .padding(.top, 34) // below the title bar drag band, which swallows clicks
-                .padding(.bottom, NookDesign.Spacing.md)
-
-            ScrollView {
-                if items.isEmpty {
-                    VStack(spacing: NookDesign.Spacing.md) {
-                        Image(systemName: text.isEmpty ? "photo.on.rectangle" : "magnifyingglass")
-                            .font(NookDesign.Font.titleLarge)
-                            .foregroundStyle(.tertiary)
-                        Text(text.isEmpty ? "No media yet" : "No media found")
-                            .font(NookDesign.Font.body)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, NookDesign.Spacing.xxxl)
-                } else {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 124), spacing: NookDesign.Spacing.md)], spacing: NookDesign.Spacing.md) {
-                        ForEach(items) { MediaTile(download: $0, isVideo: isVideo($0) == true) }
-                    }
-                    .padding(.horizontal, NookDesign.Spacing.md)
-                    .padding(.bottom, NookDesign.Spacing.lg)
+        ScrollView {
+            if items.isEmpty {
+                VStack(spacing: NookDesign.Spacing.md) {
+                    Image(systemName: text.isEmpty ? "photo.on.rectangle" : "magnifyingglass")
+                        .font(NookDesign.Font.titleLarge)
+                        .foregroundStyle(.tertiary)
+                    Text(text.isEmpty ? "No media yet" : "No media found")
+                        .font(NookDesign.Font.body)
+                        .foregroundStyle(.secondary)
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, NookDesign.Spacing.xxxl)
+            } else {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 124), spacing: NookDesign.Spacing.md)], spacing: NookDesign.Spacing.md) {
+                    ForEach(items) { MediaTile(download: $0, isVideo: isVideo($0) == true) }
+                }
+                .padding(.horizontal, NookDesign.Spacing.md)
+                .padding(.bottom, NookDesign.Spacing.md)
             }
+        }
+        // Same header as History and Downloads: the field floats over the grid, padding included.
+        .nookScrollHeader {
+            SidebarMenuSearchField(prompt: "Search Media...", text: $text)
+                .padding(NookDesign.Spacing.md)
         }
     }
 }

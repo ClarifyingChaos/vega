@@ -208,7 +208,7 @@ public class Download: Identifiable {
             // Documents
             "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "pages", "numbers", "keynote",
             // Text files
-            "txt", "rtf", "html", "htm", "md", "swift", "js", "css", "json", "xml",
+            "txt", "rtf", "md", "swift", "js", "css", "json", "xml",
             // Audio files
             "mp3", "m4a", "flac", "aac",
         ]

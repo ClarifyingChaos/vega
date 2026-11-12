@@ -38,37 +38,24 @@ extension AnyTransition {
     }
 }
 
+/// Arc's download ring: a thin track and arc around a small arrow.
 struct CircularProgressView: View {
     let progress: Double
+    var size: CGFloat = 20
 
     var body: some View {
         ZStack {
-            Circle()
-                .fill(.clear)
-                .frame(width: 20, height: 20)
             Image(systemName: "arrow.down")
-                .font(NookDesign.Font.caption)
+                .font(.system(size: size * 0.42, weight: .bold))
                 .foregroundStyle(Color.primary)
-                .frame(width: 20, height: 20)
-
             Circle()
-                .stroke(
-                    Color.secondary.opacity(0.4),
-                    lineWidth: 4
-                )
-                .frame(width: 20, height: 20)
+                .stroke(Color.secondary.opacity(0.3), lineWidth: 2)
             Circle()
                 .trim(from: 0, to: progress)
-                .stroke(
-                    Color.primary,
-                    style: StrokeStyle(
-                        lineWidth: 3,
-                        lineCap: .round
-                    )
-                )
+                .stroke(Color.primary, style: StrokeStyle(lineWidth: 2, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .animation(NookDesign.Motion.standard, value: progress)
-                .frame(width: 20, height: 20)
         }
+        .frame(width: size, height: size)
     }
 }

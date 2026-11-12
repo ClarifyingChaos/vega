@@ -120,7 +120,7 @@ struct SidebarMenuHoverDownloadItem: View {
         HStack(alignment: .center, spacing: NookDesign.Spacing.md) {
             Group {
                 if download.state == .downloading {
-                    CircularProgressView(progress: download.progress)
+                    CircularProgressView(progress: download.progress, size: 28)
                 } else {
                     // A page-like tile: the file's own preview filling a small rounded card.
                     Image(nsImage: download.downloadThumbnail ?? download.icon)

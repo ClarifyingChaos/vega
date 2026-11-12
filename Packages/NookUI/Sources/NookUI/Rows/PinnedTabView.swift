@@ -105,7 +105,8 @@ public struct PinnedTabView<Icon: View>: View {
         }
     }
 
-    private var wantsGlow: Bool { colors != nil && !reduceTransparency }
+    // FORK: no blurred icon-colored glow behind favorites; tiles stay plain.
+    private var wantsGlow: Bool { false }
 
     private func glowImage(_ image: CGImage) -> some View {
         // Fills the tile's own frame; on its own, scaledToFill grows the tile with the sidebar's width.

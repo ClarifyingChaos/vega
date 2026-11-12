@@ -100,6 +100,7 @@ private struct CrispIcon: View {
             .overlay {
                 if edge > 0 {
                     Image(nsImage: source.resampled(pixels: Int((edge * scale).rounded()), scale: scale))
+                        .clipShape(RoundedRectangle(cornerRadius: edge * 0.22, style: .continuous)) // FORK: rounded icons
                 }
             }
     }

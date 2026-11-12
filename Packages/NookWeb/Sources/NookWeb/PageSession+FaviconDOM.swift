@@ -40,7 +40,7 @@ extension PageSession {
         for link in links.sorted(by: { $0.edge > $1.edge }).prefix(4) {
             guard let image = await Self.downloadImage(from: link.url, isPrivate: isPrivate) else { continue }
             let rank = IconRank(image, touchIcon: link.touch)
-            if rank.usable, best == nil || rank > best!.rank { best = (image, rank) }
+            if rank.usable, !image.isBlank, best == nil || rank > best!.rank { best = (image, rank) }
         }
         guard let icon = best?.image.trimmedToContent().downscaled(toEdge: FaviconCache.maxStoredEdge),
               let key = FaviconCache.key(for: pageURL) else { return false }

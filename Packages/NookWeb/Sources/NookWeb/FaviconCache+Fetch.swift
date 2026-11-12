@@ -32,32 +32,33 @@ extension FaviconCache {
         return image(for: key) ?? fresh
     }
 
-    /// The largest roughly square icon among the page's `<link>` tags and its web manifest.
+    /// The best roughly square icon among the page's `<link>` tags, its web manifest and /favicon.ico.
     static func bestIcon(for url: URL) async -> PlatformImage? {
         var candidates: [FaviconURL] = []
-        for source in [FaviconSourceType.html, .webApplicationManifestFile] {
+        for source in [FaviconSourceType.html, .webApplicationManifestFile, .ico] {
             let finder = FaviconFinder(url: url, configuration: .init(preferredSource: source))
             candidates += (try? await finder.fetchFaviconURLs()) ?? []
         }
         // Declared size first; icons with no size attribute come last but still get a chance.
         var seen = Set<URL>()
         let ordered = candidates
-            .filter { seen.insert($0.source).inserted }
+            .filter { !$0.source.path.lowercased().hasSuffix(".svg") && seen.insert($0.source).inserted }
             .sorted { ($0.size?.dimension ?? 0) > ($1.size?.dimension ?? 0) }
             .prefix(4)
         var best: (image: PlatformImage, rank: IconRank)?
         for candidate in ordered {
             guard let image = try? await candidate.download().image?.image else { continue }
             let rank = IconRank(image, touchIcon: candidate.format == .appleTouchIcon || candidate.format == .appleTouchIconPrecomposed)
-            if rank.usable, best == nil || rank > best!.rank { best = (image, rank) }
+            if rank.usable, !image.isBlank, best == nil || rank > best!.rank { best = (image, rank) }
         }
         return best.map { $0.image.trimmedToContent().downscaled(toEdge: maxStoredEdge) }
     }
 }
 
-/// Orders candidate icons: one sharp at tile size beats a blurry one; then a plain favicon beats an
-/// apple-touch icon (an opaque padded square that looks heavy beside other tiles); among equals,
-/// the smallest sharp one, since it is shrunk the least, or the largest blurry one.
+/// Orders candidate icons like Chromium does: the site's own favicon beats an apple-touch icon even
+/// when smaller, since a touch icon is an opaque padded square (Cosmos's round mark becomes a white
+/// tile). Among the same kind, one sharp at tile size beats a blurry one; among the sharp, the
+/// smallest, since it is shrunk the least; among the blurry, the largest.
 struct IconRank: Comparable {
     let usable: Bool
     private let key: (Int, Int, CGFloat)
@@ -68,7 +69,7 @@ struct IconRank: Comparable {
         usable = w > 0 && h > 0 && max(w, h) / min(w, h) <= 1.25
         let edge = max(w, h)
         let sharp = edge >= FaviconCache.sharpEdge
-        key = (sharp ? 1 : 0, touchIcon ? 0 : 1, sharp ? -edge : edge)
+        key = (touchIcon ? 0 : 1, sharp ? 1 : 0, sharp ? -edge : edge)
     }
 
     static func < (a: IconRank, b: IconRank) -> Bool { a.key < b.key }
@@ -90,6 +91,17 @@ extension NSImage {
         let w = reps.map { CGFloat($0.pixelsWide) }.max() ?? 0
         let h = reps.map { CGFloat($0.pixelsHigh) }.max() ?? 0
         return (w > 0 ? w : size.width, h > 0 ? h : size.height)
+    }
+
+    /// True when no pixel is visibly opaque: an SVG rendered with no size, or a failed decode.
+    var isBlank: Bool {
+        guard let src = cgImage(forProposedRect: nil, context: nil, hints: nil), src.width > 0, src.height > 0,
+              let ctx = CGContext(data: nil, width: src.width, height: src.height, bitsPerComponent: 8, bytesPerRow: src.width * 4,
+                                  space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue),
+              let data = ctx.data else { return true }
+        ctx.draw(src, in: CGRect(x: 0, y: 0, width: src.width, height: src.height))
+        let px = data.assumingMemoryBound(to: UInt8.self)
+        return !(0..<(src.width * src.height)).contains { px[$0 * 4 + 3] > 16 }
     }
 
     /// A square copy with the transparent margin cropped off, so every icon's artwork fills the same

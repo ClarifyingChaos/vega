@@ -33,12 +33,12 @@ struct PrivacySettingsView: View {
             Section("Tracking") {
                 scopePicker(
                     "Enhanced fingerprinting protection",
-                    detail: "Makes it harder for websites to recognize your Mac and follow you around the web. If a site breaks, turn it off in Site Controls until you leave that site.",
+                    detail: "Makes it harder for sites to recognize your Mac. If a site breaks, turn it off in Site Controls.",
                     selection: $settings.enhancedFingerprintingProtection
                 )
                 scopePicker(
                     "Remove tracking from links",
-                    detail: "Removes tracking added to links, so advertisers can't see which link brought you to a site.",
+                    detail: "Strips tracking added to links you open.",
                     selection: $settings.removeTrackingFromLinks
                 )
                 .onChange(of: nookSettings.removeTrackingFromLinks) {
@@ -49,7 +49,7 @@ struct PrivacySettingsView: View {
             Section("Security") {
                 settingToggle(
                     "Warn before opening a site over HTTP",
-                    detail: "Vega always tries HTTPS first. Ask before opening a site that only works over HTTP.",
+                    detail: "Vega tries HTTPS first. Asks before opening a site that only works over HTTP.",
                     isOn: $settings.warnBeforeHTTP
                 )
             }
@@ -57,7 +57,7 @@ struct PrivacySettingsView: View {
             Section("History") {
                 settingToggle(
                     "Search page text in history",
-                    detail: "Saves the text of pages you visit on this Mac so history search can find them. Private windows, pages with a password field, and pages that ask not to be stored are skipped.",
+                    detail: "Lets history search find words inside pages. Private windows and password pages are skipped.",
                     isOn: $settings.searchPageTextInHistory
                 )
                 .onChange(of: nookSettings.searchPageTextInHistory) { _, enabled in

@@ -87,10 +87,12 @@ struct LibraryPushContainer<Content: View>: View {
     @Environment(\.nookSettings) private var nookSettings
     /// Whether the window buttons show at rest (the sidebar, or its hover overlay, is out).
     let lightsVisible: Bool
+    var lightsShift: CGSize = .zero
     @ViewBuilder let content: Content
 
-    init(lightsVisible: Bool, @ViewBuilder content: () -> Content) {
+    init(lightsVisible: Bool, lightsShift: CGSize = .zero, @ViewBuilder content: () -> Content) {
         self.lightsVisible = lightsVisible
+        self.lightsShift = lightsShift
         self.content = content()
     }
 
@@ -108,7 +110,7 @@ struct LibraryPushContainer<Content: View>: View {
                 // As in Arc, the window buttons go with the sidebar over the first half of the pull
                 // and come back with the library over the second; at rest they belong to whichever
                 // is showing.
-                TrafficLights(visible: lightsVisible || progress > 0, alpha: abs(1 - 2 * progress))
+                TrafficLights(visible: lightsVisible || progress > 0, shift: lightsShift, alpha: abs(1 - 2 * progress))
                     .frame(width: 0, height: 0)
                 LibraryPanel(width: width, shown: shown)
                 content

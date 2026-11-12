@@ -44,7 +44,11 @@ struct WindowView: View {
             // In its own view, so a swipe re-renders the push and not this whole window.
             // The window buttons sit in the sidebar's header, so they come and go with it, and
             // with the library while it is out (the container knows how far that is).
-            LibraryPushContainer(lightsVisible: windowState.isSidebarVisible || hoverSidebarManager.isOverlayVisible || nookSettings.topBarAddressView) { // FORK: the toolbar has room for them
+            LibraryPushContainer(
+                lightsVisible: windowState.isSidebarVisible || hoverSidebarManager.isOverlayVisible || nookSettings.topBarAddressView, // FORK: the toolbar has room for them
+                // FORK: in the hover panel the buttons sit inside it, as in Arc (the panel is inset 8 pt).
+                lightsShift: !windowState.isSidebarVisible && hoverSidebarManager.isOverlayVisible && nookSettings.sidebarPosition == .left
+                    ? CGSize(width: NookDesign.Spacing.md, height: NookDesign.Spacing.md) : .zero) {
                 SidebarWebViewStack()
             }
             .environmentObject(browserManager)
@@ -453,6 +457,8 @@ struct WindowView: View {
 
 struct TrafficLights: NSViewRepresentable, Animatable {
     let visible: Bool
+    /// FORK: moves them with the floating sidebar, as Arc's ride inside its hover panel.
+    var shift: CGSize = .zero
     /// Fades them with whatever they belong to at the moment (the sidebar, then the library).
     var alpha: CGFloat = 1
 
@@ -466,6 +472,7 @@ struct TrafficLights: NSViewRepresentable, Animatable {
     func updateNSView(_ view: TrafficLightsView, context: Context) {
         view.visible = visible
         view.alpha = alpha
+        view.shift = shift
     }
 }
 
@@ -482,6 +489,9 @@ final class TrafficLightsView: NSView {
                 window?.standardWindowButton(type)?.alphaValue = alpha
             }
         }
+    }
+    var shift: CGSize = .zero {
+        didSet { if shift != oldValue { place() } }
     }
     private var exitingFullScreen = false
     private var observers: [any NSObjectProtocol] = []
@@ -534,7 +544,7 @@ final class TrafficLightsView: NSView {
         let columns: [(NSWindow.ButtonType, CGFloat)] = [(.closeButton, 13), (.miniaturizeButton, 36), (.zoomButton, 59)]
         for (type, x) in columns {
             guard let button = window.standardWindowButton(type), let parent = button.superview else { continue }
-            let target = NSPoint(x: x, y: parent.bounds.height - 17 - button.frame.height)
+            let target = NSPoint(x: x + shift.width, y: parent.bounds.height - 17 - shift.height - button.frame.height)
             if button.frame.origin != target { button.setFrameOrigin(target) }
         }
     }

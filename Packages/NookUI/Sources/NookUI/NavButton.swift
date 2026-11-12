@@ -53,7 +53,7 @@ public extension View {
     /// Larger navigation and footer symbols, without changing tab or URL-bar controls.
     func nookSidebarIconButtons() -> some View {
         labelStyle(.iconOnly)
-            .font(.system(size: NookDesign.SidebarChrome.icon, weight: .medium)) // FORK: Arc's weight
+            .font(.system(size: NookDesign.SidebarChrome.icon, weight: .regular)) // FORK: Arc's light glyphs
             .buttonStyle(NookIconButtonStyle(size: NookDesign.SidebarChrome.button))
             .foregroundStyle(.primary)
     }

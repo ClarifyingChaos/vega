@@ -176,7 +176,7 @@ struct URLBarView: View {
                                 Text(displayPath(for: session)).foregroundStyle(.tertiary)
                                     .truncationMode(.tail)
                             }
-                            .font(NookDesign.Font.secondary)
+                            .font(.system(size: 13, weight: .regular)) // FORK: Arc's address text (was 12 medium)
                             .lineLimit(1)
                             if let errors = devErrorCount(for: session) {
                                 Button {

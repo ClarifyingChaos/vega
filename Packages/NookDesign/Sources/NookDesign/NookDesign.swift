@@ -140,7 +140,7 @@ public enum NookDesign {
         /// Resize indicator colors for a space with no custom palette.
         public static let defaultResizeLight = Color(.sRGB, red: 130 / 255, green: 149 / 255, blue: 247 / 255)
         public static let defaultResizeDark = Color(.sRGB, red: 145 / 255, green: 153 / 255, blue: 172 / 255)
-        public static let icon: CGFloat = 17   // FORK: Arc's title-row glyph size (was 15)
+        public static let icon: CGFloat = 16   // FORK: Arc's title-row glyph, measured side by side (was 15)
         public static let button: CGFloat = 32   // FORK: Arc's 32 pt title-row and bottom-bar buttons (was 30)
         public static let gap: CGFloat = 2
         public static let trafficLightsInset: CGFloat = 77   // FORK: Arc's toggle starts 3 pt past the zoom button, which ends at 74
@@ -170,7 +170,7 @@ public enum NookDesign {
         public static let verticalInset: CGFloat = 2
         public static var stride: CGFloat { height + verticalInset * 2 }
         public static let radius: CGFloat = 12
-        public static var font: SwiftUI.Font { .system(size: SidebarSize.current.titleSize, weight: .medium) } // tab title
+        public static var font: SwiftUI.Font { .system(size: SidebarSize.current.titleSize, weight: .regular) } // tab title; FORK: Arc's regular weight (was medium)
         public static let pressScale: CGFloat = 0.985
         public static let dragScale: CGFloat = 1.025
         public static let dragOpacity: Double = 0.96

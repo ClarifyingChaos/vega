@@ -12,15 +12,18 @@ import SwiftUI
 
 public extension View {
     /// A floating panel drawn as glass, so the page and sidebar show through it.
-    func nookGlassSurface<S: InsettableShape>(in shape: S) -> some View {
-        modifier(NookGlassSurface(shape: shape))
+    /// `tint` colors the glass, as a space's color tints the floating sidebar.
+    func nookGlassSurface<S: InsettableShape>(in shape: S, tint: Color? = nil) -> some View {
+        modifier(NookGlassSurface(shape: shape, tint: tint))
     }
 }
 
 private struct NookGlassSurface<S: InsettableShape>: ViewModifier {
     let shape: S
+    let tint: Color?
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorSchemeContrast) private var contrast
 
     /// A lit edge, brighter at the top as light catches the glass. Over a dark page the glass and
     /// its shadow both go dark too, and without this edge the panel melts into the page.
@@ -33,18 +36,19 @@ private struct NookGlassSurface<S: InsettableShape>: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        if reduceTransparency {
+        if reduceTransparency || contrast == .increased {
             content.nookFloatingSurface(in: shape)
         } else if #available(macOS 26, iOS 26, *) {
             content
                 // Regular, not clear: these panels carry text (HIG, Materials).
-                .glassEffect(.regular, in: shape)
+                .glassEffect(.regular.tint(tint), in: shape)
                 .overlay(rim)
                 .nookElevation(.floating)
         } else {
             content
                 .clipShape(shape)
                 .background(.regularMaterial, in: shape)
+                .background((tint ?? .clear).opacity(0.25), in: shape)
                 .overlay(rim)
                 .nookElevation(.floating)
         }

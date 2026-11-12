@@ -122,7 +122,7 @@ struct TabSwitcherOverlay: View {
                 }
             }
             .padding(NookDesign.Spacing.md)
-            .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xl))
+            .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xl))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .transition(.opacity.combined(with: .scale(scale: 0.97)))
         }

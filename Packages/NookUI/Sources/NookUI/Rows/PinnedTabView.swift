@@ -95,6 +95,9 @@ public struct PinnedTabView<Icon: View>: View {
             .modifier(TileSelection(isActive: isActive, themed: colors != nil))
         }
         .buttonStyle(.plain)
+        // FORK: VoiceOver read favorites as "Globe" or nothing.
+        .accessibilityLabel(tabName)
+        .accessibilityValue(tabURL)
         .onHoverTracking { hovering in
             self.isHovered = hovering
         }

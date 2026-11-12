@@ -46,7 +46,7 @@ struct TidyDownloadToast: View {
         }
         .padding(NookDesign.Spacing.lg)
         .frame(maxWidth: maxWidth, alignment: .leading)
-        .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xl))
+        .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xl))
         .task(id: download.id) {
             try? await Task.sleep(for: visibleFor)
             if downloads.lastTidied === download { downloads.dismissTidyToast() }

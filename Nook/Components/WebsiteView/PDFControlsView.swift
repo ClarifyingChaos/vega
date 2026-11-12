@@ -49,7 +49,7 @@ struct PDFControlsView: View {
         }
         .nookIconButtons()
         .padding(NookDesign.Spacing.xxs)
-        .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
+        .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
         .opacity(isVisible ? 1 : 0)
         .allowsHitTesting(isVisible)
         .animation(NookDesign.Motion.standard, value: isVisible)

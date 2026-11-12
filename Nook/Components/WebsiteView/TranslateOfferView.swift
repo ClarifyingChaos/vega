@@ -36,7 +36,7 @@ struct TranslateOfferView: View {
             .controlSize(.small)
         }
         .padding(NookDesign.Spacing.xxs)
-        .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
+        .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
     }
 }
 

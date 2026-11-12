@@ -143,13 +143,28 @@ public enum NookDesign {
         public static let footerSideReserve: CGFloat = 66
     }
 
+    /// The user's sidebar icon size, read from the global defaults domain where System Settings
+    /// writes it (1 small, 2 medium, 3 large). Read when a row lays out; a change applies as rows redraw.
+    public enum SidebarSize: Int {
+        case small = 1, medium = 2, large = 3
+
+        public static var current: SidebarSize {
+            SidebarSize(rawValue: UserDefaults.standard.integer(forKey: "NSTableViewDefaultSizeMode")) ?? .medium
+        }
+
+        var rowHeight: CGFloat { switch self { case .small: 32; case .medium: 36; case .large: 40 } }
+        var titleSize: CGFloat { switch self { case .small: 12; case .medium: 13; case .large: 15 } }
+    }
+
     /// Sidebar tab cards. Keep these separate from general chrome/control sizing.
     public enum Tab {
-        public static let height: CGFloat = 36
+        // FORK: row height and title size follow System Settings > Appearance > Sidebar icon
+        // size (HIG, Sidebars: macOS). Medium, the default, keeps Nook's own 36 pt card.
+        public static var height: CGFloat { SidebarSize.current.rowHeight }
         public static let verticalInset: CGFloat = 2
-        public static let stride: CGFloat = height + verticalInset * 2
+        public static var stride: CGFloat { height + verticalInset * 2 }
         public static let radius: CGFloat = 12
-        public static let font = NookDesign.Font.body   // tab title, as before the Arc work
+        public static var font: SwiftUI.Font { .system(size: SidebarSize.current.titleSize, weight: .medium) } // tab title
         public static let pressScale: CGFloat = 0.985
         public static let dragScale: CGFloat = 1.025
         public static let dragOpacity: Double = 0.96
@@ -175,7 +190,7 @@ public enum NookDesign {
         public static let secondary = SwiftUI.Font.system(size: 12, weight: .medium)     // URL bar, popup button
         public static let caption = SwiftUI.Font.system(size: 11, weight: .medium)       // counts, shortcuts, subtitles
         public static let captionStrong = SwiftUI.Font.system(size: 11, weight: .semibold) // section headers
-        public static let micro = SwiftUI.Font.system(size: 9, weight: .semibold)        // badges only
+        public static let micro = SwiftUI.Font.system(size: 10, weight: .semibold)       // badges only; 10 pt is the macOS minimum (HIG, Typography)
         public static let mono = SwiftUI.Font.system(size: 12, weight: .regular, design: .monospaced) // developer bar address
     }
 
@@ -204,14 +219,29 @@ public enum NookDesign {
     // MARK: - Surface
 
     public enum Surface {
-        public static let fill = Color.primary.opacity(0.045)           // hover, idle tile
-        public static let fillPressed = Color.primary.opacity(0.08)
+        // FORK: these three follow Increase Contrast (HIG, Accessibility); same look otherwise.
+        public static let fill = contrastAware(0.045, increased: 0.12)          // hover, idle tile
+        public static let fillPressed = contrastAware(0.08, increased: 0.2)
         public static let tintOpacity: Double = 0.18                       // accent-tinted control: chosen chip, own chat message
         public static let mediaScrim = Color.black.opacity(0.35)           // controls over video
-        public static let hairline = Color.primary.opacity(0.08)
+        public static let hairline = contrastAware(0.08, increased: 0.5)
         /// Dim behind a modal panel such as the command palette (HIG: dim to focus).
         public static let modalDim: Double = 0.18
         public static let unloadedOpacity: Double = 0.55
+
+        /// The label color at `normal` opacity, or `increased` when the user turns on Increase
+        /// Contrast. Resolved per appearance, so it also flips with light and dark.
+        static func contrastAware(_ normal: Double, increased: Double) -> Color {
+            #if os(macOS)
+            Color(nsColor: NSColor(name: nil) { appearance in
+                let match = appearance.bestMatch(from: [.aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua])
+                let high = match == .accessibilityHighContrastAqua || match == .accessibilityHighContrastDarkAqua
+                return NSColor.labelColor.withAlphaComponent(NSColor.labelColor.alphaComponent * (high ? increased : normal))
+            })
+            #else
+            Color.primary.opacity(normal)
+            #endif
+        }
         /// A selected favorite tile's fill, as Arc draws it: white, halved in an inactive window.
         public static func favoriteSelectedFill(dark: Bool, dimmed: Bool) -> Color {
             Color.white.opacity((dark ? 0.45 : 0.8) * (dimmed ? 0.5 : 1))

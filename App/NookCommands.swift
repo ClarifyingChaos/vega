@@ -10,6 +10,8 @@ import AppKit
 import SwiftUI
 import WebKit
 import NookWeb
+import NookDesign
+import NookTabsCore
 
 struct NookCommands: Commands {
     let browserManager: BrowserManager
@@ -91,7 +93,7 @@ struct NookCommands: Commands {
 
         // The Settings scene supplies the standard Settings… item at ⌘,
         CommandGroup(after: .appSettings) {
-            Button("Import from another Browser") {
+            Button("Import from Another Browser…") {
                 browserManager.dialogManager.showDialog(
                     BrowserImportDialog(
                         onCancel: {
@@ -118,7 +120,7 @@ struct NookCommands: Commands {
                 browserManager.setAsDefaultBrowser()
             }
 
-            Button("Check for Updates...") {
+            Button("Check for Updates…") {
                 browserManager.appDelegate?.updaterController.checkForUpdates(nil)
             }
         }
@@ -183,18 +185,18 @@ struct NookCommands: Commands {
 
         // Sidebar commands
         CommandGroup(after: .sidebar) {
-            Button("Toggle Sidebar") {
+            Button(windowRegistry.activeWindow?.isSidebarVisible == false ? "Show Sidebar" : "Hide Sidebar") { // FORK: HIG titles
                 browserManager.toggleSidebar()
             }
             .modifier(dynamicShortcut(.toggleSidebar))
 
-            Button("Toggle AI Assistant") {
+            Button(windowRegistry.activeWindow?.isSidebarAIChatVisible == true ? "Hide AI Assistant" : "Show AI Assistant") {
                 browserManager.toggleAISidebar()
             }
             .modifier(dynamicShortcut(.toggleAIAssistant))
             .disabled(!nookSettings.showAIAssistant)
 
-            Button("Toggle Picture in Picture") {
+            Button("Picture in Picture") {
                 browserManager.tabs.activeWindowSession?.requestPictureInPicture()
             }
             .modifier(dynamicShortcut(.togglePictureInPicture))
@@ -202,6 +204,12 @@ struct NookCommands: Commands {
                 browserManager.tabs.activeWindowSession == nil
                     || !(browserManager.tabs.activeWindowSession.map { $0.hasVideoContent || $0.hasPiPActive } ?? false)
             )
+
+            // FORK: the sidebar footer's Library button, also in the menu bar (HIG, Sidebars).
+            Button("Show Library") {
+                if let window = windowRegistry.activeWindow { LibraryMotion.present(window) }
+            }
+            .disabled(windowRegistry.activeWindow == nil)
 
             Divider()
 
@@ -331,6 +339,18 @@ struct NookCommands: Commands {
 
         Group {
             CommandMenu("Spaces") {
+                // FORK: the sidebar footer's New Space, also in the menu bar (HIG, Sidebars).
+                Button("New Space…") {
+                    guard let window = windowRegistry.activeWindow, !window.isIncognito else { return }
+                    withAnimation(NookDesign.Motion.standard) {
+                        window.isSidebarMenuVisible = false
+                        window.spaceDraftTheme = .randomPreset()
+                    }
+                }
+                .disabled(windowRegistry.activeWindow?.isIncognito != false)
+
+                Divider()
+
                 Button("Next Space") {
                     if let window = windowRegistry.activeWindow { browserManager.tabs.selectNextSpace(in: window) }
                 }
@@ -441,19 +461,19 @@ struct NookCommands: Commands {
             }
 
             CommandMenu("Extensions") {
-                Button("Toggle Extension Library") {
+                Button("Show Site Controls") {
                     browserManager.toggleExtensionLibrary()
                 }
                 .keyboardShortcut("e", modifiers: [.command, .shift])
 
                 Divider()
 
-                Button("Install Extension...") {
+                Button("Install Extension…") {
                     browserManager.showExtensionInstallDialog()
                 }
                 .modifier(dynamicShortcut(.installExtension))
 
-                Button("Manage Extensions...") {
+                Button("Manage Extensions…") {
                     SettingsNavigation.shared.currentSettingsTab = .extensions
                     openSettings()
                 }
@@ -473,13 +493,13 @@ struct NookCommands: Commands {
             }
 
             CommandMenu("Appearance") {
-                Button("Space Settings...") {
+                Button("Space Settings…") {
                     browserManager.showSpaceSettings()
                 }
                 .modifier(dynamicShortcut(.customizeSpaceGradient))
                 .disabled(windowRegistry.activeWindow?.spaceID == nil)
 
-                Button("Boost This Site...") {
+                Button("Boost This Site…") {
                     browserManager.boostCurrentSite()
                 }
                 .disabled(browserManager.tabs.activeWindowSession == nil)

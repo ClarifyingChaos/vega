@@ -64,18 +64,18 @@ extension BrowserManager: TabActions {
     }
 
     func confirmSpaceDeletion(spaceName: String, tabCount: Int, isLastSpace: Bool, onDelete: @escaping () -> Void) {
-        dialogManager.showDialog(
-            SpaceDeleteConfirmationDialog(
-                spaceName: spaceName,
-                tabsCount: tabCount,
-                isLastSpace: isLastSpace,
-                onDelete: { [weak self] in
-                    onDelete()
-                    self?.dialogManager.closeDialog()
-                },
-                onCancel: { [weak self] in self?.dialogManager.closeDialog() }
-            )
-        )
+        // FORK: a system alert with a destructive button (HIG, Alerts).
+        if isLastSpace {
+            SystemAlert.present(SystemAlert.make("You can't delete the last space", "Create another space first.", buttons: ["OK"])) { _ in }
+            return
+        }
+        let tabs = tabCount == 1 ? "Its 1 tab" : "Its \(tabCount) tabs"
+        let alert = SystemAlert.make("Delete \u{201C}\(spaceName)\u{201D}?", "\(tabs) will be deleted. You can't undo this.",
+                                     style: .warning, buttons: ["Delete", "Cancel"])
+        alert.buttons.first?.hasDestructiveAction = true
+        SystemAlert.present(alert) { response in
+            if response == .alertFirstButtonReturn { onDelete() }
+        }
     }
 
     func openSpaceSettings() {

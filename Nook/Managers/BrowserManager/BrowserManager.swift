@@ -756,15 +756,15 @@ class BrowserManager: ObservableObject {
 
     func showQuitDialog() {
         if self.nookSettings?.askBeforeQuit == true {
-            dialogManager.showQuitDialog(
-                onAlwaysQuit: {
-                    self.nookSettings?.askBeforeQuit = false
-                    self.quitApplication()
-                },
-                onQuit: {
-                    self.quitApplication()
-                }
-            )
+            // FORK: a system alert; "Always Quit" becomes the standard suppression checkbox.
+            let alert = SystemAlert.make("Quit Nook?", "You may lose unsaved work in your tabs.", buttons: ["Quit", "Cancel"])
+            alert.showsSuppressionButton = true
+            alert.suppressionButton?.title = "Don't ask again"
+            SystemAlert.present(alert) { response in
+                guard response == .alertFirstButtonReturn else { return }
+                if alert.suppressionButton?.state == .on { self.nookSettings?.askBeforeQuit = false }
+                self.quitApplication()
+            }
         } else {
             NSApplication.shared.terminate(nil)
         }
@@ -784,25 +784,8 @@ class BrowserManager: ObservableObject {
     /// Opens Space Settings for the active window's space, or a notice when there is none.
     func showSpaceSettings() {
         guard let spaceID = windowRegistry?.activeWindow?.spaceID, tabs.space(spaceID) != nil else {
-            dialogManager.showDialog {
-                StandardDialog(
-                    header: {
-                        DialogHeader(
-                            icon: "square.grid.2x2",
-                            title: "No Space Available",
-                            subtitle: "Create a space to change its settings."
-                        )
-                    },
-                    content: { Color.clear.frame(height: 0) },
-                    footer: {
-                        DialogFooter(rightButtons: [
-                            DialogButton(text: "OK", variant: .primary) { [weak self] in
-                                self?.closeDialog()
-                            }
-                        ])
-                    }
-                )
-            }
+            // FORK: system alert for a plain notice.
+            SystemAlert.present(SystemAlert.make("No Space Available", "Create a space to change its settings.", buttons: ["OK"])) { _ in }
             return
         }
         openSettings(tab: .spaces)

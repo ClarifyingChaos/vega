@@ -150,7 +150,7 @@ struct URLBarView: View {
                     beginEditing(session?.url.absoluteString ?? item.url?.absoluteString ?? "")
                 })
                 .help("Search or Enter URL...")
-                .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
+                .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
             } else {
                 sidebarAddress(session: session)
             }

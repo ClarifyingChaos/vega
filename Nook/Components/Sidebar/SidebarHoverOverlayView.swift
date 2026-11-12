@@ -53,10 +53,9 @@ struct SidebarHoverOverlayView: View {
                         .frame(maxHeight: .infinity)
                         // Clip the floating surface, not descendants: the expanded address
                         // panel is anchored here but deliberately extends over the page.
-                        .background {
-                            sidebarBackground
-                                .nookFloatingSurface(in: NookDesign.Radius.shape(cornerRadius))
-                        }
+                        // FORK: the floating sidebar sits over the page, so it is Liquid Glass tinted with
+                        // the space's color (HIG, Sidebars), not an opaque card.
+                        .nookGlassSurface(in: NookDesign.Radius.shape(cornerRadius), tint: overlayTint)
                         .alwaysArrowCursor()
                         .padding(nookSettings.sidebarPosition == .left ? .leading : .trailing, horizontalInset)
                         .padding(.vertical, verticalInset)
@@ -76,13 +75,7 @@ struct SidebarHoverOverlayView: View {
         return browserManager.tabs.space(spaceID)?.theme
     }
 
-    /// The docked sidebar's own background, so the overlay reads as the same sidebar.
-    private var sidebarBackground: some View {
-        let accent = windowState.isIncognito ? SpaceGradient.incognito.primaryColor : browserManager.gradientColorManager.accentColor
-        let isAgent = windowState.spaceID != nil && windowState.spaceID == browserManager.tabs.agentSpaceID
-        return SpaceChromeBackground(theme: overlayTheme, accent: accent, isActive: true)
-            .spaceThemeAppearance(overlayTheme)
-            .overlay(windowState.isIncognito ? NookDesign.Surface.privateTint : Color.clear)
-            .overlay(Rectangle().fill(NookDesign.Surface.agentGradient).opacity(isAgent ? NookDesign.Surface.agentChromeOpacity : 0))
+    private var overlayTint: Color {
+        (windowState.isIncognito ? SpaceGradient.incognito.primaryColor : browserManager.gradientColorManager.accentColor).opacity(0.35)
     }
 }

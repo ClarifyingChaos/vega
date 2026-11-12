@@ -43,7 +43,7 @@ struct BoostOverlay: View {
             )
             // A different site is a different panel, with its own draft.
             .id(host)
-            .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.lg))
+            .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.lg))
             .padding(NookDesign.Spacing.lg)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             .padding(.top, NookDesign.Size.row)

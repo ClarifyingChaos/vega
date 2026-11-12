@@ -173,7 +173,7 @@ struct DialogCard<Content: View>: View {
         content
             .padding(NookDesign.Spacing.xl)
             .frame(maxWidth: NookDesign.Size.dialogMaxWidth, alignment: .leading)
-            .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xl))
+            .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xl))
     }
 }
 

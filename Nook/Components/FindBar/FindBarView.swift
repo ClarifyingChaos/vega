@@ -130,7 +130,7 @@ struct FindBarView: View {
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xl))
+                    .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xl))
                     .padding(.trailing, 16)
                 }
                 .padding(.top, 12)

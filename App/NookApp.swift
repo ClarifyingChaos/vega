@@ -12,6 +12,7 @@ import Carbon
 import OSLog
 import Sparkle
 import SwiftUI
+import NookDesign
 import NookSettings
 import NookUI
 import NookWeb
@@ -80,6 +81,7 @@ struct NookApp: App {
             }
             // AppDelegate routes URLs; reuse the open scene instead of creating another one.
             .handlesExternalEvents(preferring: ["*"], allowing: ["*"])
+            .nookReduceMotion() // FORK
 
         }
         // TabsController restores browser windows; SwiftUI must not restore a second set.
@@ -98,6 +100,7 @@ struct NookApp: App {
         // macOS 26 style sidebar settings window
         Settings {
             SettingsWindow()
+                .nookReduceMotion() // FORK
                 .environmentObject(browserManager)
                 .environment(browserManager.tabs)
                 .environmentObject(browserManager.gradientColorManager)

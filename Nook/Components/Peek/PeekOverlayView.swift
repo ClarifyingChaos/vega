@@ -110,7 +110,7 @@ struct PeekOverlayView: View {
         }
         .padding(.horizontal, NookDesign.Spacing.sm)
         .padding(.vertical, NookDesign.Spacing.xs)
-        .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
+        .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
     }
 
     /// Close, split and new tab: standalone icon buttons on one floating card, readable over any page.
@@ -130,7 +130,7 @@ struct PeekOverlayView: View {
         }
         .nookIconButtons()
         .padding(NookDesign.Spacing.xxs)
-        .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
+        .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
     }
 
 

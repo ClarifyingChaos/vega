@@ -84,7 +84,7 @@ public struct PinnedTabView<Icon: View>: View {
                 }
 
                 tabIcon
-                    .frame(height: NookDesign.Size.essentialsFavicon)
+                    .frame(height: NookDesign.Size.favoriteFavicon)
                     // FORK: no unloaded fade; it washed icon colors out (Dia keeps them full).
             }
             // FORK: the hover reset arrow is removed; "Reset to Pinned URL" stays in the context menu.

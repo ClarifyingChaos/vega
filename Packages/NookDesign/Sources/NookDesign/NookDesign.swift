@@ -87,6 +87,7 @@ public enum NookDesign {
         public static let favicon: CGFloat = 16
         public static let essentialsTile: CGFloat = 44
         public static let essentialsFavicon: CGFloat = 20
+        public static let favoriteFavicon: CGFloat = 16  // FORK: Arc's favorite icon size (measured in Arc 1.172)
         public static let navRow: CGFloat = 28
         #if os(iOS)
         // The floating bar's control row. 50 clears the 44pt touch minimum with

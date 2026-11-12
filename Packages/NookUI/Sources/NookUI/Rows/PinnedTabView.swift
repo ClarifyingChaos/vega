@@ -87,20 +87,7 @@ public struct PinnedTabView<Icon: View>: View {
                     .frame(height: NookDesign.Size.essentialsFavicon)
                     .opacity(isUnloaded ? NookDesign.Surface.unloadedOpacity : 1)
             }
-            .overlay(alignment: .topTrailing) {
-                if hasLeftPinnedURL && isHovered {
-                    Button(action: onResetToPinnedURL) {
-                        Image(systemName: "arrow.uturn.backward")
-                            .font(NookDesign.Font.caption)
-                            .foregroundStyle(.primary)
-                            .frame(width: NookDesign.Size.cornerButton, height: NookDesign.Size.cornerButton)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .help("Reset to Pinned URL")
-                    .padding(NookDesign.Spacing.xxs)
-                }
-            }
+            // FORK: the hover reset arrow is removed; "Reset to Pinned URL" stays in the context menu.
             .frame(maxWidth: .infinity)
             .frame(height: NookDesign.Size.favoriteTile)
             .frame(minWidth: NookDesign.Size.favoriteTile)

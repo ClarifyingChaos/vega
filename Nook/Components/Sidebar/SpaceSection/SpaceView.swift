@@ -277,8 +277,10 @@ struct SpaceView: View {
         let looseTabs = regular.filter { $0.depth == 0 && !$0.item.isFolder }.map(\.item.id)
         let kept = [windowState.selectedItemID, windowState.split?.leftItemID, windowState.split?.rightItemID].compactMap { $0 }
         let clearable = tabs.tabsToClear(in: spaceID, keeping: kept)
+        let hasPinned = tabs.rows(space: spaceID).contains { $0.section == .pinned }
         return VStack(spacing: NookDesign.Spacing.xs) {
-            SpaceSeparator(
+            // FORK: as in Arc, the rule appears only when there are pinned tabs to separate.
+            if hasPinned { SpaceSeparator(
                 isHovering: $isSidebarHovered,
                 // Clear keeps the window's current tabs; a tab goes with its whole trail.
                 onClear: { clearable.forEach(tabs.remove) },
@@ -291,7 +293,7 @@ struct SpaceView: View {
                 tabCount: looseTabs.count,
                 clearCount: clearable.count
             )
-            .padding(.horizontal, NookDesign.Spacing.md)
+            .padding(.horizontal, NookDesign.Spacing.md) }
 
             if tabs.rows(space: spaceID).allSatisfy({ $0.section != .pinned }), dragSession.isDragging {
                 // Reuse the New Tab slot, so revealing an empty pin target cannot push the

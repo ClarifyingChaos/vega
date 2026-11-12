@@ -118,7 +118,7 @@ struct SpaceSwitcherTitle: View {
     private func title(_ space: SpaceRecord) -> some View {
         let title = Text(space.name)
             .foregroundStyle(.secondary) // FORK: Arc's quiet gray space name
-            .font(NookDesign.Font.body)
+            .font(NookDesign.Font.label)
             .lineLimit(1)
             .fixedSize()
         // A name too long for the title row fades out, the way a tab row's title does.

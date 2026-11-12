@@ -41,7 +41,7 @@ struct SidebarBottomBar: View {
                     menuButton
                         .zIndex(1)
 
-                    if nookSettings.showAIAssistant {
+                    if false, nookSettings.showAIAssistant { // FORK: Arc's bar has none; View > Show AI Assistant
                         Button("Toggle AI Assistant", systemImage: "sparkle") {
                             browserManager.toggleAISidebar(for: windowState)
                         }
@@ -66,7 +66,7 @@ struct SidebarBottomBar: View {
     /// Room kept clear on each side of the dots: the wider cluster plus a gap.
     private var sideReserve: CGFloat {
         let button = NookDesign.SidebarChrome.button, gap = NookDesign.SidebarChrome.gap
-        let left = nookSettings.showAIAssistant ? 2 * button + gap : button
+        let left = button // FORK: AI button removed above
         return left + gap
     }
 

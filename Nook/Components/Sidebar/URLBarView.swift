@@ -214,7 +214,8 @@ struct URLBarView: View {
                     beginEditing(session?.url.absoluteString ?? "")
                 })
 
-                if !isEditing, !windowState.isIncognito, isHovering || showSiteSettings || confirmClearSiteData, let session {
+                // FORK: Arc's field has no separate site-settings button; Site Controls covers it.
+                if false, !isEditing, !windowState.isIncognito, isHovering || showSiteSettings || confirmClearSiteData, let session {
                     SiteSettingsButton(session: session, isPresented: $showSiteSettings, confirmClear: $confirmClearSiteData)
                         .onChange(of: showSiteSettings || confirmClearSiteData) { _, open in
                             hoverManager.setSiteSettingsOpen(open, in: windowState.id)

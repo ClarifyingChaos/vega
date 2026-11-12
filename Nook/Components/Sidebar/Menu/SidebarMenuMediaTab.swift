@@ -4,7 +4,8 @@
 //  Nook
 //
 //  FORK: Arc's Media view in the Library: the images and videos you downloaded, as a grid of
-//  thumbnails. shortcut: downloads only, upgrade to captures saved elsewhere if people ask.
+//  thumbnails with a search field on top. shortcut: downloads only, upgrade to captures saved
+//  elsewhere if people ask.
 //
 
 import AppKit
@@ -15,63 +16,50 @@ import NookUI
 
 struct SidebarMenuMediaTab: View {
     @EnvironmentObject var browserManager: BrowserManager
-    @State private var filter: Filter = .all
+    @State private var text = ""
 
-    enum Filter: String, CaseIterable, Identifiable {
-        case all = "All", images = "Images", videos = "Videos"
-        var id: String { rawValue }
-    }
-
-    private enum Kind { case image, video }
-
-    private func kind(of download: Download) -> Kind? {
+    private func isVideo(_ download: Download) -> Bool? {
         guard download.state == .completed, let file = download.completedFile,
               let type = UTType(filenameExtension: file.pathExtension) else { return nil }
-        if type.conforms(to: .image) { return .image }
-        if type.conforms(to: .movie) || type.conforms(to: .video) { return .video }
+        if type.conforms(to: .image) { return false }
+        if type.conforms(to: .movie) || type.conforms(to: .video) { return true }
         return nil
     }
 
     private var items: [Download] {
         browserManager.downloadManager.allDownloads.filter { download in
-            guard let kind = kind(of: download) else { return false }
-            switch filter {
-            case .all: return true
-            case .images: return kind == .image
-            case .videos: return kind == .video
-            }
+            guard isVideo(download) != nil else { return false }
+            return text.isEmpty
+                || download.displayName.localizedCaseInsensitiveContains(text)
+                || download.originalURL.absoluteString.localizedCaseInsensitiveContains(text)
         }
     }
 
     var body: some View {
         let items = items
         VStack(spacing: 0) {
-            Picker("Show", selection: $filter) {
-                ForEach(Filter.allCases) { Text($0.rawValue).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .padding(.horizontal, NookDesign.Spacing.lg)
-            .padding(.top, NookDesign.Spacing.sidebarTop)
-            .padding(.bottom, NookDesign.Spacing.md)
+            SidebarMenuSearchField(prompt: "Search Media...", text: $text)
+                .padding(.horizontal, NookDesign.Spacing.md)
+                .padding(.top, NookDesign.Spacing.sidebarTop)
+                .padding(.bottom, NookDesign.Spacing.md)
 
             ScrollView {
                 if items.isEmpty {
                     VStack(spacing: NookDesign.Spacing.md) {
-                        Image(systemName: "photo.on.rectangle")
+                        Image(systemName: text.isEmpty ? "photo.on.rectangle" : "magnifyingglass")
                             .font(NookDesign.Font.titleLarge)
                             .foregroundStyle(.tertiary)
-                        Text("No media yet")
+                        Text(text.isEmpty ? "No media yet" : "No media found")
                             .font(NookDesign.Font.body)
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, NookDesign.Spacing.xxxl)
                 } else {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: NookDesign.Spacing.md)], spacing: NookDesign.Spacing.md) {
-                        ForEach(items) { MediaTile(download: $0, isVideo: kind(of: $0) == .video) }
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 124), spacing: NookDesign.Spacing.md)], spacing: NookDesign.Spacing.md) {
+                        ForEach(items) { MediaTile(download: $0, isVideo: isVideo($0) == true) }
                     }
-                    .padding(.horizontal, NookDesign.Spacing.lg)
+                    .padding(.horizontal, NookDesign.Spacing.md)
                     .padding(.bottom, NookDesign.Spacing.lg)
                 }
             }
@@ -79,19 +67,23 @@ struct SidebarMenuMediaTab: View {
     }
 }
 
+/// Arc's cell: the file fitted inside a rounded dark square.
 private struct MediaTile: View {
     let download: Download
     let isVideo: Bool
     @State private var isHovering = false
 
+    private var shape: some InsettableShape { NookDesign.Radius.shape(NookDesign.Radius.lg) }
+
     var body: some View {
         Image(nsImage: download.downloadThumbnail ?? download.icon)
             .resizable()
-            .aspectRatio(contentMode: download.downloadThumbnail == nil ? .fit : .fill)
+            .aspectRatio(contentMode: .fit)
+            .padding(NookDesign.Spacing.xl)
             .frame(maxWidth: .infinity)
             .aspectRatio(1, contentMode: .fit)
             .background(NookDesign.Surface.fill)
-            .clipShape(NookDesign.Radius.shape(NookDesign.Radius.md))
+            .clipShape(shape)
             .overlay(alignment: .bottomLeading) {
                 if isVideo {
                     Image(systemName: "play.fill")
@@ -99,11 +91,11 @@ private struct MediaTile: View {
                         .foregroundStyle(.white)
                         .padding(5)
                         .background(Color.black.opacity(0.55), in: Circle())
-                        .padding(NookDesign.Spacing.xs)
+                        .padding(NookDesign.Spacing.sm)
                 }
             }
-            .overlay(NookDesign.Radius.shape(NookDesign.Radius.md).strokeBorder(isHovering ? Color.primary.opacity(0.35) : NookDesign.Surface.hairline, lineWidth: 1))
-            .contentShape(NookDesign.Radius.shape(NookDesign.Radius.md))
+            .overlay(shape.strokeBorder(isHovering ? Color.primary.opacity(0.35) : Color.clear, lineWidth: 1))
+            .contentShape(shape)
             .onHover { isHovering = $0 }
             .help(download.displayName)
             .accessibilityLabel(download.displayName)

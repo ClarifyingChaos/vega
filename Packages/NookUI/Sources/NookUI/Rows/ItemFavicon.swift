@@ -37,6 +37,7 @@ public struct ItemFavicon: View {
     let item: Item
     let session: PageSession?
     @State private var cached: Image?
+    @State private var cachedPlatform: PlatformImage?
 
     public init(item: Item, session: PageSession?) {
         self.item = item
@@ -44,11 +45,16 @@ public struct ItemFavicon: View {
     }
 
     public var body: some View {
-        // FORK: a session's placeholder globe must not hide the cached icon.
-        ((session?.hasLoadedFavicon == true ? session?.favicon : nil) ?? cached ?? session?.favicon ?? Image(systemName: "globe"))
-            .resizable()
-            .interpolation(.high) // FORK: shrinking a 128 px icon to tile size without this aliases
-            .scaledToFit()
+        let _ = session?.favicon // FORK: re-render when the live icon changes
+        Group {
+            if let crisp = crispSource {
+                CrispIcon(source: crisp)
+            } else {
+                ((session?.hasLoadedFavicon == true ? session?.favicon : nil) ?? cached ?? session?.favicon ?? Image(systemName: "globe"))
+                    .resizable()
+                    .scaledToFit()
+            }
+        }
             // Keyed on the session too: closing a pinned tab or favorite ends its page but keeps
             // the row, and the cached icon must be loaded then.
             .task(id: "\(item.url.flatMap(FaviconCache.key) ?? "")|\(session == nil)|\(session?.hasLoadedFavicon == true)") {
@@ -59,11 +65,43 @@ public struct ItemFavicon: View {
                    let live = FaviconCache.key(for: session.url).flatMap({ FaviconCache.shared.image(for: $0) }) {
                     FaviconCache.shared.store(live, for: host)
                 }
-                if let image = await FaviconCache.shared.cachedImage(for: host) { cached = Image(platformImage: image) }
+                if let image = await FaviconCache.shared.cachedImage(for: host) { cached = Image(platformImage: image); cachedPlatform = image }
                 // FORK: an unloaded favorite or pinned tab has no page to fetch its icon, so fetch it here.
                 guard session?.hasLoadedFavicon != true,
                       let image = await FaviconCache.shared.loadOrFetch(for: url) else { return }
                 cached = Image(platformImage: image)
+                cachedPlatform = image
+            }
+    }
+
+    /// FORK: the stored bitmap behind the icon, when there is one to resample for the tile.
+    private var crispSource: PlatformImage? {
+        #if os(macOS)
+        if let session, session.hasLoadedFavicon, let image = FaviconCache.key(for: session.url).flatMap({ FaviconCache.shared.image(for: $0) }) { return image }
+        return cachedPlatform
+        #else
+        return nil
+        #endif
+    }
+}
+
+#if os(macOS)
+/// Draws an icon at exactly the device pixels it occupies. A square placeholder takes the layout
+/// the scaled image would, then the resampled bitmap is drawn 1:1 inside it.
+private struct CrispIcon: View {
+    let source: PlatformImage
+    @Environment(\.displayScale) private var scale
+    @State private var edge: CGFloat = 0
+
+    var body: some View {
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { edge = $0 }
+            .overlay {
+                if edge > 0 {
+                    Image(nsImage: source.resampled(pixels: Int((edge * scale).rounded()), scale: scale))
+                }
             }
     }
 }
+#endif

@@ -51,7 +51,7 @@ extension FaviconCache {
             let rank = IconRank(image, touchIcon: candidate.format == .appleTouchIcon || candidate.format == .appleTouchIconPrecomposed)
             if rank.usable, best == nil || rank > best!.rank { best = (image, rank) }
         }
-        return best.map { $0.image.downscaled(toEdge: maxStoredEdge) }
+        return best.map { $0.image.trimmedToContent().downscaled(toEdge: maxStoredEdge) }
     }
 }
 
@@ -90,6 +90,57 @@ extension NSImage {
         let w = reps.map { CGFloat($0.pixelsWide) }.max() ?? 0
         let h = reps.map { CGFloat($0.pixelsHigh) }.max() ?? 0
         return (w > 0 ? w : size.width, h > 0 ? h : size.height)
+    }
+
+    /// A square copy with the transparent margin cropped off, so every icon's artwork fills the same
+    /// box at tile size. Apple-touch icons and many favicons leave 15 to 30% empty around the mark,
+    /// which made one site's logo look half the size of the next. Opaque icons come back unchanged.
+    public func trimmedToContent() -> NSImage {
+        guard let src = cgImage(forProposedRect: nil, context: nil, hints: nil) else { return self }
+        let w = src.width, h = src.height
+        let space = CGColorSpaceCreateDeviceRGB()
+        let info = CGImageAlphaInfo.premultipliedLast.rawValue
+        guard w > 0, h > 0,
+              let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4, space: space, bitmapInfo: info),
+              let data = ctx.data else { return self }
+        ctx.draw(src, in: CGRect(x: 0, y: 0, width: w, height: h))
+        let px = data.assumingMemoryBound(to: UInt8.self)
+        var minX = w, minY = h, maxX = -1, maxY = -1
+        for y in 0..<h {
+            for x in 0..<w where px[(y * w + x) * 4 + 3] > 16 {
+                minX = min(minX, x); maxX = max(maxX, x); minY = min(minY, y); maxY = max(maxY, y)
+            }
+        }
+        guard maxX >= minX else { return self }
+        let boxW = maxX - minX + 1, boxH = maxY - minY + 1
+        // Already fills the frame: leave it alone.
+        guard boxW * 100 < w * 92 || boxH * 100 < h * 92 else { return self }
+        let side = max(boxW, boxH)
+        guard let cropped = src.cropping(to: CGRect(x: minX, y: minY, width: boxW, height: boxH)),
+              let out = CGContext(data: nil, width: side, height: side, bitsPerComponent: 8, bytesPerRow: 0, space: space, bitmapInfo: info) else { return self }
+        out.interpolationQuality = .high
+        out.draw(cropped, in: CGRect(x: (side - boxW) / 2, y: (side - boxH) / 2, width: boxW, height: boxH))
+        guard let image = out.makeImage() else { return self }
+        return NSImage(cgImage: image, size: NSSize(width: side, height: side))
+    }
+
+    /// A copy resampled to exactly `pixels` device pixels on the long side, `scale` pixels per point,
+    /// so the view draws it 1:1. Shrinking a large icon in the view, in one step, aliases at 1x.
+    public func resampled(pixels: Int, scale: CGFloat) -> NSImage {
+        let (w, h) = pixelSize
+        guard pixels > 0, w > 0, h > 0, let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: Int((w >= h ? CGFloat(pixels) : CGFloat(pixels) * w / h).rounded()),
+            pixelsHigh: Int((h >= w ? CGFloat(pixels) : CGFloat(pixels) * h / w).rounded()),
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) else { return self }
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        NSGraphicsContext.current?.imageInterpolation = .high
+        draw(in: NSRect(x: 0, y: 0, width: rep.pixelsWide, height: rep.pixelsHigh), from: .zero, operation: .copy, fraction: 1)
+        NSGraphicsContext.restoreGraphicsState()
+        let out = NSImage(size: NSSize(width: CGFloat(rep.pixelsWide) / scale, height: CGFloat(rep.pixelsHigh) / scale))
+        out.addRepresentation(rep)
+        return out
     }
 
     /// A copy no larger than `edge` pixels on the long side; the image itself when already smaller.

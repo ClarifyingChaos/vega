@@ -42,7 +42,7 @@ extension PageSession {
             let rank = IconRank(image, touchIcon: link.touch)
             if rank.usable, best == nil || rank > best!.rank { best = (image, rank) }
         }
-        guard let icon = best?.image.downscaled(toEdge: FaviconCache.maxStoredEdge),
+        guard let icon = best?.image.trimmedToContent().downscaled(toEdge: FaviconCache.maxStoredEdge),
               let key = FaviconCache.key(for: pageURL) else { return false }
         // A private page's host must not reach ~/Library/Caches/FaviconCache.
         FaviconCache.shared.store(icon, for: key, toDisk: !isPrivate)

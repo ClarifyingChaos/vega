@@ -23,7 +23,7 @@ public struct NookURLCommand: Equatable, Sendable {
     private static let maxLength = 8192
 
     public static func parse(_ link: URL) -> NookURLCommand? {
-        guard link.scheme?.lowercased() == "nook",
+        guard link.scheme?.lowercased() == "vega",
               let parts = URLComponents(url: link, resolvingAgainstBaseURL: false)
         else { return nil }
         var params: [String: String] = [:]

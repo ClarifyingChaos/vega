@@ -11,25 +11,25 @@ import OSLog
 private let nookURLLog = Logger(subsystem: "com.gstudios.nook", category: "NookURL")
 
 extension BrowserManager {
-    /// Runs a nook:// link from another app. Dropped unless Settings > Links allows it.
+    /// Runs a vega:// link from another app. Dropped unless Settings > Links allows it.
     func handleNookURL(_ link: URL) {
         guard nookSettings?.allowNookURLs == true else {
-            nookURLLog.info("Dropped nook:// link: not allowed in Settings")
+            nookURLLog.info("Dropped vega:// link: not allowed in Settings")
             return
         }
         guard let command = NookURLCommand.parse(link) else {
-            nookURLLog.info("Ignored nook:// link: \(link.host ?? "", privacy: .public) is not a valid command")
+            nookURLLog.info("Ignored vega:// link: \(link.host ?? "", privacy: .public) is not a valid command")
             return
         }
         if !command.ignored.isEmpty {
-            nookURLLog.info("Ignored nook:// parameters: \(command.ignored.joined(separator: ","), privacy: .public)")
+            nookURLLog.info("Ignored vega:// parameters: \(command.ignored.joined(separator: ","), privacy: .public)")
         }
 
         var spaceID: UUID?
         if let name = command.space {
             let choices = tabs.orderedSpaces.filter { !$0.isAgent }.map { (id: $0.id, name: $0.name) }
             guard let match = NookURLCommand.match(name, in: choices) else {
-                nookURLLog.info("Ignored nook:// link: no such space")
+                nookURLLog.info("Ignored vega:// link: no such space")
                 return
             }
             spaceID = match

@@ -268,11 +268,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
             return
         }
 
-        // nook:// commands come only through this event, and never from Nook itself.
-        if url.scheme?.lowercased() == "nook" {
+        // vega:// commands come only through this event, and never from Nook itself.
+        if url.scheme?.lowercased() == "vega" {
             let sender = event.attributeDescriptor(forKeyword: AEKeyword(keySenderPIDAttr))?.int32Value
             guard sender != getpid() else {
-                AppDelegate.log.info("Ignored nook:// link sent by Nook itself")
+                AppDelegate.log.info("Ignored vega:// link sent by Vega itself")
                 return
             }
             handleIncoming(url: url)
@@ -299,7 +299,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
             return
         }
         Task { @MainActor in
-            if url.scheme?.lowercased() == "nook" {
+            if url.scheme?.lowercased() == "vega" {
                 manager.handleNookURL(url)
             } else {
                 manager.presentExternalURL(url)

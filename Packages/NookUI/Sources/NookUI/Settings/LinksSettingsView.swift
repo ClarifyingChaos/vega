@@ -43,7 +43,7 @@ public struct LinksSettingsView: View {
             }
 
             Section {
-                Toggle("Allow nook:// links", isOn: $settings.allowNookURLs)
+                Toggle("Allow vega:// links", isOn: $settings.allowNookURLs)
             } footer: {
                 Text("Lets launchers like Raycast and Alfred open pages, search and switch spaces.")
             }

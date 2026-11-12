@@ -14,7 +14,7 @@ import OSLog
 
 enum LegacyDataMigration {
     /// Newest first: anyone with both ran the fork after the original.
-    static let previousBundleIDs = ["com.baingurley.nook", "io.browsewithnook.nook"]
+    static let previousBundleIDs = ["com.gstudios.nook", "com.baingurley.nook", "io.browsewithnook.nook"] // FORK: Vega (com.vega.browser) comes after upstream Nook
 
     private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Nook", category: "Migration")
 
@@ -38,7 +38,8 @@ enum LegacyDataMigration {
 
         log.notice("Migrating data from \(old, privacy: .public) to \(currentBundleID, privacy: .public)")
         let source = appSupport.appendingPathComponent(old, isDirectory: true)
-        for name in ["default.store", "default.store-shm", "default.store-wal", "Tabs"] {
+        // FORK: also the notes, history, downloads and cookies kept beside the tab files.
+        for name in ["default.store", "default.store-shm", "default.store-wal", "Tabs", "Notes", "History", "Downloads.json", "SessionCookies", "ArcMembershipCard.json", "Boosts"] {
             copy(source.appendingPathComponent(name), to: target.appendingPathComponent(name))
         }
         copyDataStores(from: webKit.appendingPathComponent(old).appendingPathComponent("WebsiteDataStore"),

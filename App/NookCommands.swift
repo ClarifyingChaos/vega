@@ -171,6 +171,13 @@ struct NookCommands: Commands {
             .disabled(browserManager.tabs.activeWindowSession == nil)
 
             Divider()
+            Button("Capture Visible Area…") { browserManager.capturePage(fullPage: false) }
+                .keyboardShortcut("4", modifiers: [.command, .shift, .option])
+                .disabled(browserManager.tabs.activeWindowSession == nil)
+            Button("Capture Full Page…") { browserManager.capturePage(fullPage: true) }
+                .keyboardShortcut("5", modifiers: [.command, .shift, .option])
+                .disabled(browserManager.tabs.activeWindowSession == nil)
+
             Button("Save Page As…") { browserManager.savePageAs() }
                 .keyboardShortcut("s", modifiers: [.command, .shift])
                 .disabled(browserManager.tabs.activeWindowSession == nil)

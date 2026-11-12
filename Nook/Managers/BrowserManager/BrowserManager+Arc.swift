@@ -180,6 +180,39 @@ extension BrowserManager {
         }
     }
 
+    /// Arc's Capture Visible Area / Capture Full Page: a PNG of the page, saved where the person picks.
+    func capturePage(fullPage: Bool) {
+        guard let page = tabs.activeWindowSession, let webView = page.webView, let window = activeWindowState?.window else { return }
+        let save: (WKSnapshotConfiguration) -> Void = { config in
+            webView.takeSnapshot(with: config) { image, error in
+                guard let image, let tiff = image.tiffRepresentation, let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) else {
+                    SystemAlert.present(SystemAlert.make("Couldn't capture the page", error?.localizedDescription ?? "The page has nothing to capture.", style: .warning, buttons: ["OK"])) { _ in }
+                    return
+                }
+                let panel = NSSavePanel()
+                panel.allowedContentTypes = [.png]
+                panel.nameFieldStringValue = "\(page.url.host ?? "Page") \(fullPage ? "full page" : "capture").png"
+                panel.beginSheetModal(for: window) { response in
+                    guard response == .OK, let url = panel.url else { return }
+                    do { try png.write(to: url, options: .atomic) } catch {
+                        SystemAlert.present(SystemAlert.make("Couldn't save the capture", error.localizedDescription, style: .warning, buttons: ["OK"])) { _ in }
+                    }
+                }
+            }
+        }
+        let config = WKSnapshotConfiguration()
+        config.afterScreenUpdates = true
+        guard fullPage else { save(config); return }
+        // The whole scrollable page, capped so a very long page cannot exhaust memory.
+        webView.evaluateJavaScript("[document.documentElement.scrollWidth, document.documentElement.scrollHeight]") { result, _ in
+            let size = (result as? [Double]) ?? []
+            let width = size.first ?? Double(webView.bounds.width), height = min(size.last ?? Double(webView.bounds.height), 16_000)
+            config.rect = CGRect(x: 0, y: 0, width: width, height: height)
+            config.snapshotWidth = NSNumber(value: min(width, 2_400))
+            save(config)
+        }
+    }
+
     /// Arc's Copy URL as Quote: the selected text as a Markdown quote, with the page's link.
     func copyURLAsQuote() {
         guard let page = tabs.activeWindowSession, let webView = page.webView else { return }

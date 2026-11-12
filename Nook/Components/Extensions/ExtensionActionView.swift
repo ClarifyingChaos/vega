@@ -76,6 +76,8 @@ struct ExtensionActionButton: View {
             .background(isHovering ? NookDesign.Surface.fillPressed : .clear)
             .background(ActionAnchorView(extensionId: ext.id))
             .clipShape(NookDesign.Radius.shape(NookDesign.Radius.sm))
+            .contentShape(Rectangle())
+            .overlay(ExtensionRightClickMenu(ext: ext, browserManager: browserManager))
         }
         .buttonStyle(.plain)
         .help(ext.name)
@@ -181,5 +183,122 @@ private struct ActionAnchorView: NSViewRepresentable {
 
     func updateNSView(_ nsView: NSView, context: Context) {
         ExtensionManager.shared.setActionAnchor(for: extensionId, anchorView: nsView)
+    }
+}
+
+// MARK: - Context menu (Arc's)
+
+extension View {
+    /// Arc's extension menu: name, Remove, Pin/Unpin, Manage, Permissions, Inspect.
+    /// FORK: shared by the URL bar buttons and the Site Controls tiles.
+    func extensionContextMenu(for ext: InstalledExtension, browserManager: BrowserManager) -> some View {
+        contextMenu {
+            let settings = browserManager.nookSettings
+            let isPinned = settings?.pinnedExtensionIDs.contains(ext.id) == true
+            Text(ext.name)
+            Divider()
+            Button("Remove from Vega") {
+                let alert = SystemAlert.make("Remove \(ext.name)?", "The extension and its data will be deleted.",
+                                             style: .warning, buttons: ["Remove", "Cancel"])
+                alert.buttons.first?.hasDestructiveAction = true
+                SystemAlert.present(alert) { response in
+                    if response == .alertFirstButtonReturn { browserManager.uninstallExtension(ext.id) }
+                }
+            }
+            Button(isPinned ? "Unpin" : "Pin") {
+                guard let settings else { return }
+                if isPinned { settings.pinnedExtensionIDs.removeAll { $0 == ext.id } }
+                else { settings.pinnedExtensionIDs.append(ext.id) }
+            }
+            Divider()
+            // shortcut: both open the Extensions settings; a per-extension page comes later.
+            Button("Manage Extension") { browserManager.openSettings(tab: .extensions) }
+            Button("View Web Permissions") { browserManager.openSettings(tab: .extensions) }
+            Divider()
+            Button("Inspect Popup") {}.disabled(true)
+        }
+    }
+}
+
+/// The sidebar's own context menu wins over a SwiftUI one on these buttons, so the right-click is
+/// taken here in AppKit: this view is only hit-testable for a right-click and builds the same menu.
+private struct ExtensionRightClickMenu: NSViewRepresentable {
+    let ext: InstalledExtension
+    let browserManager: BrowserManager
+
+    final class Catcher: NSView {
+        var buildMenu: (() -> NSMenu)?
+        private var monitor: Any?
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            stop()
+            guard window != nil else { return }
+            // A monitor sees the click before SwiftUI's hit testing hands it to the sidebar's menu.
+            monitor = NSEvent.addLocalMonitorForEvents(matching: .rightMouseDown) { [weak self] event in
+                guard let self, let window = self.window, event.window === window, !self.isHiddenOrHasHiddenAncestor,
+                      self.bounds.contains(self.convert(event.locationInWindow, from: nil)),
+                      let menu = self.buildMenu?() else { return event }
+                NSMenu.popUpContextMenu(menu, with: event, for: self)
+                return nil
+            }
+        }
+        func stop() {
+            if let monitor { NSEvent.removeMonitor(monitor) }
+            monitor = nil
+        }
+        deinit { if let monitor { NSEvent.removeMonitor(monitor) } }
+    }
+    static func dismantleNSView(_ nsView: Catcher, coordinator: ()) { nsView.stop() }
+
+    final class Action: NSObject {
+        let run: () -> Void
+        init(_ run: @escaping () -> Void) { self.run = run }
+        @objc func fire() { run() }
+    }
+
+    func makeNSView(context: Context) -> Catcher {
+        let view = Catcher()
+        view.buildMenu = { [ext, browserManager] in Self.menu(for: ext, browserManager: browserManager) }
+        return view
+    }
+    func updateNSView(_ nsView: Catcher, context: Context) {
+        nsView.buildMenu = { [ext, browserManager] in Self.menu(for: ext, browserManager: browserManager) }
+    }
+
+    @MainActor static func menu(for ext: InstalledExtension, browserManager: BrowserManager) -> NSMenu {
+        let menu = NSMenu()
+        var actions: [Action] = []
+        func add(_ title: String, enabled: Bool = true, _ run: @escaping () -> Void) {
+            let action = Action(run); actions.append(action)
+            let item = NSMenuItem(title: title, action: enabled ? #selector(Action.fire) : nil, keyEquivalent: "")
+            item.target = action
+            item.representedObject = action // keeps the closure alive while the menu is up
+            menu.addItem(item)
+        }
+        let settings = browserManager.nookSettings
+        let isPinned = settings?.pinnedExtensionIDs.contains(ext.id) == true
+        let header = NSMenuItem(title: ext.name, action: nil, keyEquivalent: "")
+        menu.addItem(header)
+        menu.addItem(.separator())
+        add("Remove from Vega") {
+            let alert = SystemAlert.make("Remove \(ext.name)?", "The extension and its data will be deleted.",
+                                         style: .warning, buttons: ["Remove", "Cancel"])
+            alert.buttons.first?.hasDestructiveAction = true
+            SystemAlert.present(alert) { response in
+                if response == .alertFirstButtonReturn { browserManager.uninstallExtension(ext.id) }
+            }
+        }
+        add(isPinned ? "Unpin" : "Pin") {
+            guard let settings else { return }
+            if isPinned { settings.pinnedExtensionIDs.removeAll { $0 == ext.id } }
+            else { settings.pinnedExtensionIDs.append(ext.id) }
+        }
+        menu.addItem(.separator())
+        add("Manage Extension") { browserManager.openSettings(tab: .extensions) }
+        add("View Web Permissions") { browserManager.openSettings(tab: .extensions) }
+        menu.addItem(.separator())
+        add("Inspect Popup", enabled: false) {}
+        return menu
     }
 }

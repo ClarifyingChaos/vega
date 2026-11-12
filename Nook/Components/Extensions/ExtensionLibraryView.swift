@@ -413,17 +413,7 @@ private struct ExtensionGridItem: View {
         .help(ext.name)
         .onHoverTracking { isHovering = $0 }
         .onAppear { refreshBadge() }
-        .contextMenu {
-            if isPinned {
-                Button("Unpin from URL Bar") {
-                    settings.pinnedExtensionIDs.removeAll { $0 == ext.id }
-                }
-            } else {
-                Button("Pin to URL Bar") {
-                    settings.pinnedExtensionIDs.append(ext.id)
-                }
-            }
-        }
+        .extensionContextMenu(for: ext, browserManager: browserManager)
         .accessibilityLabel(ext.name)
         .accessibilityHint("Extension. Double-tap to activate.")
         .accessibilityAddTraits(.isButton)

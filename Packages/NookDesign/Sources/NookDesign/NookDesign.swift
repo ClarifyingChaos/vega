@@ -209,6 +209,8 @@ public enum NookDesign {
         public static let tintOpacity: Double = 0.18                       // accent-tinted control: chosen chip, own chat message
         public static let mediaScrim = Color.black.opacity(0.35)           // controls over video
         public static let hairline = Color.primary.opacity(0.08)
+        /// Dim behind a modal panel such as the command palette (HIG: dim to focus).
+        public static let modalDim: Double = 0.18
         public static let unloadedOpacity: Double = 0.55
         /// A selected favorite tile's fill, as Arc draws it: white, halved in an inactive window.
         public static func favoriteSelectedFill(dark: Bool, dimmed: Bool) -> Color {

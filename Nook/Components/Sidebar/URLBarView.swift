@@ -365,11 +365,8 @@ struct URLBarView: View {
                 inlineSuggestionList
             }
         }
-        .background(colorScheme == .dark ? Color(white: 24.0 / 255.0) : .white,
-                    in: RoundedRectangle(cornerRadius: 15, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 15, style: .continuous)
-            .strokeBorder(colorScheme == .dark ? Color(white: 75.0 / 255.0) : Color.black.opacity(0.2), lineWidth: 0.5))
-        .shadow(color: .black.opacity(colorScheme == .dark ? 0.5 : 0.23), radius: 24, y: 10)
+        // FORK: glass with a lit edge; the solid #181818 card vanished over dark pages.
+        .nookGlassSurface(in: RoundedRectangle(cornerRadius: 15, style: .continuous))
     }
 
     private var inlineSuggestionList: some View {

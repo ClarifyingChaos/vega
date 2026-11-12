@@ -102,7 +102,9 @@ struct CommandPaletteView: View {
         let textFieldColor: Color = text.isEmpty ? .secondary : .primary
 
         return ZStack {
-            Color.clear
+            // FORK: a light dim behind the palette, as for any modal task, so it stands apart
+            // from the page however dark or busy that page is.
+            Color.black.opacity(NookDesign.Surface.modalDim)
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .backgroundDraggable(onClick: {
@@ -298,7 +300,7 @@ struct CommandPaletteView: View {
                         .padding(10)
                         .frame(maxWidth: .infinity)
                         .frame(width: effectiveCommandPaletteWidth)
-                        .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xxl))
+                        .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xxl)) // FORK: glass
                         .animation(
                             NookDesign.Motion.quick,
                             value: searchManager.suggestions.count

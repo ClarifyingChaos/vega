@@ -179,6 +179,8 @@ struct NookCommands: Commands {
                 .keyboardShortcut("5", modifiers: [.command, .shift, .option])
                 .disabled(browserManager.tabs.activeWindowSession == nil)
 
+            Button("Cast…") { browserManager.castPage() }
+                .disabled(browserManager.tabs.activeWindowSession == nil)
             Button("Save Page As…") { browserManager.savePageAs() }
                 .keyboardShortcut("s", modifiers: [.command, .shift])
                 .disabled(browserManager.tabs.activeWindowSession == nil)

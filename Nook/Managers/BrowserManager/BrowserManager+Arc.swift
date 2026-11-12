@@ -8,6 +8,7 @@
 //
 
 import AppKit
+import AVKit
 import Observation
 import NookTabsCore
 import NookWeb
@@ -216,6 +217,21 @@ extension BrowserManager {
             config.rect = CGRect(x: 0, y: 0, width: width, height: height)
             config.snapshotWidth = NSNumber(value: min(width, 2_400))
             save(config)
+        }
+    }
+
+    /// Arc's Cast: the system AirPlay picker, for the page's video or audio. WebKit routes media
+    /// to the chosen device (allowsAirPlayForMediaPlayback is on). The picker is AVKit's own
+    /// button, placed under the window's top-right corner and clicked for the person.
+    func castPage() {
+        guard let content = activeWindowState?.window?.contentView else { return }
+        let picker = AVRoutePickerView(frame: NSRect(x: content.bounds.maxX - 60, y: content.bounds.maxY - 40, width: 28, height: 28))
+        picker.alphaValue = 0.01
+        content.addSubview(picker)
+        // The button is built lazily inside the picker, so click on the next turn of the run loop.
+        DispatchQueue.main.async {
+            (picker.subviews.first { $0 is NSButton } as? NSButton)?.performClick(nil)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 30) { picker.removeFromSuperview() }
         }
     }
 

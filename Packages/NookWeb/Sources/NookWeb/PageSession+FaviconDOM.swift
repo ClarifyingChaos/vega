@@ -16,7 +16,7 @@ import SwiftUI
 extension PageSession {
     private static let iconLinksScript = """
     Array.from(document.querySelectorAll('link[rel~="icon"],link[rel^="apple-touch-icon"]'))
-      .map(l => ({href: l.href, sizes: l.sizes ? l.sizes.value : '', type: l.type || ''}))
+      .map(l => ({href: l.href, rel: l.rel, sizes: l.sizes ? l.sizes.value : '', type: l.type || ''}))
     """
 
     /// Stores and shows the best icon the loaded page declares. False when the page has none
@@ -26,7 +26,7 @@ extension PageSession {
         guard let webView = primaryWebView,
               let raw = try? await webView.evaluateJavaScript(Self.iconLinksScript) as? [[String: String]] else { return false }
         var seen = Set<URL>()
-        let links: [(url: URL, edge: Int)] = raw.compactMap { entry in
+        let links: [(url: URL, edge: Int, touch: Bool)] = raw.compactMap { entry in
             guard let href = entry["href"], let url = URL(string: href),
                   url.scheme == "https" || url.scheme == "http",
                   !href.lowercased().contains(".svg"), entry["type"] != "image/svg+xml",
@@ -34,14 +34,13 @@ extension PageSession {
             // "180x180" or "16x16 32x32": the biggest declared edge; undeclared sorts last.
             let edge = (entry["sizes"] ?? "").split(separator: " ")
                 .compactMap { Int($0.split(separator: "x").first ?? "") }.max() ?? 0
-            return (url, edge)
+            return (url, edge, (entry["rel"] ?? "").hasPrefix("apple-touch-icon"))
         }
-        var best: (image: PlatformImage, edge: CGFloat)?
-        for link in links.sorted(by: { $0.edge > $1.edge }).prefix(3) {
+        var best: (image: PlatformImage, rank: IconRank)?
+        for link in links.sorted(by: { $0.edge > $1.edge }).prefix(4) {
             guard let image = await Self.downloadImage(from: link.url, isPrivate: isPrivate) else { continue }
-            let (w, h) = image.pixelSize
-            guard w > 0, h > 0, max(w, h) / min(w, h) <= 1.25 else { continue }
-            if best == nil || max(w, h) > best!.edge { best = (image, max(w, h)) }
+            let rank = IconRank(image, touchIcon: link.touch)
+            if rank.usable, best == nil || rank > best!.rank { best = (image, rank) }
         }
         guard let icon = best?.image.downscaled(toEdge: FaviconCache.maxStoredEdge),
               let key = FaviconCache.key(for: pageURL) else { return false }

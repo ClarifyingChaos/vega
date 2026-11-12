@@ -15,7 +15,9 @@ import AppKit
 extension FaviconCache {
     /// Stored icons are scaled down to this many pixels on the long edge: sharp at tile size on
     /// a 2x display, and 200 of them stay small in memory.
-    static let maxStoredEdge: CGFloat = 256
+    /// Icons at least this many pixels wide stay sharp at tile size on a 2x display.
+    static let sharpEdge: CGFloat = 64
+    static let maxStoredEdge: CGFloat = 128
 
     /// The cached icon for `url`'s host, fetched and stored when missing or older than `maxAge`.
     /// Nil when the site offers none. Concurrent calls for one host share one request.
@@ -43,16 +45,34 @@ extension FaviconCache {
             .filter { seen.insert($0.source).inserted }
             .sorted { ($0.size?.dimension ?? 0) > ($1.size?.dimension ?? 0) }
             .prefix(4)
-        var best: (image: PlatformImage, edge: CGFloat)?
+        var best: (image: PlatformImage, rank: IconRank)?
         for candidate in ordered {
             guard let image = try? await candidate.download().image?.image else { continue }
-            let (w, h) = image.pixelSize
-            // A banner or a sliver is not an app icon.
-            guard w > 0, h > 0, max(w, h) / min(w, h) <= 1.25 else { continue }
-            if best == nil || max(w, h) > best!.edge { best = (image, max(w, h)) }
+            let rank = IconRank(image, touchIcon: candidate.format == .appleTouchIcon || candidate.format == .appleTouchIconPrecomposed)
+            if rank.usable, best == nil || rank > best!.rank { best = (image, rank) }
         }
         return best.map { $0.image.downscaled(toEdge: maxStoredEdge) }
     }
+}
+
+/// Orders candidate icons: one sharp at tile size beats a blurry one; then a plain favicon beats an
+/// apple-touch icon (an opaque padded square that looks heavy beside other tiles); among equals,
+/// the smallest sharp one, since it is shrunk the least, or the largest blurry one.
+struct IconRank: Comparable {
+    let usable: Bool
+    private let key: (Int, Int, CGFloat)
+
+    init(_ image: NSImage, touchIcon: Bool) {
+        let (w, h) = image.pixelSize
+        // A banner or a sliver is not an app icon.
+        usable = w > 0 && h > 0 && max(w, h) / min(w, h) <= 1.25
+        let edge = max(w, h)
+        let sharp = edge >= FaviconCache.sharpEdge
+        key = (sharp ? 1 : 0, touchIcon ? 0 : 1, sharp ? -edge : edge)
+    }
+
+    static func < (a: IconRank, b: IconRank) -> Bool { a.key < b.key }
+    static func == (a: IconRank, b: IconRank) -> Bool { a.key == b.key }
 }
 
 private actor FaviconFetches {

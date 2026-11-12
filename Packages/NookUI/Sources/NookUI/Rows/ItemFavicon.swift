@@ -47,6 +47,7 @@ public struct ItemFavicon: View {
         // FORK: a session's placeholder globe must not hide the cached icon.
         ((session?.hasLoadedFavicon == true ? session?.favicon : nil) ?? cached ?? session?.favicon ?? Image(systemName: "globe"))
             .resizable()
+            .interpolation(.high) // FORK: shrinking a 128 px icon to tile size without this aliases
             .scaledToFit()
             // Keyed on the session too: closing a pinned tab or favorite ends its page but keeps
             // the row, and the cached icon must be loaded then.

@@ -242,13 +242,16 @@ extension BrowserManager {
 
     /// Arc's Cast: the system AirPlay picker, for the page's video or audio. WebKit routes media
     /// to the chosen device (allowsAirPlayForMediaPlayback is on). The picker is AVKit's own
-    /// button, placed at the top centre of the window and clicked for the person.
+    /// button, placed in the sidebar and clicked for the person.
     func castPage() {
         guard let content = activeWindowState?.window?.contentView else { return }
-        // The hosting view is flipped, so its top edge is y = 0; the first version used maxY and the
-        // picker opened at the window's bottom edge, off where anyone looks.
-        let top = content.isFlipped ? 48 : content.bounds.maxY - 76
-        let picker = AVRoutePickerView(frame: NSRect(x: content.bounds.midX, y: top, width: 28, height: 28))
+        // Anchored in the sidebar, under the address field, so the list opens beside the tabs.
+        // The hosting view is flipped, so its top edge is y = 0.
+        let top = content.isFlipped ? 64 : content.bounds.maxY - 92
+        let width = activeWindowState?.sidebarWidth ?? 247
+        let onRight = nookSettings?.sidebarPosition == .right
+        let x = onRight ? content.bounds.maxX - width / 2 : width / 2
+        let picker = AVRoutePickerView(frame: NSRect(x: x - 14, y: top, width: 28, height: 28))
         picker.alphaValue = 0.01
         content.addSubview(picker)
         // The button is built lazily inside the picker, so click on the next turn of the run loop.

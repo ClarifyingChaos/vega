@@ -235,7 +235,9 @@ struct URLBarView: View {
                 }
 
                 // Pinned extension buttons + library button
-                if !isEditing, let extensionManager = browserManager.extensionManager {
+                // FORK: as in Arc, extensions and site controls show while the pointer is over the field
+                // (or while the library panel they open is up), not at rest.
+                if !isEditing, isHovering || windowState.isExtensionLibraryVisible, let extensionManager = browserManager.extensionManager {
                     let pinnedIDs = browserManager.nookSettings?.pinnedExtensionIDs ?? []
                     let pinnedExtensions = extensionManager.installedExtensions.filter { pinnedIDs.contains($0.id) }
 
@@ -522,7 +524,9 @@ struct URLBarView: View {
         let path = url.path
         // A developer's own server shows its query too: it is usually what is being tested.
         if isDevPage(session), let query = url.query { return path + "?" + query }
-        return path == "/" ? "" : path
+        // FORK: as in Arc the field shows the domain alone; the path comes with Show Full URL (above).
+        return ""
+
     }
 
     private func isDevPage(_ session: PageSession?) -> Bool {

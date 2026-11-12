@@ -27,7 +27,7 @@ public enum NookDesign {
         public static let xl: CGFloat = 16     // dialog, toast
         public static let xxl: CGFloat = 24    // command palette
         /// The website frame. Concentric with the macOS window corner (about 22) across the page inset.
-        public static let page: CGFloat = 10  // FORK: Dia's tighter page corner (was 14)
+        public static let page: CGFloat = 10  // FORK: 10 pt, measured in Arc (was 14)
 
         public static func shape(_ radius: CGFloat) -> RoundedRectangle {
             RoundedRectangle(cornerRadius: radius, style: .continuous)
@@ -65,8 +65,8 @@ public enum NookDesign {
     // MARK: - Browser Frame
 
     public enum Chrome {
-        /// Window inset around web content. FORK: 6 pt, Dia's thin frame (was 10).
-        public static let pageInset: CGFloat = 6
+        /// Window inset around web content. FORK: 8 pt, measured in Arc 1.172 (right, top, bottom; was 10).
+        public static let pageInset: CGFloat = 8
         public static let splitGap: CGFloat = pageInset
     }
 
@@ -138,7 +138,7 @@ public enum NookDesign {
         public static let defaultResizeLight = Color(.sRGB, red: 130 / 255, green: 149 / 255, blue: 247 / 255)
         public static let defaultResizeDark = Color(.sRGB, red: 145 / 255, green: 153 / 255, blue: 172 / 255)
         public static let icon: CGFloat = 15
-        public static let button: CGFloat = 30
+        public static let button: CGFloat = 32   // FORK: Arc's 32 pt title-row and bottom-bar buttons (was 30)
         public static let gap: CGFloat = 2
         public static let trafficLightsInset: CGFloat = 84   // 12pt past the zoom button, as in Arc
         public static let footerSideReserve: CGFloat = 66

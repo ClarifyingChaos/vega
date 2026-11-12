@@ -82,9 +82,7 @@ struct URLBarView: View {
             : splitItemID.flatMap { browserManager.tabs.session(for: $0) }
         collapsedAddress(session: session)
         .frame(maxWidth: .infinity, minHeight: controlHeight, maxHeight: controlHeight)
-        .overlay(alignment: .bottom) {
-            if splitItemID == nil { PageLoadingProgressBar(session: session) }
-        }
+        // FORK: no load bar in the address field; as in Arc, the reload button turns into stop while loading.
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .background {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -507,10 +505,20 @@ struct URLBarView: View {
     /// that was written out even when it is the scheme's default, so `https://x.com:443`
     /// still reads as `x.com`.
     private func displayHost(for session: PageSession?) -> String {
-        session?.url.nookDisplayHost ?? displayURL(for: session)
+        // FORK: Show Full URL (from Dia) keeps the scheme in front of the host.
+        if FullURLDisplay.shared.isOn, let url = session?.url, let host = url.nookDisplayHost, let scheme = url.scheme {
+            return "\(scheme)://\(host)"
+        }
+        return session?.url.nookDisplayHost ?? displayURL(for: session)
     }
     private func displayPath(for session: PageSession?) -> String {
         guard let url = session?.url, url.host != nil else { return "" }
+        if FullURLDisplay.shared.isOn {
+            var rest = url.path.isEmpty ? "/" : url.path
+            if let query = url.query { rest += "?" + query }
+            if let fragment = url.fragment { rest += "#" + fragment }
+            return rest
+        }
         let path = url.path
         // A developer's own server shows its query too: it is usually what is being tested.
         if isDevPage(session), let query = url.query { return path + "?" + query }

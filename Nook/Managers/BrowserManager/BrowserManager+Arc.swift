@@ -13,6 +13,17 @@ import NookTabsCore
 import NookWeb
 import UniformTypeIdentifiers
 
+/// Dia's Show Full URL: the address bar shows scheme, host and path in full. Kept in UserDefaults
+/// under the fork's own key, so the shared settings service stays untouched.
+@MainActor @Observable
+final class FullURLDisplay {
+    static let shared = FullURLDisplay()
+    private static let key = "fork.showFullURL"
+    var isOn: Bool = UserDefaults.standard.bool(forKey: key) {
+        didSet { UserDefaults.standard.set(isOn, forKey: Self.key) }
+    }
+}
+
 /// Window numbers the person set to Stay on Top.
 @MainActor @Observable
 final class FloatingWindows {
@@ -86,6 +97,31 @@ extension BrowserManager {
         let closing = side == .left ? split.leftItemID : split.rightItemID
         splitManager.exitSplit(keep: side == .left ? .right : .left, for: window.id)
         tabs.close(closing, archive: true)
+    }
+
+    // MARK: - Split focus and windows (from Dia)
+
+    /// Moves focus to the other split pane by selecting its tab.
+    func focusSplitPane(next: Bool) {
+        guard let window = activeWindowState, let split = window.split else { return }
+        let current = splitManager.activeSide(for: window.id) ?? .left
+        // Two panes: next and previous both mean the other one.
+        let target = current == .left ? split.rightItemID : split.leftItemID
+        _ = next
+        tabs.select(target, in: window)
+    }
+
+    /// Dia's Merge All Windows: every tab and pinned item of the other regular windows' spaces stays
+    /// where it is (spaces are shared); the windows themselves close, leaving the active one.
+    func mergeAllWindows() {
+        guard let registry = windowRegistry, let keep = registry.activeWindow else { return }
+        let others = registry.windows.values.filter { $0.id != keep.id && !$0.isIncognito }
+        for window in others { window.window?.close() }
+    }
+
+    var canMergeWindows: Bool {
+        guard let registry = windowRegistry, let keep = registry.activeWindow else { return false }
+        return registry.windows.values.contains { $0.id != keep.id && !$0.isIncognito }
     }
 
     // MARK: - Windows

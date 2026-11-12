@@ -251,6 +251,8 @@ struct NookCommands: Commands {
             }
             .modifier(dynamicShortcut(.toggleTopBarAddressView))
 
+            Toggle("Show Full URL", isOn: Binding(get: { FullURLDisplay.shared.isOn }, set: { FullURLDisplay.shared.isOn = $0 }))
+
             Button(browserManager.isPinnedSectionCollapsed ? "Expand Pinned Tabs" : "Collapse Pinned Tabs") {
                 browserManager.togglePinnedSection()
             }
@@ -262,6 +264,12 @@ struct NookCommands: Commands {
                 .keyboardShortcut("=", modifiers: [.command, .control])
                 .disabled(windowRegistry.activeWindow?.selectedItemID == nil)
             Button("Close This Split Pane") { browserManager.closeActiveSplitPane() }
+                .disabled(windowRegistry.activeWindow?.split == nil)
+            Button("Focus Next Split Pane") { browserManager.focusSplitPane(next: true) }
+                .keyboardShortcut("]", modifiers: [.command, .option])
+                .disabled(windowRegistry.activeWindow?.split == nil)
+            Button("Focus Previous Split Pane") { browserManager.focusSplitPane(next: false) }
+                .keyboardShortcut("[", modifiers: [.command, .option])
                 .disabled(windowRegistry.activeWindow?.split == nil)
             Button("Separate Page from Split View") {
                 if let window = windowRegistry.activeWindow { browserManager.separateSplit(in: window) }
@@ -447,6 +455,8 @@ struct NookCommands: Commands {
 
         // FORK: Arc's Window items.
         CommandGroup(before: .windowArrangement) {
+            Button("Merge All Windows") { browserManager.mergeAllWindows() }
+                .disabled(!browserManager.canMergeWindows)
             Button(browserManager.isActiveWindowOnTop ? "Don't Stay on Top" : "Stay on Top") { browserManager.toggleStayOnTop() }
                 .disabled(windowRegistry.activeWindow == nil)
             Divider()

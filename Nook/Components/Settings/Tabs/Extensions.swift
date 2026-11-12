@@ -21,10 +21,12 @@ struct ExtensionsSettingsView: View {
     var body: some View {
         Form {
             Section {
-                Button("Install Extension...") {
+                Button("Install Extension…", systemImage: "plus") {
                     browserManager.showExtensionInstallDialog()
                 }
                 .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .padding(.vertical, NookDesign.Spacing.sm)
             }
 
             if extensionManager.installedExtensions.isEmpty && !showSafariSection {
@@ -46,6 +48,7 @@ struct ExtensionsSettingsView: View {
                     ForEach(extensionManager.installedExtensions, id: \.id) { ext in
                         ExtensionRowView(extension: ext)
                             .environmentObject(browserManager)
+                            .padding(.vertical, NookDesign.Spacing.md)
                     }
                 }
             }
@@ -178,46 +181,39 @@ private struct ExtensionRowView: View {
     @EnvironmentObject var browserManager: BrowserManager
 
     var body: some View {
-        HStack(spacing: NookDesign.Spacing.lg) {
-            // Extension icon
+        HStack(spacing: NookDesign.Spacing.xl) {
+            // FORK: roomier row: a larger icon, the name with its version, a description of up to two lines.
             Group {
                 if let iconPath = `extension`.iconPath,
                     let nsImage = NSImage(contentsOfFile: iconPath)
                 {
                     Image(nsImage: nsImage)
                         .resizable()
+                        .interpolation(.high)
+                        .scaledToFit()
                 } else {
                     Image(systemName: "puzzlepiece.extension")
                         .foregroundStyle(.blue)
                 }
             }
-            .frame(
-                width: NookDesign.Size.settingsIcon,
-                height: NookDesign.Size.settingsIcon
-            )
-            .background(NookDesign.Surface.raised)
-            .clipShape(NookDesign.Radius.shape(NookDesign.Radius.sm))
+            .frame(width: 36, height: 36)
+            .clipShape(NookDesign.Radius.shape(NookDesign.Radius.md))
 
-            // Extension info
-            VStack(alignment: .leading, spacing: NookDesign.Spacing.xxs) {
-                Text(`extension`.name)
-                    .font(NookDesign.Font.label)
-                    .lineLimit(1)
-
-                HStack(spacing: NookDesign.Spacing.md) {
+            VStack(alignment: .leading, spacing: NookDesign.Spacing.xs) {
+                HStack(alignment: .firstTextBaseline, spacing: NookDesign.Spacing.sm) {
+                    Text(`extension`.name)
+                        .font(NookDesign.Font.title)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
                     Text("v\(`extension`.version)")
                         .font(NookDesign.Font.caption)
                         .foregroundStyle(.secondary)
-
-                    if let description = `extension`.description {
-                        Text("•")
-                            .font(NookDesign.Font.caption)
-                            .foregroundStyle(.secondary)
-                        Text(description)
-                            .font(NookDesign.Font.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
+                }
+                if let description = `extension`.description, !description.isEmpty {
+                    Text(description)
+                        .font(NookDesign.Font.secondary)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
             }
 

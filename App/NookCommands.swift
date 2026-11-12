@@ -498,6 +498,17 @@ struct NookCommands: Commands {
                 Button("Edit Theme…") { browserManager.showSpaceSettings() }
                     .disabled(windowRegistry.activeWindow?.spaceID == nil)
                 Button("Manage Spaces…") { browserManager.openLibrary(.spaces) }
+                // FORK: Arc's Change Profile; the space's pages reload on the chosen profile's logins.
+                Menu("Change Profile") {
+                    let spaceID = windowRegistry.activeWindow?.spaceID
+                    let current = spaceID.flatMap { browserManager.tabs.profile(forSpace: $0)?.id }
+                    ForEach(browserManager.tabs.profiles) { profile in
+                        Toggle(profile.name, isOn: Binding(get: { profile.id == current }, set: { _ in browserManager.changeProfile(to: profile) }))
+                    }
+                    Divider()
+                    Button("New Profile…") { browserManager.changeProfile(to: nil) }
+                }
+                .disabled(windowRegistry.activeWindow?.spaceID == nil || windowRegistry.activeWindow?.isIncognito == true)
 
                 Divider()
 

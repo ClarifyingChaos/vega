@@ -82,6 +82,26 @@ extension BrowserManager {
         activeWindowState?.spaceID.map { tabs.isPinnedCollapsed(space: $0) } ?? false
     }
 
+    // MARK: - Profiles
+
+    /// Arc's Change Profile: the active space moves to another profile's logins, or a new empty one.
+    /// A profile no space uses any more is wiped, so the last space leaving one asks first.
+    func changeProfile(to target: ProfileSummary?) {
+        guard let window = activeWindowState, let spaceID = window.spaceID, !window.isIncognito,
+              let current = tabs.profiles.first(where: { $0.spaceIDs.contains(spaceID) }), target?.id != current.id else { return }
+        let move = { [tabs] in
+            tabs.setProfile(spaceID, to: target?.id, name: target == nil ? "Profile \(tabs.profiles.count + 1)" : nil)
+        }
+        guard current.spaceIDs == [spaceID] else { move(); return }
+        let alert = SystemAlert.make("Leave “\(current.name)”?",
+                                     "No other space uses this profile, so its logins, cookies and history will be deleted. You can't undo this.",
+                                     style: .warning, buttons: ["Change Profile", "Cancel"])
+        alert.buttons.first?.hasDestructiveAction = true
+        SystemAlert.present(alert) { response in
+            if response == .alertFirstButtonReturn { move() }
+        }
+    }
+
     // MARK: - Split View
 
     /// Arc's Add Split View: opens the search engine's start page beside the current tab.

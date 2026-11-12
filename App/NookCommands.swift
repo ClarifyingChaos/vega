@@ -155,6 +155,10 @@ struct NookCommands: Commands {
                 browserManager.createIncognitoWindow()
             }
             .keyboardShortcut("n", modifiers: [.command, .shift])
+
+            // FORK: Arc's File items.
+            Button("New Little Arc Window") { browserManager.openLittleArcWindow() }
+                .keyboardShortcut("n", modifiers: [.command, .option])
             
             Divider()
             Button("Open Command Bar") {
@@ -165,6 +169,10 @@ struct NookCommands: Commands {
             .disabled(browserManager.tabs.activeWindowSession == nil)
 
             Divider()
+            Button("Save Page As…") { browserManager.savePageAs() }
+                .keyboardShortcut("s", modifiers: [.command, .shift])
+                .disabled(browserManager.tabs.activeWindowSession == nil)
+
             Button("Print…") {
                 browserManager.printCurrentPage()
             }
@@ -237,6 +245,29 @@ struct NookCommands: Commands {
 
         // View commands. FORK: in the View menu, as Safari and Dia have them (they sat in Window).
         CommandGroup(after: .toolbar) {
+            // FORK: Arc's View items.
+            Button(nookSettings.topBarAddressView ? "Hide Toolbar" : "Show Toolbar") {
+                browserManager.toggleTopBarAddressView()
+            }
+            .modifier(dynamicShortcut(.toggleTopBarAddressView))
+
+            Button(browserManager.isPinnedSectionCollapsed ? "Expand Pinned Tabs" : "Collapse Pinned Tabs") {
+                browserManager.togglePinnedSection()
+            }
+            .disabled(windowRegistry.activeWindow?.spaceID == nil)
+
+            Divider()
+
+            Button("Add Split View") { browserManager.addSplitView() }
+                .keyboardShortcut("=", modifiers: [.command, .control])
+                .disabled(windowRegistry.activeWindow?.selectedItemID == nil)
+            Button("Close This Split Pane") { browserManager.closeActiveSplitPane() }
+                .disabled(windowRegistry.activeWindow?.split == nil)
+            Button("Separate Page from Split View") {
+                if let window = windowRegistry.activeWindow { browserManager.separateSplit(in: window) }
+            }
+            .disabled(windowRegistry.activeWindow?.split == nil)
+
             Divider()
 
             Button("Reload Page") {
@@ -342,6 +373,9 @@ struct NookCommands: Commands {
             }
             .disabled(browserManager.tabs.activeWindowSession == nil)
 
+            Button("Copy URL as Quote") { browserManager.copyURLAsQuote() }
+                .disabled(browserManager.tabs.activeWindowSession == nil)
+
             Divider()
             Button("Find in Page…") {
                 browserManager.showFindBar()
@@ -352,10 +386,13 @@ struct NookCommands: Commands {
 
         // FORK: Tabs and History menus, as in Dia, built on the existing shortcut actions.
         CommandMenu("Tabs") {
-            Button("Go Back") { shortcutManager.executeAction(.goBack) }
-                .disabled(browserManager.tabs.activeWindowSession?.canGoBack != true)
-            Button("Go Forward") { shortcutManager.executeAction(.goForward) }
-                .disabled(browserManager.tabs.activeWindowSession?.canGoForward != true)
+            Button("New Folder…") {
+                if let spaceID = windowRegistry.activeWindow?.spaceID {
+                    browserManager.tabs.createFolderForRename(in: .tabs(spaceID: spaceID), after: nil)
+                }
+            }
+            .keyboardShortcut("n", modifiers: [.command, .option, .shift])
+            .disabled(windowRegistry.activeWindow?.spaceID == nil || windowRegistry.activeWindow?.isIncognito == true)
 
             Divider()
             Button("Next Tab") { shortcutManager.executeAction(.nextTab) }
@@ -363,6 +400,8 @@ struct NookCommands: Commands {
             Button("Previous Tab") { shortcutManager.executeAction(.previousTab) }
                 .modifier(dynamicShortcut(.previousTab))
             Button("Search Tabs…") { windowRegistry.activeWindow?.commandPalette?.open() }
+            Button("Reveal Tab in Sidebar") { browserManager.revealSelectedTabInSidebar() }
+                .disabled(windowRegistry.activeWindow?.selectedItemID == nil)
 
             Divider()
             Button(browserManager.pinToggleIsPin == false ? "Unpin Tab" : "Pin Tab") {
@@ -382,13 +421,39 @@ struct NookCommands: Commands {
             .disabled(
                 browserManager.tabs.activeWindowSession == nil
                     || browserManager.tabs.activeWindowSession?.hasAudioContent != true)
+
+            Divider()
+            Button("Clear Today") { browserManager.clearToday() }
+                .keyboardShortcut("k", modifiers: [.command, .shift])
+                .disabled(windowRegistry.activeWindow?.spaceID == nil)
+            Button("Reset All Tabs in This Space") { browserManager.resetAllTabsInSpace() }
+                .disabled(windowRegistry.activeWindow?.spaceID == nil)
         }
 
-        CommandMenu("History") {
-            Button("Show History…") { shortcutManager.executeAction(.viewHistory) }
+        // FORK: Arc's Archive menu: navigation, history and the tab archive.
+        CommandMenu("Archive") {
+            Button("Go Back") { shortcutManager.executeAction(.goBack) }
+                .disabled(browserManager.tabs.activeWindowSession?.canGoBack != true)
+            Button("Go Forward") { shortcutManager.executeAction(.goForward) }
+                .disabled(browserManager.tabs.activeWindowSession?.canGoForward != true)
+
+            Divider()
+            Button("View History") { shortcutManager.executeAction(.viewHistory) }
                 .modifier(dynamicShortcut(.viewHistory))
-            Button("Show Downloads") { shortcutManager.executeAction(.viewDownloads) }
+            Button("View Archive…") { browserManager.openLibrary(.archive) }
+            Button("Clear Archive…") { browserManager.confirmClearArchive() }
+                .disabled(browserManager.tabs.archive.entries.isEmpty)
+        }
+
+        // FORK: Arc's Window items.
+        CommandGroup(before: .windowArrangement) {
+            Button(browserManager.isActiveWindowOnTop ? "Don't Stay on Top" : "Stay on Top") { browserManager.toggleStayOnTop() }
+                .disabled(windowRegistry.activeWindow == nil)
+            Divider()
+            Button("Open Library…") { browserManager.openLibrary(.history) }
+            Button("View Downloads…") { shortcutManager.executeAction(.viewDownloads) }
                 .modifier(dynamicShortcut(.viewDownloads))
+            Divider()
         }
 
         Group {
@@ -402,6 +467,9 @@ struct NookCommands: Commands {
                     }
                 }
                 .disabled(windowRegistry.activeWindow?.isIncognito != false)
+                Button("Edit Theme…") { browserManager.showSpaceSettings() }
+                    .disabled(windowRegistry.activeWindow?.spaceID == nil)
+                Button("Manage Spaces…") { browserManager.openLibrary(.spaces) }
 
                 Divider()
 

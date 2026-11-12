@@ -316,7 +316,7 @@ extension PageSession: WKNavigationDelegate {
         // straight away; a scripted `a.click()` is also `.linkActivated`, so the gesture decides.
         // A subframe needs that click too, and everything else asks, one sheet at a time.
         // nook:// is for other apps. A page never triggers it, in any frame.
-        if navigationAction.request.url?.scheme?.lowercased() == "nook" {
+        if navigationAction.request.url?.scheme?.lowercased() == "vega" { // FORK: the app's own scheme (was nook)
             decisionHandler(.cancel)
             return
         }

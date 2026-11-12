@@ -5,6 +5,7 @@
 //
 
 import WebKit
+import NookSettings
 
 extension PageSession {
     /// Enhanced fingerprinting protection unless it was turned off for the current site.
@@ -30,6 +31,8 @@ extension PageSession {
         refresh()
     }
 
+    private static let mobileUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1"
+
     func applyProtection(to preferences: WKWebpagePreferences, for url: URL) {
         guard let settings = controller?.settings else { return }
         if let host = enhancedFingerprintingProtectionOffHost, host != url.host { enhancedFingerprintingProtectionOffHost = nil }
@@ -37,6 +40,15 @@ extension PageSession {
             enhancedFingerprinting: usesEnhancedFingerprintingProtection,
             linkFiltering: removesTrackingFromLinks
         )
+        // FORK: this site's own settings (see NookSettings/SitePreferences.swift).
+        let site = MainActor.assumeIsolated { SitePreferences.shared.prefs(for: url.host) }
+        if let javaScript = site.javaScript { preferences.allowsContentJavaScript = javaScript }
+        if let mobile = site.mobileSite { preferences.preferredContentMode = mobile ? .mobile : .desktop }
+        // preferredContentMode is iOS-only in effect, so on the Mac the mobile site is an iPhone
+        // User-Agent, set before this navigation's request goes out and restored for other sites.
+        #if os(macOS)
+        primaryWebView?.customUserAgent = site.mobileSite == true ? Self.mobileUserAgent : PlatformUserAgent.custom
+        #endif
         // WebKit loads a blank page instead of its warning for loopback and private addresses.
         preferences.preferredHTTPSNavigationPolicy = settings.warnBeforeHTTP && !DevHosts.isDevHost(url)
             ? .userMediatedFallbackToHTTP

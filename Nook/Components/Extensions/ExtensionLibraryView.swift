@@ -172,6 +172,27 @@ struct ExtensionLibraryView: View {
                     }
                 }
 
+                // FORK: per-site settings that WebKit applies on the next load (see SitePreferences).
+                let site = SitePreferences.shared.prefs(for: host)
+                SiteSettingRow(
+                    icon: "curlybraces",
+                    title: "JavaScript",
+                    subtitle: site.javaScript == false ? "Off for this site" : "On",
+                    isOn: site.javaScript != false
+                ) {
+                    SitePreferences.shared.update(host) { $0.javaScript = $0.javaScript == false ? nil : false }
+                    currentTab?.refresh()
+                }
+                SiteSettingRow(
+                    icon: "iphone",
+                    title: "Mobile Site",
+                    subtitle: site.mobileSite == true ? "Requested" : "Off",
+                    isOn: site.mobileSite == true
+                ) {
+                    SitePreferences.shared.update(host) { $0.mobileSite = $0.mobileSite == true ? nil : true }
+                    currentTab?.refresh()
+                }
+
                 let developer = settings.isDeveloperSite(host)
                 SiteSettingRow(
                     icon: "hammer.fill",
@@ -183,13 +204,17 @@ struct ExtensionLibraryView: View {
                 }
             }
 
+            // FORK: per site when there is one; the global setting only without a page.
+            let pipHost = currentHost
+            let pipOn = SitePreferences.shared.prefs(for: pipHost).autoPiP ?? settings.autoPictureInPicture
             SiteSettingRow(
                 icon: "pip",
                 title: "Automatic Picture-in-Picture",
-                subtitle: settings.autoPictureInPicture ? "Allowed" : "Off",
-                isOn: settings.autoPictureInPicture
+                subtitle: pipOn ? "Allowed" : "Off",
+                isOn: pipOn
             ) {
-                settings.autoPictureInPicture.toggle()
+                if let pipHost { SitePreferences.shared.update(pipHost) { $0.autoPiP = !pipOn } }
+                else { settings.autoPictureInPicture.toggle() }
             }
         }
     }

@@ -163,6 +163,10 @@ private struct SettingsSidebar: View {
                             return tab != .extensions || browserManager.extensionManager != nil
                         }
                         if !tabs.isEmpty {
+                            // A visible gap between groups, as in System Settings' sidebar.
+                            if group.title == nil, query.isEmpty, group.tabs.first != SettingsTabs.sidebarGroups.first?.tabs.first {
+                                Color.clear.frame(height: NookDesign.Spacing.md)
+                            }
                             // A group header reads as a filter label while searching, so it goes.
                             if let title = group.title, query.isEmpty {
                                 Text(title)

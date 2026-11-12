@@ -96,11 +96,11 @@ enum SettingsTabs: String, Hashable, CaseIterable {
     /// Sidebar groups, separated by visual spacing. A titled group gets a section header.
     static var sidebarGroups: [(title: String?, tabs: [SettingsTabs])] {
         [
-            (nil, [.general, .appearance]),
-            (nil, [.ai]),
+            // FORK: System Settings' order: the app itself, then what it protects, then what extends it.
+            (nil, [.general, .appearance, .spaces]),
             (nil, [.privacy, .adBlocker, .links]),
-            (nil, [.spaces, .shortcuts, .extensions, .developer]),
-            (nil, [.tweaks]),
+            (nil, [.extensions, .shortcuts, .tweaks, .ai]),
+            (nil, [.developer]),
         ]
     }
 }

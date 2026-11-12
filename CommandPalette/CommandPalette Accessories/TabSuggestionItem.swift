@@ -34,7 +34,7 @@ struct TabSuggestionItem: View {
                     NookDesign.Radius.shape(NookDesign.Radius.xs)
                 )
                 Text(tab.title)
-                    .font(NookDesign.Font.label)
+                    .font(.system(size: 15, weight: .medium)) // FORK: Arc's row title
                     .foregroundStyle(isSelected ? .white : .primary)
                     .lineLimit(1)
                     .truncationMode(.tail)

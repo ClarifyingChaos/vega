@@ -56,6 +56,10 @@ struct CommandPaletteView: View {
                 return false
             }
         }
+        // FORK: an empty field lists the open tabs, as Arc's command bar does.
+        if activeSiteSearch == nil, userTypedText.trimmingCharacters(in: .whitespaces).isEmpty {
+            return searchManager.openTabSuggestions()
+        }
         guard let primary = primarySuggestion else { return found }
         let rest = found.filter { row in
             switch row.type {
@@ -79,7 +83,9 @@ struct CommandPaletteView: View {
     
     /// Active window width
     private var currentWindowWidth: CGFloat {
-        return NSApplication.shared.keyWindow?.frame.width ?? 0
+        // FORK: this window's own width. The key window can be another, narrower one (a helper or
+        // popup) while typing, which shrank the palette to a sliver.
+        return windowState.window?.frame.width ?? NSApplication.shared.keyWindow?.frame.width ?? 0
     }
     
     /// Check if the command palette fits in the window
@@ -147,13 +153,13 @@ struct CommandPaletteView: View {
                                         text: $text
                                     )
                                     .textFieldStyle(.plain)
-                                    .font(NookDesign.Font.heading)
+                                    .font(.system(size: 20, weight: .regular)) // FORK: Arc's 20 pt input (was 17 semibold)
                                     .foregroundColor(textFieldColor)
                                     .tint(gradientColorManager.accentColor)
                                     .overlay(alignment: .leading) {
                                         if let suffix = inlineCompletionSuffix {
                                             (Text(text).foregroundColor(.clear) + Text(suffix).foregroundColor(.secondary))
-                                                .font(NookDesign.Font.heading)
+                                                .font(.system(size: 20, weight: .regular))
                                                 .lineLimit(1)
                                                 .allowsHitTesting(false)
                                         }
@@ -300,7 +306,9 @@ struct CommandPaletteView: View {
                         .padding(10)
                         .frame(maxWidth: .infinity)
                         .frame(width: effectiveCommandPaletteWidth)
-                        .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xxl)) // FORK: glass
+                        // FORK: dark glass in any theme, as Arc's command bar is.
+                        .environment(\.colorScheme, .dark)
+                        .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.xxl), tint: .black.opacity(0.6))
                         .animation(
                             NookDesign.Motion.quick,
                             value: searchManager.suggestions.count
@@ -328,6 +336,8 @@ struct CommandPaletteView: View {
 
                 text = commandPalette.prefilledText
                 userTypedText = commandPalette.prefilledText
+                // FORK: with the open tabs listed, the first is chosen, as in Arc.
+                selectedSuggestionIndex = text.isEmpty ? 0 : -1
 
                 DispatchQueue.main.async {
                     isSearchFocused = true
@@ -380,6 +390,7 @@ struct CommandPaletteView: View {
         let selectedIndex: Int
         @Binding var hoveredIndex: Int?
         let onSelect: (SearchManager.SearchSuggestion) -> Void
+        @EnvironmentObject var gradientColorManager: GradientColorManager
 
         var body: some View {
             LazyVStack(spacing: 5) {
@@ -387,12 +398,12 @@ struct CommandPaletteView: View {
                     let suggestion = suggestions[index]
                     let isHovered = hoveredIndex == index
                     // Rows keep the text roles on a neutral fill, so the chosen row reads on any accent.
-                    row(for: suggestion, isSelected: false)
+                    row(for: suggestion, isSelected: selectedIndex == index)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 11)
                         .background(
                             selectedIndex == index
-                                ? NookDesign.Surface.fillPressed
+                                ? gradientColorManager.accentColor
                                 : isHovered
                                     ? NookDesign.Surface.fill
                                     : .clear

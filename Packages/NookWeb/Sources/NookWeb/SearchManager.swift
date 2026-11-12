@@ -213,7 +213,12 @@ public class SearchManager {
         query.lowercased().split(whereSeparator: \.isWhitespace).map(String.init)
     }
 
-    @MainActor private func searchTabs(for query: String) -> [SearchSuggestion] {
+    /// FORK: what the palette lists before anything is typed, as Arc's does: the tabs to switch to.
+    @MainActor public func openTabSuggestions(limit: Int = 5) -> [SearchSuggestion] {
+        Array(searchTabs(for: "", limit: limit))
+    }
+
+    @MainActor private func searchTabs(for query: String, limit: Int = 3) -> [SearchSuggestion] {
         guard let tabs, let window, let spaceID = window.spaceID else { return [] }
         let words = Self.words(of: query)
         // This space's tabs first, then the other spaces'. The page being looked at is not a
@@ -243,7 +248,7 @@ public class SearchManager {
             if lhsHere != rhsHere { return lhsHere }
             return lhs.title.count < rhs.title.count
         }
-        return sorted.prefix(3).map { SearchSuggestion(text: $0.title, type: .tab($0)) }
+        return sorted.prefix(limit).map { SearchSuggestion(text: $0.title, type: .tab($0)) }
     }
 
     @MainActor private func searchHistory(for query: String) async -> [SearchSuggestion] {

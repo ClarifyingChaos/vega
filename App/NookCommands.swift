@@ -11,6 +11,7 @@ import SwiftUI
 import WebKit
 import NookWeb
 import NookDesign
+import NookSettings
 import NookTabsCore
 
 struct NookCommands: Commands {
@@ -145,12 +146,6 @@ struct NookCommands: Commands {
                 windowRegistry.activeWindow?.commandPalette?.open()
             }
             .modifier(dynamicShortcut(.newTab))
-            Button(browserManager.pinToggleIsPin == false ? "Unpin Tab" : "Pin Tab") {
-                browserManager.togglePinCurrentTab()
-            }
-            .modifier(dynamicShortcut(.togglePinTab))
-            .disabled(browserManager.pinToggleIsPin == nil)
-
             Button("New Window") {
                 browserManager.createNewWindow()
             }
@@ -167,12 +162,6 @@ struct NookCommands: Commands {
                 windowRegistry.activeWindow?.commandPalette?.open(prefill: currentURL, navigateCurrentTab: true)
             }
             .modifier(dynamicShortcut(.focusAddressBar))
-            .disabled(browserManager.tabs.activeWindowSession == nil)
-
-            Button("Copy Current URL") {
-                browserManager.copyCurrentURL()
-            }
-            .modifier(dynamicShortcut(.copyCurrentURL))
             .disabled(browserManager.tabs.activeWindowSession == nil)
 
             Divider()
@@ -246,14 +235,9 @@ struct NookCommands: Commands {
             }
         }
 
-        // View commands
-        CommandGroup(after: .windowSize) {
-
-            Button("Find in Page") {
-                browserManager.showFindBar()
-            }
-            .modifier(dynamicShortcut(.findInPage))
-            .disabled(browserManager.tabs.activeWindowSession == nil)
+        // View commands. FORK: in the View menu, as Safari and Dia have them (they sat in Window).
+        CommandGroup(after: .toolbar) {
+            Divider()
 
             Button("Reload Page") {
                 browserManager.tabs.activeWindowSession?.refresh()
@@ -307,34 +291,104 @@ struct NookCommands: Commands {
 
             Divider()
 
-            Button("Web Inspector") {
-                browserManager.openWebInspector()
+            Menu("Appearance") {
+                // The app's own settings object: in Commands, @Environment(\.nookSettings) is a separate default copy.
+                Picker("Appearance", selection: Binding(get: { browserManager.nookSettings?.appearanceMode ?? .system },
+                                                        set: { browserManager.nookSettings?.appearanceMode = $0 })) {
+                    Text("Automatic").tag(AppearanceMode.system)
+                    Text("Light").tag(AppearanceMode.light)
+                    Text("Dark").tag(AppearanceMode.dark)
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
             }
-            .modifier(dynamicShortcut(.openDevTools))
+
+            Menu("Developer") {
+                Button("Web Inspector") {
+                    browserManager.openWebInspector()
+                }
+                .modifier(dynamicShortcut(.openDevTools))
+                .disabled(browserManager.tabs.activeWindowSession == nil)
+
+                if nookSettings.developerModeEnabled {
+                    Button("Developer Panel") {
+                        browserManager.toggleDevPanel(.console)
+                    }
+                    .modifier(dynamicShortcut(.openDevPanel))
+
+                    Button("Pick Element") {
+                        browserManager.startElementPicker()
+                    }
+                    .modifier(dynamicShortcut(.pickElement))
+                    .disabled(browserManager.tabs.activeWindowSession == nil)
+                }
+            }
+        }
+
+        // FORK: Edit gains Find and the URL copies, where Dia and Safari keep them.
+        CommandGroup(after: .pasteboard) {
+            Divider()
+            Button("Copy URL") {
+                browserManager.copyCurrentURL()
+            }
+            .modifier(dynamicShortcut(.copyCurrentURL))
             .disabled(browserManager.tabs.activeWindowSession == nil)
 
-            if nookSettings.developerModeEnabled {
-                Button("Developer Panel") {
-                    browserManager.toggleDevPanel(.console)
-                }
-                .modifier(dynamicShortcut(.openDevPanel))
-
-                Button("Pick Element") {
-                    browserManager.startElementPicker()
-                }
-                .modifier(dynamicShortcut(.pickElement))
-                .disabled(browserManager.tabs.activeWindowSession == nil)
+            Button("Copy URL as Markdown") {
+                guard let page = browserManager.tabs.activeWindowSession else { return }
+                let title = page.title.replacingOccurrences(of: "]", with: "\\]")
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString("[\(title)](\(page.url.absoluteString))", forType: .string)
             }
+            .disabled(browserManager.tabs.activeWindowSession == nil)
 
             Divider()
+            Button("Find in Page…") {
+                browserManager.showFindBar()
+            }
+            .modifier(dynamicShortcut(.findInPage))
+            .disabled(browserManager.tabs.activeWindowSession == nil)
+        }
 
-            Button(browserManager.tabs.activeWindowSession?.isAudioMuted == true ? "Unmute Audio" : "Mute Audio") {
+        // FORK: Tabs and History menus, as in Dia, built on the existing shortcut actions.
+        CommandMenu("Tabs") {
+            Button("Go Back") { shortcutManager.executeAction(.goBack) }
+                .disabled(browserManager.tabs.activeWindowSession?.canGoBack != true)
+            Button("Go Forward") { shortcutManager.executeAction(.goForward) }
+                .disabled(browserManager.tabs.activeWindowSession?.canGoForward != true)
+
+            Divider()
+            Button("Next Tab") { shortcutManager.executeAction(.nextTab) }
+                .modifier(dynamicShortcut(.nextTab))
+            Button("Previous Tab") { shortcutManager.executeAction(.previousTab) }
+                .modifier(dynamicShortcut(.previousTab))
+            Button("Search Tabs…") { windowRegistry.activeWindow?.commandPalette?.open() }
+
+            Divider()
+            Button(browserManager.pinToggleIsPin == false ? "Unpin Tab" : "Pin Tab") {
+                browserManager.togglePinCurrentTab()
+            }
+            .modifier(dynamicShortcut(.togglePinTab))
+            .disabled(browserManager.pinToggleIsPin == nil)
+
+            Button("Duplicate Tab") { shortcutManager.executeAction(.duplicateTab) }
+                .modifier(dynamicShortcut(.duplicateTab))
+                .disabled(windowRegistry.activeWindow?.selectedItemID == nil)
+
+            Button(browserManager.tabs.activeWindowSession?.isAudioMuted == true ? "Unmute Site" : "Mute Site") {
                 browserManager.tabs.activeWindowSession?.toggleMute()
             }
             .modifier(dynamicShortcut(.muteUnmuteAudio))
             .disabled(
                 browserManager.tabs.activeWindowSession == nil
                     || browserManager.tabs.activeWindowSession?.hasAudioContent != true)
+        }
+
+        CommandMenu("History") {
+            Button("Show History…") { shortcutManager.executeAction(.viewHistory) }
+                .modifier(dynamicShortcut(.viewHistory))
+            Button("Show Downloads") { shortcutManager.executeAction(.viewDownloads) }
+                .modifier(dynamicShortcut(.viewDownloads))
         }
 
         Group {

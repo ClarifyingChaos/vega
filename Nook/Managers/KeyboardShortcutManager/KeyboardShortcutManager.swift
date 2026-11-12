@@ -506,7 +506,7 @@ class KeyboardShortcutManager {
         return true
     }
 
-    private func executeAction(_ action: ShortcutAction) {
+    func executeAction(_ action: ShortcutAction) { // FORK: menu bar items reuse it
         guard let browserManager = browserManager else { return }
 
         DispatchQueue.main.async { [weak self] in

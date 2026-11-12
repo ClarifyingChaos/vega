@@ -113,6 +113,10 @@ struct SidebarBottomBar: View {
                 onNewSpaceTap()
             }
 
+            Button("New Note", systemImage: "note.text.badge.plus") {
+                browserManager.newNote()
+            }
+
             Button("New Folder", systemImage: "folder.badge.plus") {
                 if let spaceID = windowState.spaceID {
                     tabs.createFolderForRename(in: .tabs(spaceID: spaceID), after: nil)

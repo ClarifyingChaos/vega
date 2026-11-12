@@ -117,6 +117,10 @@ struct SpacesSideBarView: View {
                     .zIndex(0)
             }
 
+            // FORK: the space's notes (Arc-style).
+            NotesSection()
+                .environment(windowState)
+
             // Downloads menu hover overlay
             if showDownloadsMenu, !browserManager.downloadManager.recentDownloads.isEmpty {
                 downloadsMenuOverlay

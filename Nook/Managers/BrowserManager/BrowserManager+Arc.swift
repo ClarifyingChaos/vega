@@ -144,6 +144,15 @@ extension BrowserManager {
         return FloatingWindows.shared.numbers.contains(number)
     }
 
+    // MARK: - Notes
+
+    /// Arc's New Note: an empty note in the current space, opened for typing.
+    func newNote() {
+        guard let window = activeWindowState, let spaceID = window.spaceID, !window.isIncognito else { return }
+        let note = NoteStore.shared.add(in: spaceID)
+        NoteStore.shared.openNote[window.id] = note.id
+    }
+
     // MARK: - Page
 
     /// Saves the page as a Safari web archive, the format WebKit writes and Safari opens.

@@ -83,7 +83,7 @@ struct ExtensionLibraryView: View {
                 browserManager.openBoostPanel(in: windowState)
                 onDismiss()
             } label: {
-                ActionTileLabel(systemImage: "paintbrush.pointed")
+                ActionTileLabel(systemImage: "wand.and.sparkles")
             }
             .buttonStyle(ActionTileStyle(solid: true))
             .help("Boost")
@@ -191,23 +191,6 @@ struct ExtensionLibraryView: View {
             ) {
                 settings.autoPictureInPicture.toggle()
             }
-
-            if currentTab != nil {
-                SiteSettingRow(
-                    icon: "plus.magnifyingglass",
-                    title: "Zoom",
-                    subtitle: "\(browserManager.zoomManager.currentZoomPercentage)%",
-                    isOn: browserManager.zoomManager.currentZoomPercentage != 100,
-                    action: nil
-                ) {
-                    HStack(spacing: NookDesign.Spacing.xxs) {
-                        Button("Zoom Out", systemImage: "minus", action: zoomOut)
-                        Button("Zoom In", systemImage: "plus", action: zoomIn)
-                    }
-                    .labelStyle(.iconOnly)
-                    .buttonStyle(NookIconButtonStyle(size: NookDesign.Size.rowButton + NookDesign.Spacing.xs))
-                }
-            }
         }
     }
 
@@ -220,7 +203,7 @@ struct ExtensionLibraryView: View {
                 .font(NookDesign.Font.body)
                 .padding(.horizontal, NookDesign.Spacing.md)
                 .frame(height: NookDesign.Size.row)
-                .background(NookDesign.Surface.fill, in: NookDesign.Radius.shape(NookDesign.Radius.md))
+                .background(Color.black.opacity(0.28), in: NookDesign.Radius.shape(NookDesign.Radius.md))
                 .help(currentHost ?? "")
 
             Spacer()
@@ -253,7 +236,7 @@ struct ExtensionLibraryView: View {
                     .font(.system(size: NookDesign.Size.spaceIcon, weight: .semibold))
                     .frame(width: NookDesign.Size.iconButton + NookDesign.Spacing.xs,
                            height: NookDesign.Size.iconButton + NookDesign.Spacing.xs)
-                    .background(NookDesign.Surface.fillPressed, in: Circle())
+                    .background(Color.white.opacity(0.2), in: Circle())
                     .contentShape(Circle())
             }
             .menuStyle(.button)
@@ -283,18 +266,6 @@ struct ExtensionLibraryView: View {
         }
         onDismiss()
     }
-
-    // MARK: - Zoom Helpers
-
-    private func zoomIn() {
-        guard let tab = currentTab, let webView = tab.webView else { return }
-        browserManager.zoomManager.zoomIn(for: webView)
-    }
-
-    private func zoomOut() {
-        guard let tab = currentTab, let webView = tab.webView else { return }
-        browserManager.zoomManager.zoomOut(for: webView)
-    }
 }
 
 // MARK: - Tiles
@@ -312,8 +283,7 @@ private struct ActionTileStyle: ButtonStyle {
             .background {
                 NookDesign.Radius.shape(NookDesign.Radius.lg)
                     .fill(solid ? Color.black.opacity(configuration.isPressed || (isHovering && isEnabled) ? 0.78 : 0.62)
-                          : (configuration.isPressed ? NookDesign.Surface.fillPressed
-                             : isHovering && isEnabled ? NookDesign.Surface.fillPressed : NookDesign.Surface.fill))
+                          : Color.white.opacity(configuration.isPressed || (isHovering && isEnabled) ? 0.2 : 0.13))
                     .overlay(alignment: .top) {
                         // The light catching the key's top edge.
                         NookDesign.Radius.shape(NookDesign.Radius.lg)
@@ -476,10 +446,11 @@ private struct SiteSettingRow<Trailing: View>: View {
         HStack(spacing: NookDesign.Spacing.md) {
             Image(systemName: icon)
                 .font(.system(size: NookDesign.Size.spaceIcon, weight: .semibold))
-                // On reads as a filled key in either appearance: primary fill, glyph knocked out.
-                .foregroundStyle(isOn ? AnyShapeStyle(.background) : AnyShapeStyle(.primary))
+                // FORK: as in Arc, on is a white circle with a dark glyph; off is a soft gray circle.
+                // The panel is always dark, so these are fixed colors, not the appearance's.
+                .foregroundStyle(isOn ? Color.black.opacity(0.72) : Color.white)
                 .frame(width: iconSize, height: iconSize)
-                .background(isOn ? Color.primary : Color.primary.opacity(0.16), in: Circle())
+                .background(isOn ? Color.white.opacity(0.94) : Color.white.opacity(0.2), in: Circle())
                 .contentTransition(.symbolEffect(.replace))
             VStack(alignment: .leading, spacing: 0) {
                 Text(title)

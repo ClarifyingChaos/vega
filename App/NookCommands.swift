@@ -394,6 +394,10 @@ struct NookCommands: Commands {
 
         // FORK: Tabs and History menus, as in Dia, built on the existing shortcut actions.
         CommandMenu("Tabs") {
+            Button("New Note") { browserManager.newNote() }
+                .keyboardShortcut("n", modifiers: [.command, .control])
+                .disabled(windowRegistry.activeWindow?.spaceID == nil || windowRegistry.activeWindow?.isIncognito == true)
+
             Button("New Folder…") {
                 if let spaceID = windowRegistry.activeWindow?.spaceID {
                     browserManager.tabs.createFolderForRename(in: .tabs(spaceID: spaceID), after: nil)

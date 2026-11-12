@@ -372,6 +372,15 @@ struct WindowView: View {
 
                 WebsiteView()
                     .zIndex(2000)
+                    // FORK: an open note covers the page, as History does.
+                    .overlay {
+                        if let noteID = NoteStore.shared.openNote[windowState.id] {
+                            NotePageView(noteID: noteID) { NoteStore.shared.openNote[windowState.id] = nil }
+                                .id(noteID)
+                                .transition(.opacity)
+                        }
+                    }
+                    .onChange(of: windowState.selectedItemID) { _, _ in NoteStore.shared.openNote[windowState.id] = nil }
                     .overlay(alignment: .topTrailing) {
                         if windowState.isPortraitCaptureVisible,
                            let session = browserManager.tabs.selectedSession(in: windowState) {

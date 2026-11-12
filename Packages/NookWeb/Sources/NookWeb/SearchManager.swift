@@ -43,8 +43,11 @@ public class SearchManager {
         public let title: String
         public let url: URL
         public let favicon: SwiftUI.Image
+        /// FORK: the space's name when the tab is in another space than the window's, as Arc labels it.
+        public let otherSpaceName: String?
 
-        public init(itemID: UUID, title: String, url: URL, favicon: SwiftUI.Image) {
+        public init(itemID: UUID, title: String, url: URL, favicon: SwiftUI.Image, otherSpaceName: String? = nil) {
+            self.otherSpaceName = otherSpaceName
             self.itemID = itemID
             self.title = title
             self.url = url
@@ -237,7 +240,8 @@ public class SearchManager {
             let favicon = session?.favicon
                 ?? FaviconCache.key(for: url).flatMap { FaviconCache.shared.swiftUIImage(for: $0) }
                 ?? SwiftUI.Image(systemName: "globe")
-            return TabMatch(itemID: item.id, title: title, url: url, favicon: favicon)
+            let other = tabs.spaceID(of: item.id).flatMap { $0 == spaceID ? nil : tabs.space($0)?.name }
+            return TabMatch(itemID: item.id, title: title, url: url, favicon: favicon, otherSpaceName: other)
         }
         // Title matches first, then shorter titles.
         let sorted = matches.sorted { lhs, rhs in

@@ -41,7 +41,7 @@ struct TabSuggestionItem: View {
             }
             Spacer()
             HStack(spacing: 10) {
-                Text("Switch to Tab")
+                Text(tab.otherSpaceName ?? "Switch to Tab") // FORK: Arc shows the space name for other spaces' tabs
                     .font(NookDesign.Font.secondary)
                     .foregroundStyle(isSelected ? .white : .secondary)
                 ZStack {

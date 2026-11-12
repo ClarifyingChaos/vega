@@ -243,7 +243,7 @@ public enum NookDesign {
         public static let hairline = contrastAware(0.08, increased: 0.5)
         /// Dim behind a modal panel such as the command palette (HIG: dim to focus).
         public static let modalDim: Double = 0.18
-        public static let unloadedOpacity: Double = 0.55
+        public static let unloadedOpacity: Double = 1   // FORK: Arc does not dim sleeping tabs (was 0.55)
 
         /// The label color at `normal` opacity, or `increased` when the user turns on Increase
         /// Contrast. Resolved per appearance, so it also flips with light and dark.

@@ -153,13 +153,13 @@ struct CommandPaletteView: View {
                                         text: $text
                                     )
                                     .textFieldStyle(.plain)
-                                    .font(.system(size: 20, weight: .regular)) // FORK: Arc's 20 pt input (was 17 semibold)
+                                    .font(.system(size: 17, weight: .regular)) // FORK: Arc's input, measured from its screenshot (17 pt regular; was 17 semibold)
                                     .foregroundColor(textFieldColor)
                                     .tint(gradientColorManager.accentColor)
                                     .overlay(alignment: .leading) {
                                         if let suffix = inlineCompletionSuffix {
                                             (Text(text).foregroundColor(.clear) + Text(suffix).foregroundColor(.secondary))
-                                                .font(.system(size: 20, weight: .regular))
+                                                .font(.system(size: 17, weight: .regular))
                                                 .lineLimit(1)
                                                 .allowsHitTesting(false)
                                         }

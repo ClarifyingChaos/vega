@@ -217,8 +217,20 @@ public class SearchManager {
     }
 
     /// FORK: what the palette lists before anything is typed, as Arc's does: the tabs to switch to.
+    /// Tabs of this space and of the others alternate, this space's first, as in Arc's list.
     @MainActor public func openTabSuggestions(limit: Int = 5) -> [SearchSuggestion] {
-        Array(searchTabs(for: "", limit: limit))
+        let all = searchTabs(for: "", limit: 40)
+        func other(_ s: SearchSuggestion) -> Bool {
+            if case .tab(let match) = s.type { return match.otherSpaceName != nil }
+            return false
+        }
+        var here = all.filter { !other($0) }[...], elsewhere = all.filter(other)[...]
+        var mixed: [SearchSuggestion] = []
+        while mixed.count < limit, !(here.isEmpty && elsewhere.isEmpty) {
+            if let next = here.popFirst() { mixed.append(next) }
+            if mixed.count < limit, let next = elsewhere.popFirst() { mixed.append(next) }
+        }
+        return mixed
     }
 
     @MainActor private func searchTabs(for query: String, limit: Int = 3) -> [SearchSuggestion] {

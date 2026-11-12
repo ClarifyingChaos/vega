@@ -34,7 +34,7 @@ struct TabSuggestionItem: View {
                     NookDesign.Radius.shape(NookDesign.Radius.xs)
                 )
                 Text(tab.title)
-                    .font(.system(size: 15, weight: .medium)) // FORK: Arc's row title
+                    .font(.system(size: 13, weight: .semibold)) // FORK: Arc's row title, measured (13 pt semibold)
                     .foregroundStyle(isSelected ? .white : .primary)
                     .lineLimit(1)
                     .truncationMode(.tail)
@@ -42,7 +42,7 @@ struct TabSuggestionItem: View {
             Spacer()
             HStack(spacing: 10) {
                 Text(tab.otherSpaceName ?? "Switch to Tab") // FORK: Arc shows the space name for other spaces' tabs
-                    .font(NookDesign.Font.secondary)
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(isSelected ? .white : .secondary)
                 ZStack {
                     Image(systemName: "arrow.right")

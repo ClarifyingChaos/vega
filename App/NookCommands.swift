@@ -169,7 +169,7 @@ struct NookCommands: Commands {
 
             // FORK: Arc's File items.
             Button("Blank Window") { browserManager.openBlankWindow() }
-            Button("New Little Arc Window") { browserManager.openLittleArcWindow() }
+            Button("New Little Window") { browserManager.openLittleArcWindow() }
                 .keyboardShortcut("n", modifiers: [.command, .option])
             
             Divider()

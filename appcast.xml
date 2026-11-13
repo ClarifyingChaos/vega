@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Vega</title>
+    <link>https://github.com/ClarifyingChaos/vega</link>
+    <item>
+      <title>Vega 1.6.0</title>
+      <pubDate>Fri, 13 Nov 2026 06:31:56 +0000</pubDate>
+      <sparkle:version>123</sparkle:version>
+      <sparkle:shortVersionString>1.6.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.5</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://github.com/ClarifyingChaos/vega/releases/tag/vega-v1.6.0</sparkle:releaseNotesLink>
+      <enclosure url="https://github.com/ClarifyingChaos/vega/releases/download/vega-v1.6.0/Vega-1.6.0.dmg" type="application/octet-stream" sparkle:edSignature="6fYB0EotX5WCS8J/ipK0qGGkEiKLEimJRVOzgR6VQR1R8cCknoxKASGeLfq4RaJblB+kxTqppI39Hfjnl8eRCA==" length="18619403" />
+    </item>
+  </channel>
+</rss>

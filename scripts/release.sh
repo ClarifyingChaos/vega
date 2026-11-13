@@ -129,8 +129,16 @@ git tag -a "$TAG" -m "Vega $VERSION"
 git push -q origin main "$TAG"
 
 PRERELEASE=""; [[ "$VERSION" == *-beta.* ]] && PRERELEASE="--prerelease"
-gh release create "$TAG" "$OUT/$DMG_NAME" --repo "$REPO" --title "Vega $VERSION" \
-  --notes-file "${RELEASE_NOTES:-/dev/null}" --generate-notes $PRERELEASE
+# Notes: RELEASE_NOTES if given, else this version's section of VEGA_CHANGELOG.md, else GitHub's.
+NOTES="$OUT/notes.md"
+if [[ -n "${RELEASE_NOTES:-}" ]]; then cp "$RELEASE_NOTES" "$NOTES"
+else awk -v v="## Vega $VERSION" 'index($0, v) == 1 {on=1; next} /^## / {on=0} on' VEGA_CHANGELOG.md > "$NOTES"; fi
+if [[ -s "$NOTES" ]]; then
+  printf '\n**Install:** download the DMG, drag Vega to Applications, then System Settings › Privacy & Security › Open Anyway on first launch. Installed copies update themselves.\n' >> "$NOTES"
+  gh release create "$TAG" "$OUT/$DMG_NAME" --repo "$REPO" --title "Vega $VERSION" --notes-file "$NOTES" $PRERELEASE
+else
+  gh release create "$TAG" "$OUT/$DMG_NAME" --repo "$REPO" --title "Vega $VERSION" --generate-notes $PRERELEASE
+fi
 
 # The feed lives on the gh-pages branch, served at https://clarifyingchaos.github.io/vega/appcast.xml
 PAGES="$OUT/gh-pages"

@@ -16,7 +16,7 @@ Run it from a clean `main`. It:
 4. signs the DMG for Sparkle with the EdDSA key in the login Keychain and writes the feed;
 5. commits "Release vega-vX.Y.Z", tags `vega-vX.Y.Z` (upstream Nook owns the plain `vX.Y.Z` tags), pushes, creates the GitHub Release with the DMG, and publishes the feed to the `gh-pages` branch, served at <https://clarifyingchaos.github.io/vega/appcast.xml>.
 
-Release notes: GitHub writes them from the commits; pass your own with `RELEASE_NOTES=notes.md scripts/release.sh …`.
+Release notes: add a `## Vega X.Y.Z` section to `VEGA_CHANGELOG.md` before releasing and the script uses it; `RELEASE_NOTES=notes.md` overrides it, and with neither GitHub writes notes from the commits.
 
 ## Keys and accounts
 

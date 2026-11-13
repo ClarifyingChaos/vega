@@ -23,6 +23,19 @@
 
 Feedback and bugs: [Issues](https://github.com/ClarifyingChaos/vega/issues).
 
+## What Vega changes
+
+Vega keeps Nook's engine and adds an Arc-style experience, with a few ideas from Dia:
+
+- **Arc's sidebar, command palette and Site Controls**, at Arc's measurements, plus Notes in the sidebar and Arc's menu bar commands.
+- **Picture-in-picture** that floats by default and docks in the sidebar when you drag it there, **Cast** to AirPlay, page **Capture**, a **Media** grid of your downloads, Arc-style **downloads**.
+- **Per-site settings**: JavaScript, mobile site, automatic picture-in-picture.
+- **Settings redesigned** to match macOS 27 System Settings.
+- **Liquid Glass**, Reduce Motion, Increase Contrast and VoiceOver work across the app; sharp favicons everywhere.
+- **Its own app** (`com.vega.browser`) that updates itself from this repo's releases.
+
+Full list: [VEGA_CHANGELOG.md](VEGA_CHANGELOG.md).
+
 ## How this fork is kept
 
 - `main` is Vega. `develop` mirrors upstream Nook and is synced daily; changes arrive as a pull request into `main`.

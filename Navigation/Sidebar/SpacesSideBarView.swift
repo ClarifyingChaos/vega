@@ -153,6 +153,10 @@ struct SpacesSideBarView: View {
                 .padding(.horizontal, NookDesign.Spacing.sidebarInset)
             }
 
+            // FORK: the password manager's "Save password?".
+            SavePasswordBar()
+                .environment(windowState)
+
             // FORK: Arc's Cast, as a bar in the sidebar.
             if windowState.isCastBarVisible {
                 CastBar()

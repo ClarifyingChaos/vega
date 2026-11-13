@@ -283,6 +283,8 @@ private struct SettingsDetailPane: View {
                 cookieManager: browserManager.cookieManager,
                 cacheManager: browserManager.cacheManager
             )
+        case .passwords:
+            PasswordsSettingsView()
         case .adBlocker:
             SettingsAdBlockerTab()
         case .tweaks:

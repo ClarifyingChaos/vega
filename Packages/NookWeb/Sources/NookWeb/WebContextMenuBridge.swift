@@ -167,12 +167,15 @@ public enum WebContextMenuPayload {
 public final class WebContextMenuBridge: NSObject, WKScriptMessageHandler, WKScriptMessageHandlerWithReply {
     private weak var session: PageSession?
     private weak var userContentController: WKUserContentController?
+    /// FORK: the password manager rides on the same per-view setup.
+    private var passwords: PasswordBridge?
 
     public init(session: PageSession?, configuration: WKWebViewConfiguration) {
         self.session = session
         let controller = configuration.userContentController
         self.userContentController = controller
         super.init()
+        passwords = PasswordBridge(session: session, controller: controller)
 
         controller.add(self, contentWorld: Self.world, name: Self.handlerName)
         controller.addUserScript(Self.script)
@@ -227,6 +230,8 @@ public final class WebContextMenuBridge: NSObject, WKScriptMessageHandler, WKScr
     }
 
     public func detach() {
+        passwords?.detach()
+        passwords = nil
         userContentController?.removeScriptMessageHandler(forName: Self.handlerName, contentWorld: Self.world)
         userContentController?.removeScriptMessageHandler(forName: Self.gateName, contentWorld: Self.world)
         userContentController = nil

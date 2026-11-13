@@ -2,14 +2,14 @@
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
     <title>Vega</title>
-    <link>https://github.com/ClarifyingChaos/vega</link>
+    <link>https://github.com/ClarifyingChaos/vega-browser</link>
     <item>
-      <title>Vega 1.7.1</title>
-      <pubDate>Fri, 13 Nov 2026 12:21:30 +0000</pubDate>
-      <sparkle:version>125</sparkle:version>
-      <sparkle:shortVersionString>1.7.1</sparkle:shortVersionString>
+      <title>Vega 1.7.2</title>
+      <pubDate>Fri, 13 Nov 2026 12:27:31 +0000</pubDate>
+      <sparkle:version>126</sparkle:version>
+      <sparkle:shortVersionString>1.7.2</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.5</sparkle:minimumSystemVersion>
-      <enclosure url="https://github.com/ClarifyingChaos/vega/releases/download/vega-v1.7.1/Vega-1.7.1.dmg" type="application/octet-stream" sparkle:edSignature="6p0WNeiPR9kRV/DepiXmDxZtEy3NX1nUg0NvcJBeDm74pFLPHj3/jh3PkY+q3/Ej1o79YOefNuyCCPq+lrXECg==" length="18988899" />
+      <enclosure url="https://github.com/ClarifyingChaos/vega-browser/releases/download/vega-v1.7.2/Vega-1.7.2.dmg" type="application/octet-stream" sparkle:edSignature="tQENKHmTEaO5uyrN11Ep7ccCCxgJ7eI7kVNgReu/50Lg8j1w/H4bkDiTSHteaKIiFiLMpGHpagcQCF71D61oCQ==" length="18977259" />
     </item>
   </channel>
 </rss>

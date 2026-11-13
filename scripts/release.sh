@@ -60,6 +60,11 @@ rm -rf "$OUT"; mkdir -p "$OUT/stage"
 APP="$OUT/stage/Vega.app"
 ditto build/release/Build/Products/Release/Nook.app "$APP"
 
+# Google sign-in for sync: the client file stays out of git and goes into the app here.
+GOOGLE_PLIST="$ROOT/scripts/signing/GoogleOAuth.plist"
+if [[ -f "$GOOGLE_PLIST" ]]; then cp "$GOOGLE_PLIST" "$APP/Contents/Resources/GoogleOAuth.plist"; echo "▸ Google sign-in: included"
+else echo "▸ Google sign-in: not set up (no scripts/signing/GoogleOAuth.plist); iCloud Drive sync only"; fi
+
 # --- Sign -------------------------------------------------------------------------------------
 IDENTITY=$(security find-identity -v -p codesigning | grep -m1 "Developer ID Application" | grep -oE '"[^"]+"' | tr -d '"' || true)
 PROFILE="$ROOT/scripts/signing/Vega_Developer_ID.provisionprofile"

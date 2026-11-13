@@ -249,7 +249,11 @@ struct CustomSearchEngineEditor: View {
 }
 
 #if os(macOS)
-/// FORK: spaces, favorites and pinned tabs shared between your Macs through iCloud Drive.
+private extension SyncCoordinator.Status {
+    var isUnavailable: Bool { if case .unavailable = self { return true } else { return false } }
+}
+
+/// FORK: spaces, favorites and pinned tabs shared between your Macs, through iCloud Drive or a Google account.
 private struct SyncSection: View {
     @State private var sync = SyncCoordinator.shared
     @State private var askingPassphrase = false
@@ -257,7 +261,7 @@ private struct SyncSection: View {
     private var detail: String {
         switch sync.status {
         case .off: return "Keeps spaces, favorites and pinned tabs the same on your Macs. Open tabs stay on each Mac."
-        case .noICloudDrive: return "Turn on iCloud Drive in System Settings › Apple Account › iCloud, then try again."
+        case .unavailable(let why): return why
         case .syncing: return "Syncing…"
         case .idle(let last, let others, let waiting):
             let found = others == 0 ? "No other Mac found yet" : "\(others) other \(others == 1 ? "Mac" : "Macs")"
@@ -269,7 +273,13 @@ private struct SyncSection: View {
 
     var body: some View {
         Section {
-            Toggle("Sync with iCloud Drive", isOn: Binding(get: { sync.isEnabled }, set: { sync.isEnabled = $0 }))
+            Toggle("Sync my Macs", isOn: Binding(get: { sync.isEnabled }, set: { sync.isEnabled = $0 }))
+            if sync.isEnabled {
+                Picker("Sync with", selection: Binding(get: { sync.backend }, set: { sync.backend = $0 })) {
+                    ForEach(SyncCoordinator.Backend.allCases) { Text($0.title).tag($0) }
+                }
+                if sync.backend == .google { GoogleRow() }
+            }
             if sync.isEnabled {
                 Toggle("Sync passwords", isOn: Binding(
                     get: { sync.passwordsEnabled },
@@ -284,7 +294,7 @@ private struct SyncSection: View {
                         .foregroundStyle(.secondary)
                     Spacer()
                     Button("Sync Now") { sync.syncNow() }
-                        .disabled(sync.status == .syncing || sync.status == .noICloudDrive)
+                        .disabled(sync.status == .syncing || sync.status.isUnavailable)
                 }
             }
         } header: {
@@ -294,6 +304,45 @@ private struct SyncSection: View {
             else if !sync.passwordsEnabled { Text("Passwords sync end to end encrypted with a passphrase only you know. iCloud never sees them.") }
         }
         .sheet(isPresented: $askingPassphrase) { PassphraseSheet(sync: sync) }
+    }
+}
+
+/// Sign in or out of the Google account that holds the sync files.
+private struct GoogleRow: View {
+    @State private var google = GoogleAccount.shared
+    @State private var error: String?
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: NookDesign.Spacing.xxs) {
+                Text(google.isSignedIn ? (google.email ?? "Signed in") : "Not signed in")
+                if let error {
+                    Text(error).font(NookDesign.Font.secondary).foregroundStyle(.red)
+                } else if !google.isAvailable {
+                    Text("This build has no Google sign-in set up.").font(NookDesign.Font.secondary).foregroundStyle(.secondary)
+                } else if google.isSigningIn {
+                    Text("Finish signing in in your browser…").font(NookDesign.Font.secondary).foregroundStyle(.secondary)
+                } else {
+                    Text("Sync files go in a hidden folder of your Google Drive that only Vega can open.")
+                        .font(NookDesign.Font.secondary).foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+            if google.isSignedIn {
+                Button("Sign Out") { google.signOut() }
+            } else if google.isSigningIn {
+                Button("Cancel") { google.cancelSignIn() }
+            } else {
+                Button("Sign in with Google") {
+                    error = nil
+                    Task {
+                        do { try await google.signIn(); SyncCoordinator.shared.syncNow() }
+                        catch { self.error = error.localizedDescription }
+                    }
+                }
+                .disabled(!google.isAvailable)
+            }
+        }
     }
 }
 

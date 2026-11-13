@@ -22,8 +22,8 @@ public final class SyncCoordinator {
 
     public enum Status: Equatable {
         case off
-        /// iCloud Drive is not turned on for this account, so there is no folder to share.
-        case noICloudDrive
+        /// No place to sync to yet: iCloud Drive is off, or nobody is signed in to Google.
+        case unavailable(String)
         case syncing
         case idle(lastSync: Date, otherMacs: Int, waitingForDownload: Int)
         case failed(String)
@@ -34,14 +34,21 @@ public final class SyncCoordinator {
         public var errorDescription: String? {
             switch self {
             case .syncOff: return "Turn on Sync with iCloud Drive first."
-            case .noFolder: return "iCloud Drive isn't available."
+            case .noFolder: return "There's nowhere to sync to yet: turn on iCloud Drive or sign in with Google."
             case .wrongPassphrase: return "That isn't the passphrase this sync was set up with."
             case .emptyPassphrase: return "Choose a passphrase of at least 8 characters."
             }
         }
     }
 
+    public enum Backend: String, CaseIterable, Identifiable, Sendable {
+        case iCloud, google
+        public var id: String { rawValue }
+        public var title: String { self == .iCloud ? "iCloud Drive" : "Google account" }
+    }
+
     private static let passwordsKey = "fork.sync.passwords"
+    private static let backendKey = "fork.sync.backend"
     private static let enabledKey = "fork.sync.enabled"
     private static let deviceKey = "fork.sync.deviceID"
     private static let interval: Duration = .seconds(20)
@@ -53,6 +60,34 @@ public final class SyncCoordinator {
     @ObservationIgnored private var loop: Task<Void, Never>?
     @ObservationIgnored private var lastWritten: SyncSnapshot?
     @ObservationIgnored private var observers: [Any] = []
+
+    public var backend: Backend {
+        get { Backend(rawValue: UserDefaults.standard.string(forKey: Self.backendKey) ?? "") ?? .iCloud }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: Self.backendKey)
+            // Another place is another set of files: start each side from scratch.
+            lastWritten = nil
+            lastPasswordFingerprint = nil
+            if isEnabled { begin() }
+        }
+    }
+
+    /// Where this Mac syncs right now, or why it can't.
+    func currentStore() -> (store: any SyncBlobStore, missing: String?)? {
+        switch backend {
+        case .iCloud:
+            guard let url = FolderBlobStore.iCloudDrive() else { return nil }
+            return (FolderBlobStore(url: url), nil)
+        case .google:
+            guard let store = GoogleAccount.shared.store() else { return nil }
+            return (store, nil)
+        }
+    }
+
+    private var missingMessage: String {
+        backend == .iCloud ? "Turn on iCloud Drive in System Settings › Apple Account › iCloud, then try again."
+                           : "Sign in with Google to sync."
+    }
 
     public var isEnabled: Bool {
         get { UserDefaults.standard.bool(forKey: Self.enabledKey) }
@@ -71,9 +106,9 @@ public final class SyncCoordinator {
     /// folder, the others must enter the same passphrase. The derived key stays in this Mac's Keychain.
     public func enablePasswords(passphrase: String) async throws {
         guard isEnabled else { throw PasswordSyncError.syncOff }
-        guard let url = FolderBlobStore.iCloudDrive() else { throw PasswordSyncError.noFolder }
+        guard let place = currentStore() else { throw PasswordSyncError.noFolder }
         guard passphrase.count >= 8 else { throw PasswordSyncError.emptyPassphrase }
-        let store = PasswordSyncStore(store: FolderBlobStore(url: url))
+        let store = PasswordSyncStore(store: place.store)
         let key: SymmetricKey
         if let meta = try await store.meta() {
             guard let k = await Task.detached(operation: { meta.key(for: passphrase) }).value else { throw PasswordSyncError.wrongPassphrase }
@@ -96,9 +131,9 @@ public final class SyncCoordinator {
         lastPasswordFingerprint = nil
     }
 
-    private func syncPasswords(folder url: URL) async {
+    private func syncPasswords(store place: any SyncBlobStore) async {
         guard UserDefaults.standard.bool(forKey: Self.passwordsKey), let key = Self.loadKey() else { return }
-        let store = PasswordSyncStore(store: FolderBlobStore(url: url))
+        let store = PasswordSyncStore(store: place)
         let vault = PasswordPrompter.shared.vault
         do {
             let (others, _) = try await store.readOthers(excluding: deviceID, key: key)
@@ -158,7 +193,7 @@ public final class SyncCoordinator {
 
     private func begin() {
         stop(keepStatus: true)
-        guard FolderBlobStore.iCloudDrive() != nil else { status = .noICloudDrive; return }
+        guard currentStore() != nil else { status = .unavailable(missingMessage); return }
         status = .syncing
         loop = Task { [weak self] in
             while !Task.isCancelled {
@@ -190,8 +225,8 @@ public final class SyncCoordinator {
 
     private func tick() async {
         guard isEnabled, let tabs else { return }
-        guard let url = FolderBlobStore.iCloudDrive() else { status = .noICloudDrive; return }
-        let store = FolderBlobStore(url: url)
+        guard let place = currentStore() else { status = .unavailable(missingMessage); return }
+        let store = place.store
         let own = deviceID
         do {
             let (snapshots, pending) = try await store.readOtherSnapshots(excluding: own)
@@ -200,7 +235,7 @@ public final class SyncCoordinator {
                 if !change.isEmpty { tabs.apply(change) }
             }
             try await writeOwn(store: store)
-            await syncPasswords(folder: url)
+            await syncPasswords(store: store)
             status = .idle(lastSync: Date(), otherMacs: snapshots.count, waitingForDownload: pending)
         } catch {
             status = .failed(error.localizedDescription)
@@ -208,12 +243,12 @@ public final class SyncCoordinator {
     }
 
     private func writeOwn() {
-        guard isEnabled, let url = FolderBlobStore.iCloudDrive() else { return }
-        Task { try? await writeOwn(store: FolderBlobStore(url: url)) }
+        guard isEnabled, let place = currentStore() else { return }
+        Task { try? await writeOwn(store: place.store) }
     }
 
     /// Writes only when something other than the timestamp changed.
-    private func writeOwn(store: FolderBlobStore) async throws {
+    private func writeOwn(store: any SyncBlobStore) async throws {
         guard let tabs else { return }
         let snapshot = SyncMerge.snapshot(of: tabs.tree, deviceID: deviceID, deviceName: deviceName)
         if let last = lastWritten, last.spaces == snapshot.spaces, last.items == snapshot.items { return }

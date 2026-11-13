@@ -151,3 +151,4 @@ ASSESSMENT.md
 
 # FORK: Developer ID provisioning profile (scripts/release.sh)
 scripts/signing/
+scripts/signing/GoogleOAuth.plist

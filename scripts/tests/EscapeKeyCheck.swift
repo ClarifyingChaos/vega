@@ -19,6 +19,7 @@ final class Probe: NSWindow {
         get { fakeFullScreen ? super.styleMask.union(.fullScreen) : super.styleMask }
         set { super.styleMask = newValue }
     }
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect { frameRect }   // stay at -6000
     @objc func _fullScreenTileFillsScreen() -> Bool { fakeFullScreen }
     @objc(exitFullScreenMode:) func recordExit(_ sender: Any?) { exits += 1 }
 }
@@ -34,6 +35,10 @@ struct EscapeKeyCheck {
         func window() -> (Probe, WKWebView) {
             let w = Probe(contentRect: NSRect(x: -6000, y: -6000, width: 400, height: 300), styleMask: [.titled], backing: .buffered, defer: false)
             w.isReleasedWhenClosed = false
+            // Nothing here may reach the screen: a titled window ordered in is pulled back on screen by AppKit, so it
+            // also stays transparent and click-through. (It showed as a white "page" window on every run.)
+            w.alphaValue = 0
+            w.ignoresMouseEvents = true
             let web = WKWebView(frame: NSRect(x: 0, y: 0, width: 400, height: 300))
             w.contentView = web
             web.loadHTMLString("<body>page", baseURL: nil)

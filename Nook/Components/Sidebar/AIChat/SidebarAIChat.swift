@@ -56,6 +56,7 @@ struct SidebarAIChat: View {
 
     @State private var messageText: String = ""
     @State private var showAddModelPopover: Bool = false
+    @State private var showModelMenu: Bool = false
     @State private var newModelId: String = ""
     @FocusState private var isTextFieldFocused: Bool
 
@@ -87,7 +88,7 @@ struct SidebarAIChat: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                 }
                 .onChange(of: aiService.streamingText) {
@@ -117,7 +118,6 @@ struct SidebarAIChat: View {
         .safeAreaInset(edge: .bottom) {
             inputAreaView
         }
-        .safeAreaPadding(.top, 8)
         .safeAreaPadding(.bottom, 8)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onChange(of: windowState.agentDraft, initial: true) { takeAgentDraft() }
@@ -138,47 +138,74 @@ struct SidebarAIChat: View {
     // MARK: - Header
 
     private var headerView: some View {
-        HStack(spacing: 8) {
-            if !aiService.messages.isEmpty {
-                Text("Ask Vega")
-                    .font(NookDesign.Font.title)
-                    .foregroundStyle(.primary)
-                    .transition(.blur.animation(NookDesign.Motion.standard))
-            }
-
-            Spacer()
-
-            HStack(spacing: NookDesign.Spacing.xxs) {
-                Button("Settings", nookIcon: "gearshape") {
-                    showSettings()
+        VStack(spacing: 0) {
+            HStack(alignment: .center, spacing: 8) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Ask Vega")
+                        .font(NookDesign.Font.heading)
+                        .foregroundStyle(.primary)
+                    // The page the chat is about, so it is clear what "this page" means.
+                    if let host = pageHost {
+                        Text(host)
+                            .font(NookDesign.Font.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
-                Button("Clear Messages", nookIcon: "trash") {
-                    showClearMessagesDialog()
-                }
-                .disabled(aiService.messages.isEmpty)
-                // With Developer Mode on, the panel's tab bar has the close button.
-                if !nookSettings.developerModeEnabled {
-                    Button("Close", nookIcon: "xmark") {
+
+                Spacer(minLength: 8)
+
+                HStack(spacing: NookDesign.Spacing.xxs) {
+                    Button {
+                        showClearMessagesDialog()
+                    } label: {
+                        AnimatedIcon("trash", fallback: "trash")
+                    }
+                    .disabled(aiService.messages.isEmpty)
+                    .accessibilityLabel("Clear Chat")
+                    .help("Clear this chat")
+                    Button {
+                        showSettings()
+                    } label: {
+                        AnimatedIcon("settings", fallback: "gearshape")
+                    }
+                    .accessibilityLabel("Settings")
+                    .help("AI settings")
+                    Button {
                         withAnimation(NookDesign.Motion.standard) {
                             windowState.isSidebarAIChatVisible = false
                         }
+                    } label: {
+                        AnimatedIcon("error", fallback: "xmark")
                     }
+                    .accessibilityLabel("Close")
+                    .help("Close")
                 }
+                .nookIconButtons()
             }
-            .nookIconButtons()
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            .padding(.bottom, 10)
+
+            Divider().opacity(0.5)
         }
-        .padding(.horizontal, 8)
+    }
+
+    private var pageHost: String? {
+        guard let url = browserManager.tabs.selectedSession(in: windowState)?.url,
+              let host = url.host(), ["http", "https"].contains(url.scheme?.lowercased()) else { return nil }
+        return host.hasPrefix("www.") ? String(host.dropFirst(4)) : host
     }
 
     // MARK: - Input Area
 
     private var inputAreaView: some View {
-        VStack(spacing: 8) {
-            TextField("Ask about this page...", text: $messageText, axis: .vertical)
+        VStack(alignment: .leading, spacing: 10) {
+            TextField("", text: $messageText, prompt: Text("Ask about this page...").foregroundColor(.secondary), axis: .vertical)
                 .textFieldStyle(.plain)
                 .font(NookDesign.Font.body)
                 .foregroundStyle(.primary)
-                .lineLimit(1...4)
+                .lineLimit(2...6)
                 .focused($isTextFieldFocused)
                 .onSubmit { sendMessage() }
 
@@ -195,71 +222,60 @@ struct SidebarAIChat: View {
                 Spacer()
 
                 Button(action: sendMessage) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(NookDesign.Font.titleLarge)
-                        .foregroundStyle(messageText.isEmpty ? HierarchicalShapeStyle.tertiary : .primary)
+                    AnimatedIcon("send", fallback: "paperplane", size: 18, ink: canSend ? .white : .secondary)
+                        .frame(width: 28, height: 28)
+                        .background(canSend ? Color.accentColor : Color.primary.opacity(0.16), in: Circle())
                 }
                 .buttonStyle(.plain)
-                .disabled(messageText.isEmpty || aiService.isLoading || !aiService.hasApiKey)
+                .disabled(!canSend)
+                .help("Send")
             }
         }
+        .padding(14)
+        .chatSurface(radius: NookDesign.Radius.xl)
+        .overlay(alignment: .topLeading) {
+            if showModelMenu {
+                // A zero-size frame pinned at the composer's top-left corner; the card hangs from its bottom-left,
+                // so it opens upward with its left edge on the pill's left edge.
+                modelMenuCard
+                    .padding(.leading, 14)
+                    .frame(width: 0, height: 0, alignment: .bottomLeading)
+                    .offset(y: -8)
+                    .transition(.opacity)
+            }
+        }
+        .zIndex(1)
+        .onChange(of: isTextFieldFocused) { _, focused in if focused { showModelMenu = false } }
+        .onExitCommand { showModelMenu = false }
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .nookControlSurface(in: NookDesign.Radius.shape(NookDesign.Radius.lg))
-        .padding(.horizontal, 8)
+    }
+
+    private var canSend: Bool {
+        !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !aiService.isLoading && aiService.hasApiKey
     }
 
     // MARK: - Model Selector
 
     private var modelSelectorMenu: some View {
-        Menu(configService.activeModel?.displayName ?? "Add Model") {
-            let models = configService.modelsForActiveProvider()
-            ForEach(models) { model in
-                Button(action: { configService.setActiveModel(model.id) }) {
-                    HStack {
-                        Text(model.displayName)
-                        if configService.config.activeModelId == model.id {
-                            Spacer()
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
+        Button {
+            withAnimation(NookDesign.Motion.quick) { showModelMenu.toggle() }
+        } label: {
+            // A pill with its own edge, so its left side lines up with the text above it.
+            HStack(spacing: 5) {
+                Text(configService.activeModel?.displayName ?? "Add Model")
+                    .font(NookDesign.Font.secondary)
+                    .foregroundStyle(.primary)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(.secondary)
             }
-
-            // Show fetched dynamic models if available
-            if !configService.ollamaModels.isEmpty && configService.activeProviderType == .ollama {
-                Divider()
-                ForEach(configService.ollamaModels) { model in
-                    Button(action: {
-                        configService.addModel(model)
-                        configService.setActiveModel(model.id)
-                    }) {
-                        HStack {
-                            Text(model.displayName)
-                            if configService.config.activeModelId == model.id {
-                                Spacer()
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
-                }
-            }
-
-            Divider()
-
-            if configService.activeProviderType != .appleIntelligence {
-                Button(action: { showAddModelPopover = true }) {
-                    Label("Add Model...", nookIcon: "plus.circle")
-                }
-            }
-
-            Button(action: { showSettings() }) {
-                Label("Manage Models...", nookIcon: "gearshape")
-            }
+            .padding(.horizontal, 10)
+            .frame(height: 28)
+            .background(Color.primary.opacity(0.09), in: Capsule())
+            .overlay(Capsule().strokeBorder(Color.primary.opacity(0.18), lineWidth: 0.75))
+            .contentShape(Capsule())
         }
-        .menuStyle(.button)
-        .buttonStyle(RectNavButtonStyle())
-        .controlSize(.small)
+        .buttonStyle(.plain)
         .popover(isPresented: $showAddModelPopover, arrowEdge: .top) {
             VStack(spacing: 8) {
                 Text("Add Model by ID")
@@ -290,6 +306,40 @@ struct SidebarAIChat: View {
         }
     }
 
+
+    /// The model list, opened above the composer with its left edge on the model pill (a system menu centres itself
+    /// on the pill, which left the two out of line).
+    private var modelMenuCard: some View {
+        let close = { withAnimation(NookDesign.Motion.quick) { showModelMenu = false } }
+        let active = configService.config.activeModelId
+        return VStack(alignment: .leading, spacing: 2) {
+            ForEach(configService.modelsForActiveProvider()) { model in
+                ModelMenuRow(title: model.displayName, checked: active == model.id) {
+                    configService.setActiveModel(model.id); close()
+                }
+            }
+            if !configService.ollamaModels.isEmpty && configService.activeProviderType == .ollama {
+                Divider().padding(.vertical, 4)
+                ForEach(configService.ollamaModels) { model in
+                    ModelMenuRow(title: model.displayName, checked: active == model.id) {
+                        configService.addModel(model); configService.setActiveModel(model.id); close()
+                    }
+                }
+            }
+            Divider().padding(.vertical, 4)
+            if configService.activeProviderType != .appleIntelligence {
+                ModelMenuRow(title: "Add Model…", icon: "plus.circle") { close(); showAddModelPopover = true }
+            }
+            ModelMenuRow(title: "Manage Models…", icon: "gearshape") { close(); showSettings() }
+        }
+        .padding(6)
+        .frame(minWidth: 190, alignment: .leading)
+        .fixedSize()
+        .background(Color(nsColor: .windowBackgroundColor).opacity(0.96), in: NookDesign.Radius.shape(NookDesign.Radius.lg))
+        .overlay(NookDesign.Radius.shape(NookDesign.Radius.lg).strokeBorder(Color.primary.opacity(0.18), lineWidth: 0.75))
+        .shadow(color: .black.opacity(0.35), radius: 14, y: 6)
+    }
+
     // MARK: - Web Search Toggle
 
     private var webSearchToggle: some View {
@@ -300,8 +350,8 @@ struct SidebarAIChat: View {
                 configService.generationConfig = config
             }
         }) {
-            Image(systemName: configService.generationConfig.webSearchEnabled ? "globe.americas.fill" : "globe")
-                .foregroundStyle(configService.generationConfig.webSearchEnabled ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
+            AnimatedIcon("globe", fallback: "globe", size: 18,
+                         ink: configService.generationConfig.webSearchEnabled ? .green : .secondary)
         }
         .buttonStyle(NookIconButtonStyle())
         .help(configService.generationConfig.webSearchEnabled ? "Web Search On" : "Web Search Off")
@@ -311,9 +361,7 @@ struct SidebarAIChat: View {
 
     private var apiKeyRequiredView: some View {
         VStack(spacing: 12) {
-            Image(systemName: "key.fill")
-                .font(NookDesign.Font.display)
-                .foregroundStyle(.tertiary)
+            AnimatedIcon("key", fallback: "key", size: 40, ink: .secondary)
 
             Text("API Key Required")
                 .font(NookDesign.Font.label)
@@ -333,47 +381,63 @@ struct SidebarAIChat: View {
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 20) {
             let webSearchEnabled = configService.generationConfig.webSearchEnabled
             let supportsWebSearch = configService.activeProviderType == .openRouter || configService.activeProviderType == .gemini
 
-            Image(systemName: webSearchEnabled && supportsWebSearch ? "globe" : "sparkle")
-                .font(NookDesign.Font.display)
-                .foregroundStyle(webSearchEnabled && supportsWebSearch ? AnyShapeStyle(.green.opacity(0.6)) : AnyShapeStyle(.tertiary))
-
-            Text("Ask Vega")
-                .font(NookDesign.Font.label)
-                .foregroundStyle(.primary)
-
-            if webSearchEnabled && supportsWebSearch {
-                VStack(spacing: 6) {
-                    Text("Questions about this page, or just curious? I'm here.")
-                        .font(NookDesign.Font.secondary)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-
-                    HStack(spacing: 4) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(NookDesign.Font.caption)
-                            .foregroundStyle(.green.opacity(0.7))
-                        Text("Web search enabled")
-                            .font(NookDesign.Font.caption)
-                            .foregroundStyle(.green.opacity(0.7))
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(.green.opacity(0.12))
-                    .clipShape(NookDesign.Radius.shape(NookDesign.Radius.sm))
-                }
-            } else {
-                Text("Questions about this page, or just curious? I'm here.")
-                    .font(NookDesign.Font.secondary)
+            VStack(spacing: 10) {
+                Image(systemName: "sparkle")
+                    .font(NookDesign.Font.display)
+                    .foregroundStyle(.tertiary)
+                Text("What can I help with?")
+                    .font(NookDesign.Font.heading)
+                    .foregroundStyle(.primary)
+                Text("Ask about this page, or anything else.")
+                    .font(NookDesign.Font.bodyRegular)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+                if webSearchEnabled && supportsWebSearch {
+                    Text("Web search is on")
+                        .font(NookDesign.Font.caption)
+                        .foregroundStyle(.green)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(.green.opacity(0.12), in: NookDesign.Radius.shape(NookDesign.Radius.sm))
+                }
+            }
+
+            VStack(spacing: 8) {
+                suggestion("Summarize this page")
+                suggestion("List the key points")
+                suggestion("Explain this in simple terms")
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.top, 60)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 48)
+        .padding(.horizontal, 4)
+    }
+
+    /// A starter prompt: one click sends it.
+    private func suggestion(_ text: String) -> some View {
+        Button {
+            messageText = text
+            sendMessage()
+        } label: {
+            HStack(spacing: 10) {
+                Text(text)
+                    .font(NookDesign.Font.body)
+                    .foregroundStyle(.primary)
+                Spacer(minLength: 0)
+                AnimatedIcon("arrow-up-right", fallback: "arrow.up.right", size: 16, ink: .secondary)
+            }
+            .padding(.horizontal, 14)
+            .frame(height: 40)
+            .frame(maxWidth: .infinity)
+            .chatSurface(radius: NookDesign.Radius.lg)
+            .contentShape(NookDesign.Radius.shape(NookDesign.Radius.lg))
+        }
+        .buttonStyle(.plain)
+        .disabled(!aiService.hasApiKey || aiService.isLoading)
     }
 
     private var loadingView: some View {
@@ -492,8 +556,7 @@ struct MessageBubble: View {
                     VStack(alignment: .leading, spacing: 0) {
                         if message.usedWebSearch {
                             HStack(spacing: 4) {
-                                NookSymbol("globe", size: 14)
-                                    .font(NookDesign.Font.caption)
+                                AnimatedIcon("globe", fallback: "globe", size: 16, ink: .secondary)
                                 Text("Web Search")
                                     .font(NookDesign.Font.caption)
                                 if !message.citations.isEmpty {
@@ -542,36 +605,9 @@ struct MessageBubble: View {
                             .padding(.bottom, 10)
                         }
                     }
-                    .nookControlSurface(in: NookDesign.Radius.shape(NookDesign.Radius.lg))
-                    .overlay(alignment: .topTrailing) {
-                        if isHovered {
-                            Button(action: {
-                                NSPasteboard.general.clearContents()
-                                NSPasteboard.general.setString(message.content, forType: .string)
-                                showCopied = true
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                    showCopied = false
-                                }
-                            }) {
-                                Image(systemName: showCopied ? "checkmark" : "doc.on.doc")
-                                    .font(NookDesign.Font.caption)
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 28, height: 28)
-                                    // Raised so it stands off the bubble's fill
-                                    .background(
-                                        NookDesign.Radius.shape(NookDesign.Radius.md)
-                                            .fill(NookDesign.Surface.raised)
-                                    )
-                                    .overlay(
-                                        NookDesign.Radius.shape(NookDesign.Radius.md)
-                                            .strokeBorder(NookDesign.Surface.hairline, lineWidth: NookDesign.Size.hairlineWidth)
-                                    )
-                            }
-                            .buttonStyle(.plain)
-                            .padding(6)
-                            .transition(.opacity.combined(with: .scale(scale: 0.8)))
-                        }
-                    }
+                    .chatSurface(radius: NookDesign.Radius.lg)
+                    // The copy button sits under the bubble, in space kept for it, so it never covers the text.
+                    copyButton
                 } else {
                     Text(message.content)
                         .font(NookDesign.Font.bodyRegular)
@@ -592,6 +628,31 @@ struct MessageBubble: View {
                 isHovered = hovering
             }
         }
+    }
+
+    private var copyButton: some View {
+        HStack {
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(message.content, forType: .string)
+                showCopied = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { showCopied = false }
+            } label: {
+                HStack(spacing: 4) {
+                    if showCopied { Image(systemName: "checkmark").frame(width: 16, height: 16) }
+                    else { AnimatedIcon("copy", fallback: "doc.on.doc", size: 16, ink: .secondary) }
+                    Text(showCopied ? "Copied" : "Copy")
+                }
+                .font(NookDesign.Font.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .frame(height: 22)
+            }
+            .buttonStyle(.plain)
+            .opacity(isHovered || showCopied ? 1 : 0)
+            Spacer(minLength: 0)
+        }
+        .frame(height: 22)
     }
 
     private func parseMarkdown(_ content: String) -> [AnyView] {
@@ -738,7 +799,7 @@ struct CitationView: View {
             }
         }) {
             HStack(spacing: 6) {
-                NookSymbol("link", size: 14)
+                AnimatedIcon("link", fallback: "link", size: 16, ink: .secondary)
                     .font(NookDesign.Font.caption)
                     .foregroundStyle(.tertiary)
 
@@ -758,7 +819,7 @@ struct CitationView: View {
 
                 Spacer()
 
-                NookSymbol("arrow.up.forward", size: 14)
+                AnimatedIcon("arrow-up-right", fallback: "arrow.up.forward", size: 16, ink: .secondary)
                     .font(NookDesign.Font.caption)
                     .foregroundStyle(isHovered ? .secondary : .tertiary)
             }
@@ -779,5 +840,46 @@ struct CitationView: View {
                 isHovered = hovering
             }
         }
+    }
+}
+
+private extension View {
+    /// The chat's cards: a visible fill and a hairline edge, so the composer, starters and replies stand off the
+    /// panel's tinted background instead of merging into it (the glass control surface was nearly invisible on dark).
+    func chatSurface(radius: CGFloat) -> some View {
+        let shape = NookDesign.Radius.shape(radius)
+        return self
+            .background(Color.primary.opacity(0.09), in: shape)
+            .overlay(shape.strokeBorder(Color.primary.opacity(0.18), lineWidth: 0.75))
+    }
+}
+
+
+private struct ModelMenuRow: View {
+    let title: String
+    var checked = false
+    var icon: String? = nil
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Group {
+                    if checked { Image(systemName: "checkmark").font(.system(size: 11, weight: .semibold)) }
+                    else if let icon { NookSymbol(icon, size: 16) }
+                    else { Color.clear }
+                }
+                .frame(width: 16, height: 16)
+                Text(title).font(NookDesign.Font.body).foregroundStyle(.primary)
+                Spacer(minLength: 12)
+            }
+            .padding(.horizontal, 8)
+            .frame(height: 28)
+            .background(hovering ? Color.primary.opacity(0.1) : .clear, in: NookDesign.Radius.shape(NookDesign.Radius.sm))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
     }
 }

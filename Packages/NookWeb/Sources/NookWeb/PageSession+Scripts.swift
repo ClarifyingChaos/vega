@@ -325,6 +325,9 @@ extension PageSession: WKScriptMessageHandler {
                 translationFeed?.yield(nodes)
             }
 
+        case Self.readerHandlerName where message.world == Self.readerWorld:
+            if let body = message.body as? [String: Any], let active = body["active"] as? Bool { isReaderActive = active }
+
         case "pipStateChange":
             if let dict = message.body as? [String: Any], let active = dict["active"] as? Bool {
                 self.hasPiPActive = active

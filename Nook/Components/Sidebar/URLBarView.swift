@@ -227,6 +227,18 @@ struct URLBarView: View {
                         .onDisappear { hoverManager.setSiteSettingsOpen(false, in: windowState.id) }
                 }
 
+                // Reader view (shown on hover for ordinary web pages)
+                if !isEditing, isHovering, let session, session.canShowReader {
+                    Button { session.toggleReader() } label: {
+                        AnimatedIcon("book-open", fallback: "doc.text")
+                    }
+                    .accessibilityLabel(session.isReaderActive ? "Hide Reader" : "Show Reader")
+                    .buttonStyle(NookIconButtonStyle(size: NookDesign.Size.iconButton, radius: NookDesign.Radius.sm))
+                    .foregroundStyle(session.isReaderActive ? Color.accentColor : Color.primary)
+                    .help(session.isReaderActive ? "Hide Reader" : "Show Reader (⌥⌘R)")
+                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                }
+
                 // Copy link button (show on hover when tab is selected)
                 if !isEditing, isHovering, let session {
                     Button {

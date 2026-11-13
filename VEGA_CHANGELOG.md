@@ -2,6 +2,24 @@
 
 What Vega changes on top of [Nook](https://github.com/nook-browser/Nook). Nook's own changes reach Vega through the daily upstream sync; they're in [CHANGELOG.md](CHANGELOG.md) and [Nook's releases](https://github.com/nook-browser/Nook/releases).
 
+## Vega 1.7.3 (2026-11-14)
+
+Icons that move, a calmer AI chat, and a reader view.
+
+### New
+- **Animated icons.** The sidebar, tabs, library, Settings and more use icons that move when you point at them. Menus show the same icons, still.
+- **Reader view.** View › Show Reader (⌥⌘R), or the book button in the address bar, shows an article without the clutter: text size, a light, sepia or dark page, and Esc to leave. The page underneath is untouched.
+- **Ask Vega, redone.** A clean header that names the page you're asking about, one-tap starters, a clearer input with the model picker lined up under it, and a copy button under each reply that never covers text.
+
+### Faster
+- **Lighter ad blocker.** Vega now hands the web engine at most 150,000 blocking rules, so pages open faster. The 108,000-rule malware list is optional.
+
+### Fixes
+- A page's own HTML no longer downloads when Vega reopens with a tab restored, or when you Option-click a link inside Peek.
+- A download with no address no longer sits in the library keeping its ring on the library button.
+- The Peek card's site name and buttons stay readable over any window; the buttons are now round glass buttons beside the card.
+- The AI chat button is back in the bottom bar, with the space dots closer together.
+
 ## Vega 1.7.2 (2026-11-13)
 
 Faster page loads, and a new home for updates.

@@ -68,6 +68,7 @@ extension PageSession: WKNavigationDelegate {
         downloadsThisPage = 0
         moreDownloadsAllowed = nil
         resetTranslation()
+        isReaderActive = false
 
         if let newURL = webView.url {
             self.url = newURL
@@ -441,7 +442,13 @@ extension PageSession: WKNavigationDelegate {
             clickedRequestURLs = Array((clickedRequestURLs + [url]).suffix(8))
         }
 
-        if navigationAction.shouldPerformDownload {
+        // Option-click is Peek here. WebKit reads it as "download the linked file", which saved a page's own
+        // HTML (www.youtube.com.html) when the link was clicked inside Peek or a mini window.
+        // A reload or Back/Forward is never a download. Restoring a tab at launch reloads it from its saved history,
+        // and WebKit carried the saved entry's download flag over, saving the page's HTML (www.youtube.com.html).
+        let reloadsPage = navigationAction.navigationType == .reload || navigationAction.navigationType == .backForward
+        if navigationAction.shouldPerformDownload, !reloadsPage,
+           !(navigationAction.navigationType == .linkActivated && navigationAction.modifierFlags.contains(.option)) {
             allowDownload(clicked: navigationAction.nookIsUserInitiated, in: webView) { decisionHandler($0 ? .download : .cancel) }
             return
         }
@@ -529,8 +536,10 @@ extension PageSession: WKNavigationDelegate {
         navigationAction: WKNavigationAction,
         didBecome download: WKDownload
     ) {
-        let originalURL = navigationAction.request.url ?? URL(string: "https://example.com")!
-        let suggestedFilename = navigationAction.request.url?.lastPathComponent ?? "download"
+        // A download with no URL has nothing to fetch: it sat in the library as "download", zero bytes,
+        // and kept the library button showing a download ring.
+        guard let originalURL = navigationAction.request.url else { download.cancel(); return }
+        let suggestedFilename = originalURL.lastPathComponent
 
 
         controller?.sessionDelegate?.addDownload(
@@ -542,8 +551,8 @@ extension PageSession: WKNavigationDelegate {
         navigationResponse: WKNavigationResponse,
         didBecome download: WKDownload
     ) {
-        let originalURL = navigationResponse.response.url ?? URL(string: "https://example.com")!
-        let suggestedFilename = navigationResponse.response.url?.lastPathComponent ?? "download"
+        guard let originalURL = navigationResponse.response.url else { download.cancel(); return }
+        let suggestedFilename = originalURL.lastPathComponent
 
 
         controller?.sessionDelegate?.addDownload(

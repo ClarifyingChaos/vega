@@ -38,6 +38,24 @@ public struct AnimatedIcon: View {
     @State private var selfHovering = false
     private var isHovering: Bool { hovering || selfHovering }
 
+    /// Where each animation's ink sits against the centre of its 32-unit canvas (x right, y down), for the ones
+    /// that are off by more than a third of a unit. Measured from the rendered first frame; the view moves it back.
+    private static let inkOffsets: [String: (x: CGFloat, y: CGFloat)] = [
+        "archive": (0.0, 5.0),
+        "checkmark": (0.0, -0.5),
+        "key": (0.0, -0.5),
+        "rotate-ccw": (-1.0, 0.0),
+        "rotate-cw": (1.0, 0.0),
+        // The paper plane is heavy at the nose: its mass sits 1.7 right and 2.0 up of its box, so it is placed by weight
+        // (70% of the way), not by box, or it reads as off-centre inside a circle.
+        "send": (1.2, -1.4),
+        "star": (0.0, -0.5),
+        "trash": (0.0, 2.0),
+    ]
+
+    /// Animations whose first frame is blank (they draw in), so they rest on the last frame instead.
+    private static let restsAtEnd: Set<String> = ["checkmark"]
+
     @MainActor private static var cache: [String: LottieAnimation] = [:]
 
     /// `name` is a file in Resources/UseAnimations without its extension; `fallback` an SF Symbol.
@@ -45,7 +63,7 @@ public struct AnimatedIcon: View {
     /// `holdWhileHovered`: play forward on enter and stay at the end, then play back on leave (plus to x).
     public init(_ name: String, fallback: String, size: CGFloat = 20, holdWhileHovered: Bool = false, ink: Color? = nil, toggled: Bool? = nil) {
         self.toggled = toggled
-        self._mode = State(initialValue: .paused(at: .progress(toggled == true ? 1 : 0)))
+        self._mode = State(initialValue: .paused(at: .progress(toggled == true || Self.restsAtEnd.contains(name) ? 1 : 0)))
         self.ink = ink
         self.holdWhileHovered = holdWhileHovered
         self.name = name
@@ -75,7 +93,7 @@ public struct AnimatedIcon: View {
                     .playbackMode(mode)
                     .animationDidFinish { _ in
                         // Held icons rest on their end frame while the pointer is still on the button.
-                        mode = .paused(at: .progress(toggled == true || (holdWhileHovered && isHovering) ? 1 : 0))
+                        mode = .paused(at: .progress(toggled == true || Self.restsAtEnd.contains(name) || (holdWhileHovered && isHovering) ? 1 : 0))
                     }
                     .configure { $0.contentMode = .scaleAspectFit }
                     .valueProvider(ColorValueProvider(lottieInk), for: AnimationKeypath(keypath: "**.Color"))
@@ -97,6 +115,7 @@ public struct AnimatedIcon: View {
                 Image(systemName: fallback)
             }
         }
+        .offset(x: -(Self.inkOffsets[name]?.x ?? 0) * size / 32, y: -(Self.inkOffsets[name]?.y ?? 0) * size / 32)
         .frame(width: size, height: size)
         .contentShape(Rectangle())
         .onHover { selfHovering = $0 }

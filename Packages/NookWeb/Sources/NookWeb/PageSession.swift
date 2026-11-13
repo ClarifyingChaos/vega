@@ -144,6 +144,8 @@ public final class PageSession: NSObject, Identifiable {
 
     /// The page's text is shown translated, or a translation is under way.
     public internal(set) var isTranslated = false
+    /// The reader view is showing over the page.
+    public internal(set) var isReaderActive = false
     /// The detected language while the window offers to translate the page.
     public internal(set) var translationOffer: Locale.Language?
     /// Requests a view-hosted session for language downloads, or any translation on Sequoia.
@@ -456,6 +458,8 @@ public final class PageSession: NSObject, Identifiable {
         }
         controller.removeScriptMessageHandler(forName: Self.translateHandlerName, contentWorld: Self.translateWorld)
         controller.add(self, contentWorld: Self.translateWorld, name: Self.translateHandlerName)
+        controller.removeScriptMessageHandler(forName: Self.readerHandlerName, contentWorld: Self.readerWorld)
+        controller.add(self, contentWorld: Self.readerWorld, name: Self.readerHandlerName)
         webView.customUserAgent = PlatformUserAgent.custom
         // Let the web content control its own background so extension styles (like Dark
         // Reader) can paint dark backgrounds. The themed background shows only while loading.
@@ -514,6 +518,7 @@ public final class PageSession: NSObject, Identifiable {
         webStoreHandler = nil
         devCapture = nil
         resetTranslation()
+        isReaderActive = false
         loadingState = .idle
         hasPiPActive = false
         hasPlayingVideo = false
@@ -553,6 +558,7 @@ public final class PageSession: NSObject, Identifiable {
             controller.removeScriptMessageHandler(forName: name, contentWorld: Self.linkHoverWorld)
         }
         controller.removeScriptMessageHandler(forName: Self.translateHandlerName, contentWorld: Self.translateWorld)
+        controller.removeScriptMessageHandler(forName: Self.readerHandlerName, contentWorld: Self.readerWorld)
         self.controller?.sessionDelegate?.removeWebStoreHandler(from: controller)
         detachDevCaptureHandler(from: webView)
         controller.removeScriptMessageHandler(

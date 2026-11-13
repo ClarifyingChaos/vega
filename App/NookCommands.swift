@@ -315,6 +315,12 @@ struct NookCommands: Commands {
             }
             .disabled(browserManager.tabs.activeWindowSession?.usesEnhancedFingerprintingProtection != true)
 
+            Button(browserManager.tabs.activeWindowSession?.isReaderActive == true ? "Hide Reader" : "Show Reader") {
+                browserManager.tabs.activeWindowSession?.toggleReader()
+            }
+            .keyboardShortcut("r", modifiers: [.command, .option])
+            .disabled(browserManager.tabs.activeWindowSession?.canShowReader != true)
+
             Button(browserManager.tabs.activeWindowSession?.isTranslated == true ? "Show Original" : "Translate Page") {
                 browserManager.tabs.activeWindowSession?.toggleTranslation()
             }

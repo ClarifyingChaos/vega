@@ -22,6 +22,8 @@ public struct SettingsAdBlockerTab: View {
     public var body: some View {
         @Bindable var settings = nookSettings
         Form {
+            SettingsHero(symbol: "shield.lefthalf.filled", title: "Ad Blocker", detail: "Block ads and trackers with the filter lists you choose.")
+
             Section {
                 Toggle("Ad & Tracker Blocker", isOn: $settings.adBlockerEnabled)
                     .onChange(of: nookSettings.adBlockerEnabled) { _, enabled in

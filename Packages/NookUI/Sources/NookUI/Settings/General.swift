@@ -36,6 +36,8 @@ public struct SettingsGeneralTab: View {
     public var body: some View {
         @Bindable var settings = nookSettings
         Form {
+            SettingsHero(symbol: "gearshape", title: "General", detail: "Search engine, tabs, startup and how Vega performs.")
+
             Section {
                 #if os(macOS)
                 LabeledContent("Default search engine") {

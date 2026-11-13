@@ -8,6 +8,7 @@
 
 import NookSettings
 import SwiftUI
+import NookUI
 import NookDesign
 
 struct SettingsDeveloperTab: View {
@@ -17,6 +18,8 @@ struct SettingsDeveloperTab: View {
     var body: some View {
         @Bindable var settings = nookSettings
         Form {
+            SettingsHero(symbol: "hammer", title: "Developer", detail: "Developer tools, and browser control for agents.")
+
             Section {
                 Toggle("Developer Mode", isOn: $settings.developerModeEnabled)
                     .onChange(of: settings.developerModeEnabled) { _, on in

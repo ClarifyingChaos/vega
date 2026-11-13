@@ -29,6 +29,8 @@ public struct SpacesSettingsView: View {
 
     public var body: some View {
         Form {
+            SettingsHero(symbol: "square.on.square", title: "Spaces", detail: "Spaces, and the profiles that keep their logins apart.")
+
             Section {
                 ForEach(tabs.profiles) { profile in
                     profileRow(profile)
@@ -91,9 +93,13 @@ public struct SpacesSettingsView: View {
                     Task { await clearData(profile) }
                 }
             } label: {
-                Image(systemName: "ellipsis.circle")
+                Image(systemName: "ellipsis")
             }
-            .menuStyle(.borderlessButton)
+            // FORK: System Settings' row menu: a round "…" button with no disclosure arrow.
+            .menuStyle(.button)
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
+            .menuIndicator(.hidden)
             .fixedSize()
         }
     }
@@ -182,9 +188,13 @@ public struct SpacesSettingsView: View {
                         showDeleteDialog(space)
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Image(systemName: "ellipsis")
                 }
-                .menuStyle(.borderlessButton)
+                // FORK: System Settings' row menu: a round "…" button with no disclosure arrow.
+                .menuStyle(.button)
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.circle)
+                .menuIndicator(.hidden)
                 .fixedSize()
             }
         }

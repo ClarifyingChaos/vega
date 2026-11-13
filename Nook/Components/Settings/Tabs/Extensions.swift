@@ -8,6 +8,7 @@
 
 import AppKit
 import SwiftUI
+import NookUI
 import NookDesign
 
 struct ExtensionsSettingsView: View {
@@ -20,6 +21,8 @@ struct ExtensionsSettingsView: View {
 
     var body: some View {
         Form {
+            SettingsHero(symbol: "puzzlepiece.extension", title: "Extensions", detail: "Add, turn off or remove browser extensions.")
+
             Section {
                 Button("Install Extension…", systemImage: "plus") {
                     browserManager.showExtensionInstallDialog()
@@ -250,9 +253,13 @@ private struct ExtensionRowView: View {
                         browserManager.uninstallExtension(`extension`.id)
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Image(systemName: "ellipsis")
                 }
-                .menuStyle(.borderlessButton)
+                // FORK: System Settings' row menu: a round "…" button with no disclosure arrow.
+                .menuStyle(.button)
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.circle)
+                .menuIndicator(.hidden)
                 .fixedSize()
                 .accessibilityLabel("More options for \(`extension`.name)")
             }

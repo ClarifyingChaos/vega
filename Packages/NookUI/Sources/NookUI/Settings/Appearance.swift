@@ -18,6 +18,8 @@ public struct SettingsAppearanceTab: View {
     public var body: some View {
         @Bindable var settings = nookSettings
         Form {
+            SettingsHero(symbol: "paintbrush", title: "Appearance", detail: "Theme, sidebar layout and previews.")
+
             Section("Theme") {
                 Picker("Appearance", selection: $settings.appearanceMode) {
                     ForEach(AppearanceMode.allCases) { mode in

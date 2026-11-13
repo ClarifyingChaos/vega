@@ -21,6 +21,8 @@ public struct SettingsTweaksTab: View {
     public var body: some View {
         @Bindable var settings = nookSettings
         Form {
+            SettingsHero(symbol: "wand.and.stars", title: "Tweaks", detail: "Small fixes for sites you use every day.")
+
             // Same rows as Site Search in General.
             Section {
                 ForEach(settings.mediaDownloadSites, id: \.self) { site in

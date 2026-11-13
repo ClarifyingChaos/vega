@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import NookUI
 import WebKit
 
 import NookDesign
@@ -30,6 +31,8 @@ struct PrivacySettingsView: View {
         @Bindable var settings = nookSettings
 
         Form {
+            SettingsHero(symbol: "lock.shield", title: "Privacy", detail: "Tracking protection, history and the data websites store.")
+
             Section("Tracking") {
                 scopePicker(
                     "Enhanced fingerprinting protection",

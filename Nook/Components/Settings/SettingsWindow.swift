@@ -105,11 +105,28 @@ private struct HistoryToolbar: ViewModifier {
     let goBack: () -> Void
     let goForward: () -> Void
 
+    @ViewBuilder
     func body(content: Content) -> some View {
-        content
-            .toolbar { buttons }
-            // No hairline under the top bar; the pages scroll under a soft edge, as in System Settings.
-            .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        // Branch at the View level: ToolbarContentBuilder's availability erasure fails to link in
+        // optimized builds. On 26+, a fixed spacer keeps the capsule clear of the sidebar, as in
+        // System Settings; padding on the item only widens its glass.
+        if #available(macOS 26, *) {
+            content
+                .toolbar {
+                    // An empty, glass-less item ahead of the capsule: ToolbarSpacer alone left it
+                    // touching the sidebar.
+                    ToolbarItem(placement: .navigation) {
+                        Color.clear.frame(width: 2, height: 1).accessibilityHidden(true)
+                    }
+                    .sharedBackgroundVisibility(.hidden)
+                    buttons
+                }
+                .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        } else {
+            content
+                .toolbar { buttons }
+                .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        }
     }
 
     /// System Settings' pair: back and forward joined in one capsule, the page title beside it.
@@ -122,8 +139,6 @@ private struct HistoryToolbar: ViewModifier {
                     .disabled(!canGoForward)
             }
             .controlGroupStyle(.navigation)
-            // System Settings keeps 12 pt between the capsule and the page title.
-            .padding(.trailing, 10)
         }
     }
 }

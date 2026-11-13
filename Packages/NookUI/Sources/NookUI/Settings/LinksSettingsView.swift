@@ -25,6 +25,8 @@ public struct LinksSettingsView: View {
         @Bindable var settings = nookSettings
 
         Form {
+            SettingsHero(symbol: "link", title: "Links", detail: "Where links from other apps open, and rules that send sites to a Space.")
+
             #if os(macOS)
             Section {
                 LabeledContent("Open in") {

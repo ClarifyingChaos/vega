@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import NookUI
 import NookDesign
 
 struct ShortcutsSettingsView: View {
@@ -22,6 +23,8 @@ struct ShortcutsSettingsView: View {
 
     var body: some View {
         Form {
+            SettingsHero(symbol: "keyboard", title: "Shortcuts", detail: "Keyboard shortcuts for every command in Vega.")
+
             // FORK: the search field stands on its own, above the groups, not inside a card with a switch.
             Section {
                 SidebarMenuSearchField(prompt: "Search shortcuts...", text: $searchText)

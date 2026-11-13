@@ -8,6 +8,7 @@
 
 import NookSettings
 import SwiftUI
+import NookUI
 import NookDesign
 
 struct SettingsAITab: View {
@@ -32,6 +33,8 @@ struct SettingsAITab: View {
     var body: some View {
         @Bindable var settings = nookSettings
         Form {
+            SettingsHero(symbol: "sparkles", title: "AI", detail: "Tab organizer, providers and the assistant\u{2019}s tools.")
+
             // MARK: - Tab Organizer
             Section {
                 if let note = TabOrganizationModel.unavailableNote {

@@ -26,7 +26,7 @@ OUT="$ROOT/build/release-out"
 PBX="Nook.xcodeproj/project.pbxproj"
 SPARKLE_BIN="$ROOT/build/SourcePackages/artifacts/sparkle/Sparkle/bin"
 DMG_NAME="Vega-$VERSION.dmg"
-TAG="v$VERSION"
+TAG="vega-v$VERSION"   # upstream Nook tags vX.Y.Z; a prefix keeps the two apart
 
 # --- Preconditions ---------------------------------------------------------------------------
 if ! $DRY_RUN; then

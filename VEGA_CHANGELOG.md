@@ -6,24 +6,23 @@ What Vega changes on top of [Nook](https://github.com/nook-browser/Nook). Nook's
 
 The first public Vega release, built on Nook 1.6.0.
 
-### Feels like Arc
-- **Sidebar** at Arc's measurements: 247 pt wide, 32 pt buttons, Arc's insets and title row, window buttons and tiles in Arc's positions, a cleaner address field, an 8 pt page frame.
-- **Hover sidebar** (when the sidebar is collapsed) carries the window buttons inside the panel, like Arc.
-- **Command palette** like Arc's: centred dark glass, your open tabs listed before you type (from every space, each labelled with its space), Arc's text sizes, an accent-filled selected row.
+### Sidebar and browsing
+- **Sidebar** reworked: 247 pt wide, 32 pt buttons, tighter insets and title row, a cleaner address field, an 8 pt page frame.
+- **Hover sidebar** (when the sidebar is collapsed) carries the window buttons inside the panel.
+- **Command palette** redesigned: centred dark glass, your open tabs listed before you type (from every space, each labelled with its space), smaller text, an accent-filled selected row.
 - **Page loading** shows as a tint in the space's colour sweeping across the address field.
-- **Site Controls panel** redone after Arc's, with per-site settings: JavaScript on or off, the mobile version of a site, automatic picture-in-picture.
-- **Extensions:** pinned extensions show in the address field on hover; right-click one for Arc's menu (Remove, Pin/Unpin, Manage, Permissions).
+- **Site Controls panel** redesigned, with per-site settings: JavaScript on or off, the mobile version of a site, automatic picture-in-picture.
+- **Extensions:** pinned extensions show in the address field on hover; right-click one for Remove, Pin/Unpin, Manage and Permissions.
 - **Notes** in the sidebar.
-- **Arc's menu bar:** Clear Today, Reset All Tabs in This Space, Reveal Tab in Sidebar, Stay on Top, Copy URL as Quote, Save Page As, Little Arc window, Expand/Collapse Pinned Tabs, View Archive and Clear Archive, Add Split View and more.
-- **From Dia:** focus the next or previous split pane, Show Full URL, Merge All Windows, Dia's thinner page frame.
-- **Favorites** at Arc's 16 pt icon size.
+- **Menu bar commands:** Clear Today, Reset All Tabs in This Space, Reveal Tab in Sidebar, Stay on Top, Copy URL as Quote, Save Page As, a small floating window, Expand/Collapse Pinned Tabs, View Archive and Clear Archive, Add Split View, focus the next or previous split pane, Show Full URL, Merge All Windows and more.
+- **Favorites** with 16 pt icons and a thinner page frame.
 
 ### New features
 - **Picture-in-picture** opens in a floating window by default; drag it into the sidebar and Vega remembers, pull it out and it floats again.
 - **Cast** (File › Cast…): AirPlay the page's video from a bar in the sidebar.
 - **Capture** (File › Capture Visible Area / Capture Full Page) to PNG.
 - **Media** in the Library: images and videos you downloaded, as a searchable grid.
-- **Downloads like Arc:** a context menu (Copy Image, Messages, AirDrop, Preview, Show in Finder, Hide, Move to Trash), drag a file out of the list anywhere, a download ring in the footer.
+- **Downloads:** a context menu (Copy Image, Messages, AirDrop, Preview, Show in Finder, Hide, Move to Trash), drag a file out of the list anywhere, a download ring in the footer.
 - **Blank Window** (File menu) and **Change Profile** (Spaces menu).
 
 ### Settings

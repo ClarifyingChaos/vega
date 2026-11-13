@@ -37,23 +37,6 @@ enum SettingsTabs: String, Hashable, CaseIterable {
         }
     }
 
-    /// The line under a page's large title, as in Apple Music's content pane.
-    var subtitle: String {
-        switch self {
-        case .general: return "Search, tabs and startup"
-        case .appearance: return "Theme and layout"
-        case .ai: return "Tab organizer and providers"
-        case .privacy: return "Tracking, history and website data"
-        case .adBlocker: return "Filter lists and blocking"
-        case .tweaks: return "Small changes for popular sites"
-        case .links: return "Links from other apps and routing"
-        case .spaces: return "Spaces and their profiles"
-        case .shortcuts: return "Keyboard shortcuts"
-        case .extensions: return "Installed and available extensions"
-        case .developer: return "Tools for developers and agents"
-        }
-    }
-
     var icon: String {
         switch self {
         case .general: return "gearshape"

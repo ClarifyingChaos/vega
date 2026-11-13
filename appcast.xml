@@ -4,13 +4,12 @@
     <title>Vega</title>
     <link>https://github.com/ClarifyingChaos/vega</link>
     <item>
-      <title>Vega 1.7.0</title>
-      <pubDate>Fri, 13 Nov 2026 11:59:19 +0000</pubDate>
-      <sparkle:version>124</sparkle:version>
-      <sparkle:shortVersionString>1.7.0</sparkle:shortVersionString>
+      <title>Vega 1.7.1</title>
+      <pubDate>Fri, 13 Nov 2026 12:21:30 +0000</pubDate>
+      <sparkle:version>125</sparkle:version>
+      <sparkle:shortVersionString>1.7.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.5</sparkle:minimumSystemVersion>
-      <sparkle:releaseNotesLink>https://github.com/ClarifyingChaos/vega/releases/tag/vega-v1.7.0</sparkle:releaseNotesLink>
-      <enclosure url="https://github.com/ClarifyingChaos/vega/releases/download/vega-v1.7.0/Vega-1.7.0.dmg" type="application/octet-stream" sparkle:edSignature="ScQ2URkuzbCGmCf1wNuz76HFFDgv8/1RNhhtczw5qGR+v95kBgHXgtdGFZxAB9hFI1P8vSwPQcU7RXedR1L2Bw==" length="18977591" />
+      <enclosure url="https://github.com/ClarifyingChaos/vega/releases/download/vega-v1.7.1/Vega-1.7.1.dmg" type="application/octet-stream" sparkle:edSignature="6p0WNeiPR9kRV/DepiXmDxZtEy3NX1nUg0NvcJBeDm74pFLPHj3/jh3PkY+q3/Ej1o79YOefNuyCCPq+lrXECg==" length="18988899" />
     </item>
   </channel>
 </rss>

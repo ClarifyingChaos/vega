@@ -252,6 +252,7 @@ struct CustomSearchEngineEditor: View {
 /// FORK: spaces, favorites and pinned tabs shared between your Macs through iCloud Drive.
 private struct SyncSection: View {
     @State private var sync = SyncCoordinator.shared
+    @State private var askingPassphrase = false
 
     private var detail: String {
         switch sync.status {
@@ -270,6 +271,13 @@ private struct SyncSection: View {
         Section {
             Toggle("Sync with iCloud Drive", isOn: Binding(get: { sync.isEnabled }, set: { sync.isEnabled = $0 }))
             if sync.isEnabled {
+                Toggle("Sync passwords", isOn: Binding(
+                    get: { sync.passwordsEnabled },
+                    set: { on in if on { askingPassphrase = true } else { sync.disablePasswords() } }
+                ))
+                if sync.passwordsEnabled, let line = sync.passwordStatus {
+                    Text(line).font(NookDesign.Font.secondary).foregroundStyle(.secondary)
+                }
                 HStack {
                     Text(detail)
                         .font(NookDesign.Font.secondary)
@@ -283,7 +291,51 @@ private struct SyncSection: View {
             Text("Sync")
         } footer: {
             if !sync.isEnabled { Text(detail) }
+            else if !sync.passwordsEnabled { Text("Passwords sync end to end encrypted with a passphrase only you know. iCloud never sees them.") }
         }
+        .sheet(isPresented: $askingPassphrase) { PassphraseSheet(sync: sync) }
+    }
+}
+
+/// Asks for the sync passphrase: the first Mac creates it, every other Mac enters the same one.
+private struct PassphraseSheet: View {
+    let sync: SyncCoordinator
+    @Environment(\.dismiss) private var dismiss
+    @State private var passphrase = ""
+    @State private var error: String?
+    @State private var working = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Form {
+                Section {
+                    SecureField("Passphrase", text: $passphrase)
+                } header: {
+                    Text("Sync Passphrase")
+                } footer: {
+                    if let error { Text(error).foregroundStyle(.red) }
+                    else { Text("On your first Mac this creates the passphrase; on your other Macs enter the same one. It locks your passwords before they leave this Mac, so it can't be recovered: write it down.") }
+                }
+            }
+            .formStyle(.grouped)
+            HStack {
+                if working { ProgressView().controlSize(.small) }
+                Spacer()
+                Button("Cancel", role: .cancel) { dismiss() }
+                Button("Turn On") {
+                    working = true
+                    Task {
+                        do { try await sync.enablePasswords(passphrase: passphrase); dismiss() }
+                        catch { self.error = error.localizedDescription }
+                        working = false
+                    }
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(passphrase.count < 8 || working)
+            }
+            .padding(NookDesign.Spacing.xl)
+        }
+        .frame(width: 440)
     }
 }
 #endif

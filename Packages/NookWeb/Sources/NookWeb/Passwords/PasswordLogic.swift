@@ -26,8 +26,33 @@ public struct SavedLogin: Identifiable, Hashable, Sendable {
 public protocol PasswordVault: AnyObject {
     func all() -> [SavedLogin]
     func password(host: String, username: String) -> String?
-    func save(host: String, username: String, password: String)
-    func delete(host: String, username: String)
+    func save(host: String, username: String, password: String, modified: Date)
+    func delete(host: String, username: String, at: Date)
+    /// Deletions the vault remembers, so sync can pass them on.
+    func tombstones() -> [PasswordRecord]
+}
+
+public extension PasswordVault {
+    func save(host: String, username: String, password: String) { save(host: host, username: username, password: password, modified: Date()) }
+    func delete(host: String, username: String) { delete(host: host, username: username, at: Date()) }
+
+    /// Every login with its password, plus the remembered deletions. Reading passwords may ask the
+    /// Keychain for access once per item the first time a new build does it.
+    func records() -> [PasswordRecord] {
+        all().compactMap { login in
+            password(host: login.host, username: login.username).map {
+                PasswordRecord(host: login.host, username: login.username, password: $0, modified: login.modified)
+            }
+        } + tombstones()
+    }
+
+    /// Writes records from another Mac, with their own timestamps.
+    func apply(_ records: [PasswordRecord]) {
+        for r in records {
+            if r.deleted { delete(host: r.host, username: r.username, at: r.modified) }
+            else { save(host: r.host, username: r.username, password: r.password, modified: r.modified) }
+        }
+    }
 }
 
 public enum PasswordHosts {
@@ -76,17 +101,25 @@ public extension PasswordVault {
     }
 }
 
-/// For tests, and for private windows' nothing.
+/// For tests.
 public final class MemoryVault: PasswordVault {
     private var items: [String: (login: SavedLogin, password: String)] = [:]
+    private var gone: [String: PasswordRecord] = [:]
     public init() {}
     public func all() -> [SavedLogin] { items.values.map(\.login) }
-    public func password(host: String, username: String) -> String? { items[SavedLogin(host: host, username: username).id]?.password }
-    public func save(host: String, username: String, password: String) {
-        let login = SavedLogin(host: PasswordHosts.normalized(host), username: username)
+    public func password(host: String, username: String) -> String? { items[SavedLogin(host: PasswordHosts.normalized(host), username: username).id]?.password }
+    public func save(host: String, username: String, password: String, modified: Date) {
+        let login = SavedLogin(host: PasswordHosts.normalized(host), username: username, modified: modified)
         items[login.id] = (login, password)
+        gone[login.id] = nil
     }
-    public func delete(host: String, username: String) { items[SavedLogin(host: PasswordHosts.normalized(host), username: username).id] = nil }
+    public func delete(host: String, username: String, at: Date) {
+        let h = PasswordHosts.normalized(host)
+        let id = SavedLogin(host: h, username: username).id
+        items[id] = nil
+        gone[id] = PasswordRecord(host: h, username: username, password: "", modified: at, deleted: true)
+    }
+    public func tombstones() -> [PasswordRecord] { Array(gone.values) }
 }
 
 public enum PasswordCSV {

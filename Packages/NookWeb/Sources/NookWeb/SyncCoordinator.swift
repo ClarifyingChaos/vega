@@ -10,9 +10,11 @@
 //
 
 import AppKit
+import CryptoKit
 import Foundation
 import NookTabsCore
 import Observation
+import Security
 
 @MainActor @Observable
 public final class SyncCoordinator {
@@ -27,11 +29,26 @@ public final class SyncCoordinator {
         case failed(String)
     }
 
+    public enum PasswordSyncError: LocalizedError {
+        case syncOff, noFolder, wrongPassphrase, emptyPassphrase
+        public var errorDescription: String? {
+            switch self {
+            case .syncOff: return "Turn on Sync with iCloud Drive first."
+            case .noFolder: return "iCloud Drive isn't available."
+            case .wrongPassphrase: return "That isn't the passphrase this sync was set up with."
+            case .emptyPassphrase: return "Choose a passphrase of at least 8 characters."
+            }
+        }
+    }
+
+    private static let passwordsKey = "fork.sync.passwords"
     private static let enabledKey = "fork.sync.enabled"
     private static let deviceKey = "fork.sync.deviceID"
     private static let interval: Duration = .seconds(20)
 
     public private(set) var status: Status = .off
+    /// Where password sync stands, shown under its switch.
+    public private(set) var passwordStatus: String?
     @ObservationIgnored private weak var tabs: TabsController?
     @ObservationIgnored private var loop: Task<Void, Never>?
     @ObservationIgnored private var lastWritten: SyncSnapshot?
@@ -43,6 +60,85 @@ public final class SyncCoordinator {
             UserDefaults.standard.set(newValue, forKey: Self.enabledKey)
             newValue ? begin() : stop()
         }
+    }
+
+    public var passwordsEnabled: Bool { UserDefaults.standard.bool(forKey: Self.passwordsKey) && Self.loadKey() != nil }
+    @ObservationIgnored private var lastPasswordFingerprint: [String: Date]?
+
+    // MARK: - Password sync
+
+    /// Sets up password sync on this Mac: the first Mac creates the passphrase's salt in the shared
+    /// folder, the others must enter the same passphrase. The derived key stays in this Mac's Keychain.
+    public func enablePasswords(passphrase: String) async throws {
+        guard isEnabled else { throw PasswordSyncError.syncOff }
+        guard let url = FolderBlobStore.iCloudDrive() else { throw PasswordSyncError.noFolder }
+        guard passphrase.count >= 8 else { throw PasswordSyncError.emptyPassphrase }
+        let store = PasswordSyncStore(store: FolderBlobStore(url: url))
+        let key: SymmetricKey
+        if let meta = try await store.meta() {
+            guard let k = await Task.detached(operation: { meta.key(for: passphrase) }).value else { throw PasswordSyncError.wrongPassphrase }
+            key = k
+        } else {
+            let made = try await Task.detached { try PasswordSyncMeta.create(passphrase: passphrase) }.value
+            try await store.writeMeta(made.meta)
+            key = made.key
+        }
+        Self.saveKey(key)
+        UserDefaults.standard.set(true, forKey: Self.passwordsKey)
+        lastPasswordFingerprint = nil
+        await tick()
+    }
+
+    public func disablePasswords() {
+        UserDefaults.standard.set(false, forKey: Self.passwordsKey)
+        Self.deleteKey()
+        passwordStatus = nil
+        lastPasswordFingerprint = nil
+    }
+
+    private func syncPasswords(folder url: URL) async {
+        guard UserDefaults.standard.bool(forKey: Self.passwordsKey), let key = Self.loadKey() else { return }
+        let store = PasswordSyncStore(store: FolderBlobStore(url: url))
+        let vault = PasswordPrompter.shared.vault
+        do {
+            let (others, _) = try await store.readOthers(excluding: deviceID, key: key)
+            // Merge decisions need only each login's key and time, so no password is read for them.
+            var light = vault.all().map { PasswordRecord(host: $0.host, username: $0.username, password: "", modified: $0.modified) } + vault.tombstones()
+            var changed = 0
+            for snapshot in others {
+                let changes = PasswordMerge.changes(applying: snapshot.records, to: light)
+                if !changes.isEmpty { vault.apply(changes); changed += changes.count }
+                light = vault.all().map { PasswordRecord(host: $0.host, username: $0.username, password: "", modified: $0.modified) } + vault.tombstones()
+            }
+            // Own snapshot (with passwords) only when a login or a deletion changed since the last write.
+            let fingerprint = Dictionary(light.map { ($0.key + ($0.deleted ? "\u{0}" : ""), $0.modified) }, uniquingKeysWith: { a, _ in a })
+            if fingerprint != lastPasswordFingerprint {
+                try await store.write(PasswordSnapshot(deviceID: deviceID, records: vault.records()), key: key)
+                lastPasswordFingerprint = fingerprint
+            }
+            passwordStatus = changed > 0 ? "Passwords synced · \(changed) updated" : "Passwords synced"
+        } catch {
+            passwordStatus = "Couldn't sync passwords: \(error.localizedDescription)"
+        }
+    }
+
+    // The derived key, in this Mac's Keychain so the passphrase is asked once.
+    private static let keyService = "com.vega.browser.syncKey"
+    private static func loadKey() -> SymmetricKey? {
+        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: keyService,
+                                    kSecReturnData as String: true, kSecMatchLimit as String: kSecMatchLimitOne]
+        var result: CFTypeRef?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess, let data = result as? Data else { return nil }
+        return SymmetricKey(data: data)
+    }
+    private static func saveKey(_ key: SymmetricKey) {
+        deleteKey()
+        let data = key.withUnsafeBytes { Data($0) }
+        SecItemAdd([kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: keyService,
+                    kSecValueData as String: data, kSecAttrLabel as String: "Vega sync key"] as CFDictionary, nil)
+    }
+    private static func deleteKey() {
+        SecItemDelete([kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: keyService] as CFDictionary)
     }
 
     private var deviceID: UUID {
@@ -62,7 +158,7 @@ public final class SyncCoordinator {
 
     private func begin() {
         stop(keepStatus: true)
-        guard SyncFolder.iCloudDrive() != nil else { status = .noICloudDrive; return }
+        guard FolderBlobStore.iCloudDrive() != nil else { status = .noICloudDrive; return }
         status = .syncing
         loop = Task { [weak self] in
             while !Task.isCancelled {
@@ -94,17 +190,17 @@ public final class SyncCoordinator {
 
     private func tick() async {
         guard isEnabled, let tabs else { return }
-        guard let url = SyncFolder.iCloudDrive() else { status = .noICloudDrive; return }
-        let folder = SyncFolder(url: url)
+        guard let url = FolderBlobStore.iCloudDrive() else { status = .noICloudDrive; return }
+        let store = FolderBlobStore(url: url)
         let own = deviceID
-        // Reading and decoding other Macs' files can touch iCloud; keep it off the main actor.
-        let (snapshots, pending) = await Task.detached { folder.readOthers(excluding: own) }.value
-        for snapshot in snapshots {
-            let change = SyncMerge.change(applying: snapshot, to: tabs.tree)
-            if !change.isEmpty { tabs.apply(change) }
-        }
         do {
-            try writeOwn(folder: folder)
+            let (snapshots, pending) = try await store.readOtherSnapshots(excluding: own)
+            for snapshot in snapshots {
+                let change = SyncMerge.change(applying: snapshot, to: tabs.tree)
+                if !change.isEmpty { tabs.apply(change) }
+            }
+            try await writeOwn(store: store)
+            await syncPasswords(folder: url)
             status = .idle(lastSync: Date(), otherMacs: snapshots.count, waitingForDownload: pending)
         } catch {
             status = .failed(error.localizedDescription)
@@ -112,16 +208,16 @@ public final class SyncCoordinator {
     }
 
     private func writeOwn() {
-        guard isEnabled, let url = SyncFolder.iCloudDrive() else { return }
-        try? writeOwn(folder: SyncFolder(url: url))
+        guard isEnabled, let url = FolderBlobStore.iCloudDrive() else { return }
+        Task { try? await writeOwn(store: FolderBlobStore(url: url)) }
     }
 
     /// Writes only when something other than the timestamp changed.
-    private func writeOwn(folder: SyncFolder) throws {
+    private func writeOwn(store: FolderBlobStore) async throws {
         guard let tabs else { return }
         let snapshot = SyncMerge.snapshot(of: tabs.tree, deviceID: deviceID, deviceName: deviceName)
         if let last = lastWritten, last.spaces == snapshot.spaces, last.items == snapshot.items { return }
-        try folder.write(snapshot)
+        try await store.writeSnapshot(snapshot)
         lastWritten = snapshot
     }
 }

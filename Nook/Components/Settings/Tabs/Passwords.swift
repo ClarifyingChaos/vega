@@ -15,7 +15,58 @@ import NookWeb
 import SwiftUI
 import UniformTypeIdentifiers
 
+/// The Passwords page opens only after Touch ID or the Mac's password, every time it is opened.
 struct PasswordsSettingsView: View {
+    @State private var unlocked = false
+    @State private var failed = false
+
+    var body: some View {
+        Group {
+            if unlocked {
+                PasswordsContent()
+            } else {
+                lockedView
+            }
+        }
+        .onAppear { if !unlocked { unlock() } }
+        // Leaving the page locks it again.
+        .onDisappear { unlocked = false; failed = false }
+    }
+
+    private var lockedView: some View {
+        Form {
+            SettingsHero(symbol: "lock", title: "Passwords", detail: "Locked. Unlock with Touch ID or your Mac's password to see and manage saved passwords.")
+            Section {
+                HStack {
+                    Spacer()
+                    Button("Unlock", systemImage: "touchid") { unlock() }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                    Spacer()
+                }
+                .padding(.vertical, NookDesign.Spacing.md)
+            } footer: {
+                if failed { Text("Couldn't unlock. Try again.") }
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private func unlock() {
+        let context = LAContext()
+        var error: NSError?
+        // No Touch ID and no password set on the Mac: nothing to ask, so it opens.
+        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else { unlocked = true; return }
+        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Show your saved passwords") { ok, _ in
+            Task { @MainActor in
+                unlocked = ok
+                failed = !ok
+            }
+        }
+    }
+}
+
+private struct PasswordsContent: View {
     @State private var settings = PasswordSettings.shared
     @State private var logins: [SavedLogin] = []
     @State private var query = ""

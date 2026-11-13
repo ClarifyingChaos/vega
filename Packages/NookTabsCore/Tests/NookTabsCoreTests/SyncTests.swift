@@ -80,16 +80,17 @@ struct SyncTests {
         #expect(!snap.items.contains { $0.id == tab })
     }
 
-    @Test func folderRoundTripAndBadFiles() throws {
+    @Test func folderRoundTripAndBadFiles() async throws {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("sync-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: dir) }
         var f = Fixture()
         f.tab("one", in: .favorites(spaceID: f.spaceA))
-        let folder = SyncFolder(url: dir)
-        try folder.write(SyncMerge.snapshot(of: f.tree, deviceID: macA, deviceName: "A", now: later))
-        try Data("not json".utf8).write(to: dir.appendingPathComponent("devices/junk.json"))
-        let read = folder.readOthers(excluding: macB)
+        let store = FolderBlobStore(url: dir)
+        try await store.writeSnapshot(SyncMerge.snapshot(of: f.tree, deviceID: macA, deviceName: "A", now: later))
+        try await store.put("devices/junk.json", Data("not json".utf8))
+        let read = try await store.readOtherSnapshots(excluding: macB)
         #expect(read.snapshots.count == 1 && read.snapshots[0].deviceID == macA)
-        #expect(folder.readOthers(excluding: macA).snapshots.isEmpty, "never reads its own file")
+        let own = try await store.readOtherSnapshots(excluding: macA)
+        #expect(own.snapshots.isEmpty, "never reads its own file")
     }
 }

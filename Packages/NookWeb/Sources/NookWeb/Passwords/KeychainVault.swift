@@ -28,6 +28,13 @@ public final class KeychainVault: PasswordVault {
         return query
     }
 
+    /// When a login last changed, kept in the item itself so a login written from another Mac keeps
+    /// that Mac's time; the Keychain's own modification date would be "now" and bounce between Macs.
+    private static func encode(_ date: Date) -> Data { Data(String(date.timeIntervalSince1970).utf8) }
+    private static func decode(_ data: Data?) -> Date? {
+        data.flatMap { String(data: $0, encoding: .utf8) }.flatMap(Double.init).map(Date.init(timeIntervalSince1970:))
+    }
+
     public func all() -> [SavedLogin] {
         var query = base()
         query[kSecReturnAttributes as String] = true
@@ -38,7 +45,9 @@ public final class KeychainVault: PasswordVault {
         return items.compactMap { item in
             guard let host = item[kSecAttrServer as String] as? String,
                   let user = item[kSecAttrAccount as String] as? String else { return nil }
-            return SavedLogin(host: host, username: user, modified: item[kSecAttrModificationDate as String] as? Date ?? .distantPast)
+            let modified = Self.decode(item[kSecAttrGeneric as String] as? Data)
+                ?? item[kSecAttrModificationDate as String] as? Date ?? .distantPast
+            return SavedLogin(host: host, username: user, modified: modified)
         }
     }
 
@@ -51,18 +60,47 @@ public final class KeychainVault: PasswordVault {
         return String(data: data, encoding: .utf8)
     }
 
-    public func save(host: String, username: String, password: String) {
+    public func save(host: String, username: String, password: String, modified: Date) {
         let data = Data(password.utf8)
-        let update = SecItemUpdate(base(host: host, username: username) as CFDictionary, [kSecValueData as String: data] as CFDictionary)
-        guard update == errSecItemNotFound else { return }
-        var add = base(host: host, username: username)
-        add[kSecValueData as String] = data
-        add[kSecAttrLabel as String] = "Vega: \(PasswordHosts.normalized(host))"
-        add[kSecAttrProtocol as String] = kSecAttrProtocolHTTPS
-        SecItemAdd(add as CFDictionary, nil)
+        let attrs: [String: Any] = [kSecValueData as String: data, kSecAttrGeneric as String: Self.encode(modified)]
+        let update = SecItemUpdate(base(host: host, username: username) as CFDictionary, attrs as CFDictionary)
+        if update == errSecItemNotFound {
+            var add = base(host: host, username: username)
+            add.merge(attrs) { $1 }
+            add[kSecAttrLabel as String] = "Vega: \(PasswordHosts.normalized(host))"
+            add[kSecAttrProtocol as String] = kSecAttrProtocolHTTPS
+            SecItemAdd(add as CFDictionary, nil)
+        }
+        forgetTombstone(host: host, username: username)
     }
 
-    public func delete(host: String, username: String) {
+    public func delete(host: String, username: String, at: Date) {
         SecItemDelete(base(host: host, username: username) as CFDictionary)
+        var all = storedTombstones().filter { $0.key != PasswordRecord(host: PasswordHosts.normalized(host), username: username, password: "", modified: at).key }
+        all.append(PasswordRecord(host: PasswordHosts.normalized(host), username: username, password: "", modified: at, deleted: true))
+        storeTombstones(all)
+    }
+
+    // MARK: - Remembered deletions (no secrets in them)
+
+    private static let tombstoneKey = "fork.passwords.tombstones"
+
+    public func tombstones() -> [PasswordRecord] { PasswordMerge.pruned(storedTombstones()) }
+
+    private func storedTombstones() -> [PasswordRecord] {
+        guard let data = UserDefaults.standard.data(forKey: Self.tombstoneKey) else { return [] }
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .millisecondsSince1970
+        return (try? decoder.decode([PasswordRecord].self, from: data)) ?? []
+    }
+
+    private func storeTombstones(_ records: [PasswordRecord]) {
+        let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .millisecondsSince1970
+        UserDefaults.standard.set(try? encoder.encode(PasswordMerge.pruned(records)), forKey: Self.tombstoneKey)
+    }
+
+    private func forgetTombstone(host: String, username: String) {
+        let key = PasswordRecord(host: PasswordHosts.normalized(host), username: username, password: "", modified: Date()).key
+        let all = storedTombstones()
+        if all.contains(where: { $0.key == key }) { storeTombstones(all.filter { $0.key != key }) }
     }
 }

@@ -51,9 +51,10 @@ struct SidebarUpdateNotification: View {
         if let availability, shouldShowNotification {
             VStack(spacing: 0) {
                 VStack(spacing: 0) {
-                    Text("Vega \(availability.shortVersion) is available")
+                    Label("Vega \(availability.shortVersion) is available", systemImage: "arrow.down.circle.fill")
                         .font(NookDesign.Font.secondary)
                         .foregroundStyle(.primary)
+                        .symbolRenderingMode(.multicolor)
                         .offset(y: isExpanded ? -25 : 0)
                         .zIndex(2)
 

@@ -29,4 +29,4 @@ GOOD TO KNOW
 
 FEEDBACK
   Anything that breaks, feels slow, or that you wish it did. A screenshot helps.
-  Issues: https://github.com/ClarifyingChaos/vega/issues
+  Issues: https://github.com/ClarifyingChaos/vega-browser/issues

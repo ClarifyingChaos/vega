@@ -69,7 +69,7 @@
 	<key>SUEnableDowngrade</key>
 	<false/>
 	<key>SUFeedURL</key>
-	<string>https://clarifyingchaos.github.io/vega/appcast.xml</string>
+	<string>https://clarifyingchaos.github.io/vega-browser/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>pZHRQSCstyw1n2jKkD03FCk5u+1OcI5qiYws00+MX1g=</string>
 	<key>SUScheduledCheckInterval</key>

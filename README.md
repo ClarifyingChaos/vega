@@ -8,20 +8,20 @@
 <p align="center">
   <a href="https://www.apple.com/macos/"><img src="https://img.shields.io/badge/macOS-15.5+%20·%20Apple%20Silicon-blue" alt="macOS 15.5+, Apple Silicon"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-green" alt="GPL-3.0"></a>
-  <a href="https://github.com/ClarifyingChaos/vega/releases/latest"><img src="https://img.shields.io/github/v/release/ClarifyingChaos/vega?label=release" alt="Latest release"></a>
+  <a href="https://github.com/ClarifyingChaos/vega-browser/releases/latest"><img src="https://img.shields.io/github/v/release/ClarifyingChaos/vega-browser?label=release" alt="Latest release"></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/ClarifyingChaos/vega/releases/latest"><img src="https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS"></a>
+  <a href="https://github.com/ClarifyingChaos/vega-browser/releases/latest"><img src="https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS"></a>
 </p>
 
 ## Install
 
-1. Download `Vega-X.Y.Z.dmg` from the [latest release](https://github.com/ClarifyingChaos/vega/releases/latest) and drag Vega to Applications.
+1. Download `Vega-X.Y.Z.dmg` from the [latest release](https://github.com/ClarifyingChaos/vega-browser/releases/latest) and drag Vega to Applications.
 2. Test builds aren't notarized yet, so the first open is blocked once: open Vega, then System Settings › Privacy & Security › **Open Anyway**.
 3. After that Vega updates itself (Vega › Check for Updates… checks now).
 
-Feedback and bugs: [Issues](https://github.com/ClarifyingChaos/vega/issues).
+Feedback and bugs: [Issues](https://github.com/ClarifyingChaos/vega-browser/issues).
 
 ## What Vega changes
 

@@ -20,7 +20,7 @@ VERSION="${1:?usage: scripts/release.sh X.Y.Z [--dry-run]}"
 DRY_RUN=false; [[ "${2:-}" == "--dry-run" ]] && DRY_RUN=true
 [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-beta\.[0-9]+)?$ ]] || { echo "version must look like 1.6.1 or 1.6.1-beta.1"; exit 1; }
 
-REPO="ClarifyingChaos/vega"
+REPO="ClarifyingChaos/vega-browser"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"; cd "$ROOT"
 OUT="$ROOT/build/release-out"
 PBX="Nook.xcodeproj/project.pbxproj"
@@ -148,7 +148,7 @@ else
   gh release create "$TAG" "$OUT/$DMG_NAME" --repo "$REPO" --title "Vega $VERSION" --generate-notes $PRERELEASE
 fi
 
-# The feed lives on the gh-pages branch, served at https://clarifyingchaos.github.io/vega/appcast.xml
+# The feed lives on the gh-pages branch, served at https://clarifyingchaos.github.io/vega-browser/appcast.xml
 PAGES="$OUT/gh-pages"
 if git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1; then
   git clone -q --depth 1 --branch gh-pages "$(git remote get-url origin)" "$PAGES"

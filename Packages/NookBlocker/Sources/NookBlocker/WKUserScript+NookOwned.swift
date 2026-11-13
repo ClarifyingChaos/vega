@@ -40,9 +40,12 @@ extension WKUserContentController {
     /// extension content scripts in place, and some begin with `// Nook`, so re-adding them stacked a copy per call.
     public func resetUserScripts(to scripts: [WKUserScript]) {
         removeAllUserScripts()
-        var kept = userScripts.reduce(into: [String: Int]()) { $0[$1.source, default: 0] += 1 }
+        // Keyed by NSString: Swift's String hash normalises every character of these large bridged
+        // sources, which stalled the main thread on each navigation; NSString samples a prefix.
+        var kept = userScripts.reduce(into: [NSString: Int]()) { $0[$1.source as NSString, default: 0] += 1 }
         for script in scripts {
-            if let n = kept[script.source], n > 0 { kept[script.source] = n - 1 } else { addUserScript(script) }
+            let key = script.source as NSString
+            if let n = kept[key], n > 0 { kept[key] = n - 1 } else { addUserScript(script) }
         }
     }
 }

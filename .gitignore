@@ -136,6 +136,8 @@ build-release-signed/
 # Everything under docs/ stays local: designs, specs, reviews, handoffs, working
 # notes. adblocker-architecture.md is the one committed doc.
 docs/*
+# FORK: the release guide ships with the repo
+!docs/RELEASING.md
 !docs/adblocker-architecture.md
 tasks/
 .superpowers/

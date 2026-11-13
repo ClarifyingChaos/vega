@@ -66,7 +66,7 @@ struct UpdatesSettingsView: View {
 
     var body: some View {
         Form {
-            SettingsHero(symbol: "arrow.down.circle", title: "Updates", detail: "Vega keeps itself up to date. Every version's changes are listed below.")
+            SettingsHero(symbol: "arrow.down.circle", title: "Updates", detail: "Vega keeps itself up to date. Every version's changes are listed below.", logotype: "vega-logotype")
 
             Section {
                 LabeledContent("Version", value: "Vega \(version) (\(build))")

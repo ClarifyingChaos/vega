@@ -45,7 +45,7 @@ def main():
             continue
         # Some commands are written from the package folder, some from the repo root.
         first = next((w for w in cmd.split() if w.endswith(".swift")), "")
-        cwd = os.getcwd() if os.path.exists(first) else os.path.dirname(os.path.dirname(path))
+        cwd = os.getcwd() if glob.glob(first) else os.path.dirname(os.path.dirname(path))  # first may be a pattern
         out = tempfile.mktemp(prefix="check-")
         cmd = re.sub(r"-o\s+\S+", f"-o {out}", cmd)
         cmd = re.sub(r"&&\s*/tmp/\S+", f"&& {out}", cmd)

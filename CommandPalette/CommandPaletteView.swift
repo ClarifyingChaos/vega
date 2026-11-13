@@ -372,7 +372,6 @@ struct CommandPaletteView: View {
                 selectedSuggestionIndex = count - 1
             }
         }
-        .animation(NookDesign.Motion.quick, value: selectedSuggestionIndex)
         .onChange(of: commandPalette.prefilledText) { _, newValue in
             if isVisible {
                 text = newValue
@@ -415,7 +414,7 @@ struct CommandPaletteView: View {
                         .foregroundStyle(.primary)
                         .contentShape(NookDesign.Radius.shape(NookDesign.Radius.sm))
                         .onHoverTracking { hovering in
-                            withAnimation(NookDesign.Motion.quick) {
+                            withAnimation(NookDesign.Motion.hover(hovering)) {
                                 if hovering {
                                     hoveredIndex = index
                                 } else {

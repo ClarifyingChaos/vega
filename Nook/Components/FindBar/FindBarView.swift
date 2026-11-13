@@ -85,7 +85,7 @@ struct FindBarView: View {
                             .buttonStyle(.plain)
                             .disabled(findManager.searchText.isEmpty)
                             .onHoverTracking { hovering in
-                                withAnimation(NookDesign.Motion.quick) {
+                                withAnimation(NookDesign.Motion.hover(hovering)) {
                                     isUpButtonHovered = hovering
                                 }
                             }
@@ -102,7 +102,7 @@ struct FindBarView: View {
                             .buttonStyle(.plain)
                             .disabled(findManager.searchText.isEmpty)
                             .onHoverTracking { hovering in
-                                withAnimation(NookDesign.Motion.quick) {
+                                withAnimation(NookDesign.Motion.hover(hovering)) {
                                     isDownButtonHovered = hovering
                                 }
                             }
@@ -123,7 +123,7 @@ struct FindBarView: View {
                         }
                         .buttonStyle(.plain)
                         .onHoverTracking { hovering in
-                            withAnimation(NookDesign.Motion.quick) {
+                            withAnimation(NookDesign.Motion.hover(hovering)) {
                                 isCloseButtonHovered = hovering
                             }
                         }
@@ -157,14 +157,6 @@ struct FindBarView: View {
             } else {
                 isTextFieldFocused = false
             }
-        }
-        // Only handle escape when find bar is visible
-        if findManager.isFindBarVisible {
-            EmptyView()
-                .onKeyPress(.escape) {
-                    findManager.hideFindBar()
-                    return .handled
-                }
         }
     }
 }

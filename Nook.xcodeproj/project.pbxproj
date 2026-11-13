@@ -36,7 +36,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		7F8340FC2E37F39400674A5D /* Nook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nook.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F8340FC2E37F39400674A5D /* Vega.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vega.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		105000000000000000000009 /* NookiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NookiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -207,7 +207,7 @@
 			isa = PBXGroup;
 			children = (
 				105000000000000000000009 /* NookiOS.app */,
-				7F8340FC2E37F39400674A5D /* Nook.app */,
+				7F8340FC2E37F39400674A5D /* Vega.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -248,7 +248,7 @@
 				C0DE7AB50000000000000062 /* NookUI */,
 			);
 			productName = Pulse;
-			productReference = 7F8340FC2E37F39400674A5D /* Nook.app */;
+			productReference = 7F8340FC2E37F39400674A5D /* Vega.app */;
 			productType = "com.apple.product-type.application";
 		};
 		105000000000000000000001 /* NookiOS */ = {
@@ -516,7 +516,8 @@
 				);
 				MARKETING_VERSION = 1.7.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vega.browser;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = Nook;
+				PRODUCT_NAME = Vega;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = YES;
@@ -565,7 +566,8 @@
 				);
 				MARKETING_VERSION = 1.7.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vega.browser;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = Nook;
+				PRODUCT_NAME = Vega;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;

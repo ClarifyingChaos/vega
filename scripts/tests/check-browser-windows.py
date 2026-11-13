@@ -27,13 +27,13 @@ with tempfile.TemporaryDirectory(prefix="nook-window-check-") as temporary:
     contents = folder / "WindowCheck.app/Contents"
     binaries = contents / "MacOS"
     binaries.mkdir(parents=True)
-    (contents / "Resources").symlink_to(products / "Nook.app/Contents/Resources")
-    (contents / "Frameworks").symlink_to(products / "Nook.app/Contents/Frameworks")
+    (contents / "Resources").symlink_to(products / "Vega.app/Contents/Resources")
+    (contents / "Frameworks").symlink_to(products / "Vega.app/Contents/Frameworks")
     with (contents / "Info.plist").open("wb") as stream:
         plistlib.dump({"CFBundleIdentifier": bundle_id, "CFBundleExecutable": "WindowCheck",
                       "CFBundlePackageType": "APPL", "CFBundleName": "Nook Window Check"}, stream)
     library = binaries / "Nook.debug.dylib"
-    shutil.copy2(products / "Nook.app/Contents/MacOS/Nook.debug.dylib", library)
+    shutil.copy2(products / "Vega.app/Contents/MacOS/Vega.debug.dylib", library)
     command = [
         "swiftc", "-parse-as-library", "-I", str(products), "-I", str(products / "include"),
         "-I", str(derived / "SourcePackages/checkouts/swift-atomics/Sources/_AtomicsShims/include"),
@@ -54,7 +54,7 @@ with tempfile.TemporaryDirectory(prefix="nook-window-check-") as temporary:
         command[command.index(str(root / "scripts/tests/BrowserWindowOpeningCheck.swift"))] = str(root / "scripts/tests/BrowserColdLaunchCheck.swift")
         subprocess.run(command, check=True)
         subprocess.run(["codesign", "--force", "--sign", "-", str(binaries / "WindowCheck")], check=True)
-        with (products / "Nook.app/Contents/Info.plist").open("rb") as stream:
+        with (products / "Vega.app/Contents/Info.plist").open("rb") as stream:
             info = plistlib.load(stream)
         info.update(CFBundleIdentifier=bundle_id, CFBundleExecutable="WindowCheck", CFBundleName="Nook Window Check")
         with (contents / "Info.plist").open("wb") as stream:

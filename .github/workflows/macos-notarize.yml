@@ -98,19 +98,19 @@ jobs:
             DEPLOYMENT_POSTPROCESSING=YES \
             STRIP_INSTALLED_PRODUCT=YES \
             DEBUG_INFORMATION_FORMAT=dwarf-with-dsym
-          cp -R "build/Build/Products/Release/Nook.app" ./Nook.app
+          cp -R "build/Build/Products/Release/Vega.app" ./Vega.app
 
       # The app ships stripped; its symbols stay here so crash reports can be read.
       - name: Keep debug symbols
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Nook-${{ github.ref_name }}-dSYM
-          path: build/Build/Products/Release/Nook.app.dSYM
+          path: build/Build/Products/Release/Vega.app.dSYM
           retention-days: 90
 
       - name: Read minimum macOS version
         run: |
-          MINIMUM_MACOS=$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' Nook.app/Contents/Info.plist)
+          MINIMUM_MACOS=$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' Vega.app/Contents/Info.plist)
           test -n "$MINIMUM_MACOS"
           echo "MINIMUM_MACOS=$MINIMUM_MACOS" >> "$GITHUB_ENV"
 
@@ -119,7 +119,7 @@ jobs:
           # Notarization requires all binaries to be signed with our Developer ID,
           # a secure timestamp, and hardened runtime. Sparkle ships pre-signed with
           # its own cert, so we must re-sign the entire bundle from inside out.
-          SPARKLE="Nook.app/Contents/Frameworks/Sparkle.framework/Versions/B"
+          SPARKLE="Vega.app/Contents/Frameworks/Sparkle.framework/Versions/B"
 
           # Sign innermost binaries first
           codesign --force --sign "$SIGNING_IDENTITY" --timestamp --options runtime \
@@ -153,10 +153,10 @@ jobs:
           codesign --force --sign "$SIGNING_IDENTITY" --timestamp \
             --options runtime \
             --entitlements "$(pwd)/Nook/Nook-CI.entitlements" \
-            "Nook.app"
+            "Vega.app"
 
       - name: Verify signature before notarizing
-        run: codesign --verify --deep --strict --verbose=2 "Nook.app"
+        run: codesign --verify --deep --strict --verbose=2 "Vega.app"
 
       - name: Notarize app
         env:
@@ -172,7 +172,7 @@ jobs:
           # ditto preserves macOS symlinks and extended attributes; zip -r does not.
           # Broken symlinks in the archive cause "invalid signature" errors because
           # the bundle seal references symlink targets, not file copies.
-          ditto -c -k --keepParent "Nook.app" Nook.zip
+          ditto -c -k --keepParent "Vega.app" Nook.zip
           SUBMIT_OUTPUT=$(xcrun notarytool submit "Nook.zip" \
             --keychain-profile "nook-notary" \
             --wait 2>&1)
@@ -186,17 +186,17 @@ jobs:
           fi
 
       - name: Staple notarization ticket
-        run: xcrun stapler staple "Nook.app"
+        run: xcrun stapler staple "Vega.app"
 
       - name: Verify signature
         run: |
-          codesign --verify --deep --strict --verbose=2 "Nook.app"
-          spctl --assess --type execute --verbose "Nook.app"
+          codesign --verify --deep --strict --verbose=2 "Vega.app"
+          spctl --assess --type execute --verbose "Vega.app"
 
       - name: Create DMG
         run: |
           hdiutil create -volname "Nook $DISPLAY_VERSION" \
-            -srcfolder "Nook.app" \
+            -srcfolder "Vega.app" \
             -ov -format UDZO "Nook-${VERSION}.dmg"
 
       - name: Sign DMG for Sparkle

@@ -58,7 +58,7 @@ xcodebuild -scheme Nook -configuration Release -arch arm64 -derivedDataPath buil
 
 rm -rf "$OUT"; mkdir -p "$OUT/stage"
 APP="$OUT/stage/Vega.app"
-ditto build/release/Build/Products/Release/Nook.app "$APP"
+ditto build/release/Build/Products/Release/Vega.app "$APP"
 
 # Google sign-in for sync: the client file stays out of git and goes into the app here.
 GOOGLE_PLIST="$ROOT/scripts/signing/GoogleOAuth.plist"

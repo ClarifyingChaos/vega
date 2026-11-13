@@ -58,8 +58,8 @@ jobs:
 
       - name: Ad-hoc sign and pack
         run: |
-          codesign --force --deep --sign - build/Build/Products/Release/Nook.app
-          ditto -c -k --keepParent build/Build/Products/Release/Nook.app Nook.zip
+          codesign --force --deep --sign - build/Build/Products/Release/Vega.app
+          ditto -c -k --keepParent build/Build/Products/Release/Vega.app Nook.zip
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -82,7 +82,7 @@ jobs:
       - name: Launch and stay up for 20 seconds
         run: |
           ditto -x -k Nook.zip .
-          open -g --stdout "$PWD/nook.log" --stderr "$PWD/nook.log" Nook.app
+          open -g --stdout "$PWD/nook.log" --stderr "$PWD/nook.log" Vega.app
           sleep 20
-          if ! pgrep -x Nook; then cat nook.log; exit 1; fi
-          pkill -x Nook
+          if ! pgrep -x Vega; then cat nook.log; exit 1; fi
+          pkill -x Vega

@@ -21,7 +21,9 @@ FIRST OPEN (once)
 GOOD TO KNOW
   - Vega updates itself: it checks for a new version in the background and installs it on
     the next relaunch. Vega menu > Check for Updates… checks now.
-  - Not in this build: password autofill from the Passwords app, and web push notifications.
+  - Passwords: Vega saves and fills logins itself (Settings > Passwords, locked with Touch ID).
+  - Sync: Settings > General > Sync keeps your spaces, favorites and passwords the same on your Macs,
+    through iCloud Drive or a Google account. Not in this build: web push notifications.
   - Import from another browser: Vega menu > Import from Another Browser.
   - Everything stays on your Mac. Nothing is sent to us.
 

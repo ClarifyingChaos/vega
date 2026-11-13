@@ -30,6 +30,8 @@ Vega keeps Nook's engine and reworks how it looks and feels:
 - **A redesigned sidebar, command palette and Site Controls**, plus Notes in the sidebar and new menu bar commands.
 - **Picture-in-picture** that floats by default and docks in the sidebar when you drag it there, **Cast** to AirPlay, page **Capture**, a **Media** grid of your downloads, richer **downloads**.
 - **Per-site settings**: JavaScript, mobile site, automatic picture-in-picture.
+- **Passwords** saved in your Keychain and filled only when you pick them, locked behind Touch ID, importable from Chrome or Safari.
+- **Sync** of spaces, favorites and encrypted passwords between your Macs through iCloud Drive or a Google account, no paid account needed.
 - **Settings redesigned** to match macOS 27 System Settings.
 - **Liquid Glass**, Reduce Motion, Increase Contrast and VoiceOver work across the app; sharp favicons everywhere.
 - **Its own app** (`com.vega.browser`) that updates itself from this repo's releases.

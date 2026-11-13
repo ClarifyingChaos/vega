@@ -121,7 +121,6 @@ cat > "$OUT/appcast.xml" <<XML
       <sparkle:version>$BUILD_FOR_FEED</sparkle:version>
       <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.5</sparkle:minimumSystemVersion>
-      <sparkle:releaseNotesLink>https://github.com/$REPO/releases/tag/$TAG</sparkle:releaseNotesLink>
       <enclosure url="$URL" type="application/octet-stream" $SIG_LINE />
     </item>
   </channel>

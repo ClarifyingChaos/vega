@@ -2,6 +2,15 @@
 
 What Vega changes on top of [Nook](https://github.com/nook-browser/Nook). Nook's own changes reach Vega through the daily upstream sync; they're in [CHANGELOG.md](CHANGELOG.md) and [Nook's releases](https://github.com/nook-browser/Nook/releases).
 
+## Vega 1.7.1 (2026-11-13)
+
+Small fixes to updating.
+
+### Updates
+- **Check for Updates…** in the Vega menu works again.
+- After an update, the "What's new" card opens the Updates page in Settings.
+- The update window no longer shows a web page of release notes.
+
 ## Vega 1.7.0 (2026-11-13)
 
 Your passwords, and your setup on every Mac.

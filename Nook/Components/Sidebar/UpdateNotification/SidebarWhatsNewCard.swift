@@ -12,22 +12,16 @@ import NookUI
 import NookWeb
 
 /// Shown once after an update, in the update notification's slot. The whole card opens the
-/// release notes; the corner button dismisses it. Either way it is gone until the next version.
+/// Updates page in Settings; the corner button dismisses it. Either way it is gone until the next version.
 struct SidebarWhatsNewCard: View {
     @EnvironmentObject var browserManager: BrowserManager
-    @Environment(BrowserWindowState.self) private var windowState
     @State private var isHovering = false
-
-    // One place to point at a designed page later.
-    private static let notesBase = "https://github.com/nook-browser/Nook/releases/tag/v"
 
     var body: some View {
         // The update card owns this slot while an update is pending.
         if let version = browserManager.whatsNewVersion, browserManager.updateAvailability == nil {
             Button {
-                if let url = URL(string: Self.notesBase + version) {
-                    browserManager.tabs.open(url: url, in: windowState, placement: .newTab)
-                }
+                browserManager.openSettings(tab: .updates)
                 browserManager.whatsNewVersion = nil
             } label: {
                 VStack(spacing: NookDesign.Spacing.xxs) {

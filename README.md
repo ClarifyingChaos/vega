@@ -1,5 +1,8 @@
 <div align="center">
-  <h1><b>Vega</b></h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/vega-lockup-white.svg">
+    <img src="assets/brand/vega-lockup.svg" alt="Vega" height="64">
+  </picture>
   <p>
     A fast, sidebar-first browser for macOS.
   </p>

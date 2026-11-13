@@ -1,55 +1,37 @@
 {
-  "fill" : {
-    "automatic-gradient" : "display-p3:0.96000,0.96500,1.00000,1.00000"
+  "fill": {
+    "solid": "display-p3:0.06000,0.06000,0.09000,1.00000"
   },
-  "groups" : [
+  "groups": [
     {
-      "layers" : [
+      "layers": [
         {
-          "fill-specializations" : [
+          "fill-specializations": [
             {
-              "value" : {
-                "linear-gradient" : [
-                  "display-p3:0.33000,0.36000,0.95000,1.00000",
-                  "display-p3:0.12000,0.10000,0.55000,1.00000"
-                ]
-              }
-            },
-            {
-              "appearance" : "dark",
-              "value" : {
-                "linear-gradient" : [
-                  "display-p3:0.82959,0.93311,0.70703,1.00000",
-                  "display-p3:0.68115,0.87158,0.46851,1.00000"
-                ]
-              }
-            },
-            {
-              "appearance" : "tinted",
-              "value" : {
-                "solid" : "display-p3:0.36620,0.68093,0.52321,1.00000"
+              "value": {
+                "solid": "display-p3:1.00000,1.00000,1.00000,1.00000"
               }
             }
           ],
-          "glass" : false,
-          "image-name" : "Light Mode.svg",
-          "name" : "Logo"
+          "glass": false,
+          "image-name": "Vega Symbol.svg",
+          "name": "Vega"
         }
       ],
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
       },
-      "translucency" : {
-        "enabled" : true,
-        "value" : 0.5
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
       }
     }
   ],
-  "supported-platforms" : {
-    "circles" : [
+  "supported-platforms": {
+    "circles": [
       "watchOS"
     ],
-    "squares" : "shared"
+    "squares": "shared"
   }
 }

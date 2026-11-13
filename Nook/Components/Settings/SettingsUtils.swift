@@ -20,6 +20,7 @@ enum SettingsTabs: String, Hashable, CaseIterable {
     case spaces
     case shortcuts
     case extensions
+    case updates
     case developer
 
     var name: String {
@@ -35,6 +36,7 @@ enum SettingsTabs: String, Hashable, CaseIterable {
         case .spaces: return "Spaces"
         case .shortcuts: return "Shortcuts"
         case .extensions: return "Extensions"
+        case .updates: return "Updates"
         case .developer: return "Developer"
         }
     }
@@ -52,6 +54,7 @@ enum SettingsTabs: String, Hashable, CaseIterable {
         case .spaces: return "square.on.square"
         case .shortcuts: return "keyboard"
         case .extensions: return "puzzlepiece.extension"
+        case .updates: return "arrow.down.circle"
         case .developer: return "hammer"
         }
     }
@@ -70,6 +73,7 @@ enum SettingsTabs: String, Hashable, CaseIterable {
         case .spaces: return ["accent", "colour", "color", "rename"]
         case .shortcuts: return ["keyboard", "keys", "hotkeys"]
         case .extensions: return ["web extensions", "chrome", "add-ons"]
+        case .updates: return ["version", "release notes", "what's new", "changelog", "update", "upgrade"]
         case .developer: return ["devtools", "inspector", "console", "network", "mcp", "browser control"]
         }
     }
@@ -94,6 +98,7 @@ enum SettingsTabs: String, Hashable, CaseIterable {
         case .spaces: return .cyan
         case .shortcuts: return .indigo
         case .extensions: return .teal
+        case .updates: return .green
         case .developer: return .gray
         }
     }
@@ -105,7 +110,7 @@ enum SettingsTabs: String, Hashable, CaseIterable {
             (nil, [.general, .appearance, .spaces]),
             (nil, [.privacy, .passwords, .adBlocker, .links]),
             (nil, [.extensions, .shortcuts, .tweaks, .ai]),
-            (nil, [.developer]),
+            (nil, [.updates, .developer]),
         ]
     }
 }

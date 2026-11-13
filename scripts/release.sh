@@ -46,6 +46,10 @@ if ! $DRY_RUN; then
 fi
 echo "▸ Vega $VERSION (build $($DRY_RUN && echo $OLD_BUILD || echo $NEW_BUILD))"
 
+# --- The in-app list of changes comes from VEGA_CHANGELOG.md ----------------------------------
+grep -q "^## Vega $VERSION" VEGA_CHANGELOG.md || { echo "add a '## Vega $VERSION' section to VEGA_CHANGELOG.md first"; exit 1; }
+python3 scripts/gen-changelog.py
+
 # --- Build ------------------------------------------------------------------------------------
 xcodebuild -scheme Nook -configuration Release -arch arm64 -derivedDataPath build/release \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO COMPILER_INDEX_STORE_ENABLE=NO \

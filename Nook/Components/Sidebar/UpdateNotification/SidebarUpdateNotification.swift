@@ -51,13 +51,19 @@ struct SidebarUpdateNotification: View {
         if let availability, shouldShowNotification {
             VStack(spacing: 0) {
                 VStack(spacing: 0) {
-                    Text("New version of Vega available")
+                    Text("Vega \(availability.shortVersion) is available")
                         .font(NookDesign.Font.secondary)
                         .foregroundStyle(.primary)
                         .offset(y: isExpanded ? -25 : 0)
                         .zIndex(2)
 
                     if isExpanded {
+                        // FORK: what changed, before restarting.
+                        Button("What's New") { browserManager.openSettings(tab: .updates) }
+                            .buttonStyle(.plain)
+                            .font(NookDesign.Font.secondary)
+                            .foregroundStyle(.secondary)
+                            .padding(.top, NookDesign.Spacing.md)
                         Button(action: {
                             installUpdate(wasDownloaded: availability.isDownloaded)
                         }) {

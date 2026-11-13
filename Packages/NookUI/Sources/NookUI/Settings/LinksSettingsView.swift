@@ -29,14 +29,9 @@ public struct LinksSettingsView: View {
 
             #if os(macOS)
             Section {
-                LabeledContent("Open in") {
-                    Picker("Open in", selection: $settings.externalLinksInMiniWindow) {
-                        Text("Mini window").tag(true)
-                        Text("New tab in current Space").tag(false)
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
-                    .fixedSize()
+                Picker("Open in", selection: $settings.externalLinksInMiniWindow) {
+                    Text("Mini window").tag(true)
+                    Text("New tab in current Space").tag(false)
                 }
             } header: {
                 Text("Links from other apps")

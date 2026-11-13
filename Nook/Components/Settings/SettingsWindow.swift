@@ -125,11 +125,9 @@ private struct HistoryToolbar: ViewModifier {
                     }
                     .sharedBackgroundVisibility(.hidden)
                 }
-                .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         } else {
             content
                 .toolbar { buttons }
-                .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         }
     }
 
@@ -146,6 +144,18 @@ private struct HistoryToolbar: ViewModifier {
                 .disabled(!canGoForward)
         }
         .controlGroupStyle(.navigation)
+    }
+}
+
+/// System Settings blurs pages softly where they scroll under the back/forward capsule and title;
+/// without it the page's own heading ran straight into the window title.
+private struct SoftTopScrollEdge: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *) {
+            content.scrollEdgeEffectStyle(.soft, for: .top)
+        } else {
+            content
+        }
     }
 }
 
@@ -242,6 +252,7 @@ private struct SettingsDetailPane: View {
                     tabPage
                         // FORK: room to breathe: taller rows on every page.
                         .environment(\.defaultMinListRowHeight, 40)
+                        .modifier(SoftTopScrollEdge())
                     .navigationTitle(tab.name)
                 }
             }

@@ -16,6 +16,8 @@ public struct SettingsGeneralTab: View {
     @Environment(NookSettingsService.self) var nookSettings
     @State private var showingAddSite = false
     @State private var showingAddEngine = false
+    /// The Site Search row picked for the − button.
+    @State private var selectedSite: UUID?
 
     public init() {}
 
@@ -135,43 +137,50 @@ public struct SettingsGeneralTab: View {
                 Text(nookSettings.tabManagementMode.description)
             }
 
+            // FORK: System Settings' editable list: plain rows you select, and one + / − bar under
+            // them, in place of a red minus button on every row.
             Section {
                 ForEach(nookSettings.siteSearchEntries) { entry in
-                    LabeledContent {
-                        HStack(spacing: NookDesign.Spacing.md) {
-                            Text(entry.domain)
-                                .foregroundStyle(.secondary)
-                            Button {
-                                nookSettings.siteSearchEntries.removeAll { $0.id == entry.id }
-                            } label: {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundStyle(.red)
-                            }
-                            .buttonStyle(.plain)
+                    HStack(spacing: NookDesign.Spacing.md) {
+                        Circle()
+                            .fill(entry.color)
+                            .frame(width: NookDesign.Size.statusDot, height: NookDesign.Size.statusDot)
+                        Text(entry.name)
+                        Spacer()
+                        Text(entry.domain)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, NookDesign.Spacing.sm)
+                    .padding(.vertical, NookDesign.Spacing.xs)
+                    .background(
+                        NookDesign.Radius.shape(NookDesign.Radius.sm)
+                            .fill(selectedSite == entry.id ? Color.accentColor.opacity(0.25) : .clear)
+                    )
+                    .contentShape(Rectangle())
+                    .onTapGesture { selectedSite = selectedSite == entry.id ? nil : entry.id }
+                    .accessibilityAddTraits(selectedSite == entry.id ? [.isButton, .isSelected] : .isButton)
+                }
+
+                HStack(spacing: NookDesign.Spacing.sm) {
+                    Button { showingAddSite = true } label: { Image(systemName: "plus") }
+                        .help("Add Site")
+                        .accessibilityLabel("Add Site")
+                    Button {
+                        if let id = selectedSite {
+                            nookSettings.siteSearchEntries.removeAll { $0.id == id }
+                            selectedSite = nil
                         }
-                    } label: {
-                        Label {
-                            Text(entry.name)
-                        } icon: {
-                            Circle()
-                                .fill(entry.color)
-                                .frame(
-                                    width: NookDesign.Size.statusDot,
-                                    height: NookDesign.Size.statusDot
-                                )
-                        }
+                    } label: { Image(systemName: "minus") }
+                        .disabled(selectedSite == nil)
+                        .help("Remove Site")
+                        .accessibilityLabel("Remove Site")
+                    Spacer()
+                    Button("Reset to Defaults") {
+                        nookSettings.siteSearchEntries = SiteSearchEntry.defaultSites
+                        selectedSite = nil
                     }
                 }
-
-                Button {
-                    showingAddSite = true
-                } label: {
-                    Label("Add Site", systemImage: "plus")
-                }
-
-                Button("Reset to Defaults") {
-                    nookSettings.siteSearchEntries = SiteSearchEntry.defaultSites
-                }
+                .buttonStyle(.bordered)
             } header: {
                 Text("Site Search")
             } footer: {

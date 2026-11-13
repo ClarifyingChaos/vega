@@ -74,7 +74,11 @@ private struct ShortcutRowView: View {
     }
 
     var body: some View {
-        LabeledContent(shortcut.action.displayName) {
+        // FORK: name and keys centred on one line; LabeledContent pinned the name to the top of
+        // the taller recorder.
+        HStack(alignment: .center) {
+            Text(shortcut.action.displayName)
+            Spacer(minLength: NookDesign.Spacing.lg)
             if shortcut.isCustomizable {
                 ShortcutRecorderView(
                     keyCombination: keys,
@@ -83,9 +87,10 @@ private struct ShortcutRowView: View {
                     onRecord: { keyboardShortcutManager.updateShortcut(action: shortcut.action, keyCombination: $0) }
                 )
             } else {
-                Text(keys?.displayString ?? "(none)")
+                Text(keys?.displayString ?? "None")
                     .foregroundStyle(.secondary)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }

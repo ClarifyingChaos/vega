@@ -24,30 +24,33 @@ public struct SettingsAdBlockerTab: View {
         Form {
             SettingsHero(symbol: "shield.lefthalf.filled", title: "Ad Blocker", detail: "Block ads and trackers with the filter lists you choose.")
 
+            // FORK: one group: the switch, then when the lists last updated with Update at the trailing edge.
             Section {
                 Toggle("Ad & Tracker Blocker", isOn: $settings.adBlockerEnabled)
                     .onChange(of: nookSettings.adBlockerEnabled) { _, enabled in
                         contentBlocker?.setEnabled(enabled)
                     }
-            } footer: {
-                Text("Filter lists update automatically every 24 hours.")
-            }
-
-            if nookSettings.adBlockerEnabled {
-                Section("Status") {
+                if nookSettings.adBlockerEnabled {
                     HStack {
-                        if isUpdatingFilters {
-                            ProgressView()
-                                .controlSize(.small)
-                            Text("Updating filter lists...")
-                                .foregroundStyle(.secondary)
-                        } else {
-                            if let lastUpdate = nookSettings.adBlockerLastUpdate {
-                                Text("Last updated: \(lastUpdate, style: .relative) ago")
-                                    .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: NookDesign.Spacing.xxs) {
+                            Text("Filter lists")
+                            Group {
+                                if isUpdatingFilters {
+                                    Text("Updating…")
+                                } else if let lastUpdate = nookSettings.adBlockerLastUpdate {
+                                    Text("Updated \(lastUpdate, style: .relative) ago")
+                                } else {
+                                    Text("Not updated yet")
+                                }
                             }
-                            Spacer()
-                            Button("Update Filters") {
+                            .font(NookDesign.Font.secondary)
+                            .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if isUpdatingFilters {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Button("Update Now") {
                                 isUpdatingFilters = true
                                 Task {
                                     await contentBlocker?.recompileFilterLists()
@@ -57,7 +60,11 @@ public struct SettingsAdBlockerTab: View {
                         }
                     }
                 }
+            } footer: {
+                Text("Filter lists update automatically every 24 hours.")
+            }
 
+            if nookSettings.adBlockerEnabled {
                 Section("Default Filter Lists") {
                     ForEach(FilterListManager.defaultLists, id: \.filename) { list in
                         LabeledContent {

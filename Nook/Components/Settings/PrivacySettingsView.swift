@@ -15,6 +15,7 @@ import NookSettings
 import NookWeb
 
 struct PrivacySettingsView: View {
+    @State private var confirmingClearHistory = false
     @EnvironmentObject var browserManager: BrowserManager
     @Environment(\.nookSettings) var nookSettings
     @Environment(\.showSettingsSubPane) private var showSettingsSubPane
@@ -71,10 +72,10 @@ struct PrivacySettingsView: View {
             Section {
                 cookiesRow
                 cacheRow
-                LabeledContent("Browsing history") {
-                    Button("Clear History") {
-                        clearBrowsingHistory()
-                    }
+                HStack {
+                    Text("Browsing history")
+                    Spacer()
+                    Button("Clear History…") { confirmingClearHistory = true }
                 }
             } header: {
                 HStack(spacing: NookDesign.Spacing.md) {
@@ -87,6 +88,12 @@ struct PrivacySettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .confirmationDialog("Clear your browsing history?", isPresented: $confirmingClearHistory) {
+            Button("Clear History", role: .destructive, action: clearBrowsingHistory)
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Every page you visited is removed from history in all spaces. You can't undo this.")
+        }
         .onAppear {
             Task {
                 await cookieManager.loadCookies()
@@ -137,24 +144,11 @@ struct PrivacySettingsView: View {
 
     // MARK: - Website Data Rows
 
-    private struct DataStat: Identifiable {
-        let value: String
-        let label: String
-        var isWarning = false
-        var id: String { label }
-    }
-
     private var cookiesRow: some View {
         let stats = cookieManager.getCookieStats()
         return websiteDataRow(
             "Cookies",
-            count: stats.total.formatted(),
-            stats: stats.total == 0 ? [] : [
-                DataStat(value: stats.persistent.formatted(), label: "Persistent"),
-                DataStat(value: stats.session.formatted(), label: "Session"),
-                DataStat(value: stats.expired.formatted(), label: "Expired", isWarning: stats.expired > 0),
-                DataStat(value: formatSize(stats.totalSize), label: "Total size"),
-            ],
+            summary: stats.total == 0 ? "None" : "\(stats.total.formatted()) cookies · \(formatSize(stats.totalSize))",
             manage: .cookies
         ) {
             Button("Clear Expired Cookies") {
@@ -184,13 +178,7 @@ struct PrivacySettingsView: View {
         let stats = cacheManager.getCacheStats()
         return websiteDataRow(
             "Cache",
-            count: stats.total == 1 ? "1 site" : "\(stats.total.formatted()) sites",
-            stats: stats.total == 0 ? [] : [
-                DataStat(value: formatSize(stats.diskSize), label: "Disk"),
-                DataStat(value: formatSize(stats.memorySize), label: "Memory"),
-                DataStat(value: stats.staleCount.formatted(), label: "Stale", isWarning: stats.staleCount > 0),
-                DataStat(value: formatSize(stats.totalSize), label: "Total size"),
-            ],
+            summary: stats.total == 0 ? "None" : "\(stats.total == 1 ? "1 site" : "\(stats.total.formatted()) sites") · \(formatSize(stats.totalSize))",
             manage: .cache
         ) {
             Button("Clear Stale Cache") {
@@ -216,53 +204,36 @@ struct PrivacySettingsView: View {
         }
     }
 
+    /// System Settings' row: the name with a one-line summary, Clear at the trailing edge, and a
+    /// chevron to the detail list. FORK: replaces a four-column stats grid and a 7 pt chevron.
     private func websiteDataRow<ClearItems: View>(
         _ title: String,
-        count: String,
-        stats: [DataStat],
+        summary: String,
         manage: SettingsSubPane,
         @ViewBuilder clearItems: () -> ClearItems
     ) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: NookDesign.Spacing.md) {
-            VStack(alignment: .leading, spacing: NookDesign.Spacing.sm) {
-                HStack(spacing: NookDesign.Spacing.xs) {
-                    Text(title)
-                    Text("· \(count)")
-                        .foregroundStyle(.secondary)
-                }
-                if !stats.isEmpty {
-                    HStack(alignment: .top, spacing: NookDesign.Spacing.lg) {
-                        ForEach(stats) { stat in
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text(stat.value)
-                                    .foregroundStyle(stat.isWarning ? .orange : .primary)
-                                Text(stat.label)
-                                    .font(NookDesign.Font.caption)
-                                    .foregroundStyle(stat.isWarning ? .orange : .secondary)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                }
+        HStack(alignment: .center, spacing: NookDesign.Spacing.lg) {
+            VStack(alignment: .leading, spacing: NookDesign.Spacing.xxs) {
+                Text(title)
+                Text(summary)
+                    .font(NookDesign.Font.secondary)
+                    .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             Menu("Clear", content: clearItems)
+                .menuStyle(.button)
                 .fixedSize()
                 .disabled(isClearing)
-            Button {
-                showSettingsSubPane(manage)
-            } label: {
-                Image(systemName: "chevron.right")
-            }
-            .buttonStyle(.borderless)
-            .foregroundStyle(.secondary)
-            .help("Manage \(title)")
-            .accessibilityLabel("Manage \(title)")
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
         }
+        .padding(.vertical, NookDesign.Spacing.xxs)
         .contentShape(Rectangle())
-        .onTapGesture {
-            showSettingsSubPane(manage)
-        }
+        .onTapGesture { showSettingsSubPane(manage) }
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint("Shows \(title.lowercased()) by site")
     }
 
     private func clearExpiredCookies() {

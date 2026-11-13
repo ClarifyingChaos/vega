@@ -344,7 +344,10 @@ private struct ProfileDetailsSheet: View {
             name = profile.name
             #if os(macOS)
             // A sheet focuses its first field with the text selected; leave it unfocused until clicked.
-            DispatchQueue.main.async { NSApp.keyWindow?.makeFirstResponder(nil) }
+            // After the sheet has finished presenting; at once is too early and AppKit refocuses it.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                for window in NSApp.windows where window.isSheet { window.makeFirstResponder(nil) }
+            }
             #endif
         }
         .confirmationDialog("Clear website data for \u{201C}\(profile.name)\u{201D}?", isPresented: $confirmingClear) {

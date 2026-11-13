@@ -61,6 +61,12 @@ struct ProfilesTests {
         #expect(f.tree.profile(ofSpace: f.spaceA)?.name == "Personal")
     }
 
+    @Test func clearedNameFallsBackToTheSpaceName() throws {
+        var f = Fixture()
+        try f.tree.renameProfile(f.spaceA, to: "  ", now: fixedNow)
+        #expect(f.tree.profile(ofSpace: f.spaceA)?.name == f.tree.space(f.spaceA)?.name)
+    }
+
     @Test func joiningAndLeaving() throws {
         var f = Fixture()
         try f.tree.renameProfile(f.spaceA, to: "Work", now: fixedNow)

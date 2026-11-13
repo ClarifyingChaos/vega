@@ -113,13 +113,17 @@ private struct HistoryToolbar: ViewModifier {
         if #available(macOS 26, *) {
             content
                 .toolbar {
-                    // An empty, glass-less item ahead of the capsule: ToolbarSpacer alone left it
-                    // touching the sidebar.
+                    // The item's shared glass would grow with any padding, so the capsule draws its
+                    // own glass and the 8 pt gap to the sidebar sits outside it, as in System Settings.
                     ToolbarItem(placement: .navigation) {
-                        Color.clear.frame(width: 2, height: 1).accessibilityHidden(true)
+                        navigationPair
+                            .glassEffect(.regular.interactive(), in: .capsule)
+                            // The item starts under the sidebar's edge; 14 pt leaves System Settings' 8 pt gap.
+                            .padding(.leading, 14)
+                            // and 12 pt before the page title, which otherwise runs under the glass.
+                            .padding(.trailing, 12)
                     }
                     .sharedBackgroundVisibility(.hidden)
-                    buttons
                 }
                 .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         } else {
@@ -131,15 +135,17 @@ private struct HistoryToolbar: ViewModifier {
 
     /// System Settings' pair: back and forward joined in one capsule, the page title beside it.
     private var buttons: some ToolbarContent {
-        ToolbarItem(placement: .navigation) {
-            ControlGroup {
-                Button("Back", systemImage: "chevron.backward", action: goBack)
-                    .disabled(!canGoBack)
-                Button("Forward", systemImage: "chevron.forward", action: goForward)
-                    .disabled(!canGoForward)
-            }
-            .controlGroupStyle(.navigation)
+        ToolbarItem(placement: .navigation) { navigationPair }
+    }
+
+    private var navigationPair: some View {
+        ControlGroup {
+            Button("Back", systemImage: "chevron.backward", action: goBack)
+                .disabled(!canGoBack)
+            Button("Forward", systemImage: "chevron.forward", action: goForward)
+                .disabled(!canGoForward)
         }
+        .controlGroupStyle(.navigation)
     }
 }
 
@@ -240,6 +246,14 @@ private struct SettingsDetailPane: View {
                 }
             }
             .environment(\.showSettingsSubPane) { path.append($0) }
+            // FORK: AppKit focuses a page's first text field, all of it selected, so the next keys
+            // typed replaced a space's name. Nothing takes focus until it is clicked, as in System Settings.
+            .task(id: tab) {
+                try? await Task.sleep(for: .milliseconds(80))
+                if let window = NSApp.windows.first(where: { $0.title == tab.name && $0.firstResponder is NSText }) {
+                    window.makeFirstResponder(nil)
+                }
+            }
             .modifier(history)
         }
     }

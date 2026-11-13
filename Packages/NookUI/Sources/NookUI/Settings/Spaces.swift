@@ -12,12 +12,20 @@ import SwiftUI
 import NookDesign
 import NookWeb
 
+private extension ProfileSummary {
+    var rowKey: String { "profile-\(id.uuidString)" }
+}
+
 public struct SpacesSettingsView: View {
     @Environment(TabsController.self) private var tabs
     @Environment(\.tabActions) private var actions
 
     /// Data size per profile, filled in as each store answers.
     @State private var stats: [UUID: String] = [:]
+    /// The profile whose details sheet is open.
+    @State private var detailsFor: UUID?
+    /// The space being renamed and the name typed so far.
+    @State private var renamingSpace: (id: UUID, name: String)?
     @State private var showAccentPickerFor: UUID?
     @State private var showIconPickerFor: UUID?
     /// A move that would leave its profile empty, waiting on confirmation.
@@ -29,16 +37,16 @@ public struct SpacesSettingsView: View {
 
     public var body: some View {
         Form {
-            SettingsHero(symbol: "square.on.square", title: "Spaces", detail: "Spaces, and the profiles that keep their logins apart.")
+            SettingsHero(symbol: "square.on.square", title: "Spaces", detail: "Each profile keeps its own logins, cookies and history. Spaces in a profile share them.")
 
             Section {
-                ForEach(tabs.profiles) { profile in
+                // A profile's id is its first space's id; keyed alike, the two rows collided and this
+                // section lost its card. Profile rows get their own keys.
+                ForEach(tabs.profiles, id: \.rowKey) { profile in
                     profileRow(profile)
                 }
             } header: {
                 Text("Profiles")
-            } footer: {
-                Text("A profile keeps its own logins, cookies and history. Spaces in the same profile share them. Extensions and settings are shared by all profiles.")
             }
 
             Section {
@@ -58,6 +66,28 @@ public struct SpacesSettingsView: View {
         }
         .formStyle(.grouped)
         .task(id: tabs.profiles.map(\.id)) { await refreshStats() }
+        // System Settings' pattern: the ⓘ button opens a sheet with the profile's details and actions.
+        .sheet(isPresented: Binding(get: { detailsFor != nil }, set: { if !$0 { detailsFor = nil } })) {
+            if let id = detailsFor, let profile = tabs.profiles.first(where: { $0.id == id }) {
+                ProfileDetailsSheet(
+                    profile: profile,
+                    spaceNames: profile.spaceIDs.compactMap { tabs.space($0)?.name },
+                    dataSize: stats[profile.id],
+                    rename: { tabs.renameProfile(profile.id, to: $0) },
+                    clearData: { Task { await clearData(profile) } },
+                    done: { detailsFor = nil }
+                )
+            }
+        }
+        .alert("Rename Space", isPresented: Binding(get: { renamingSpace != nil }, set: { if !$0 { renamingSpace = nil } })) {
+            TextField("Name", text: Binding(get: { renamingSpace?.name ?? "" }, set: { renamingSpace?.name = $0 }))
+            Button("Rename") {
+                if let renamingSpace, !renamingSpace.name.trimmingCharacters(in: .whitespaces).isEmpty {
+                    tabs.updateSpace(renamingSpace.id, name: renamingSpace.name, icon: nil, accentHex: nil)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
         .alert(
             "Delete the \u{201C}\(pendingMove?.profile ?? "")\u{201D} profile?",
             isPresented: Binding(get: { pendingMove != nil }, set: { if !$0 { pendingMove = nil } })
@@ -71,37 +101,35 @@ public struct SpacesSettingsView: View {
         }
     }
 
-    @ViewBuilder
+    /// A profile as System Settings draws an account: avatar, name, a quiet summary, and ⓘ.
     private func profileRow(_ profile: ProfileSummary) -> some View {
-        HStack(spacing: NookDesign.Spacing.md) {
+        let count = profile.spaceIDs.count
+        return HStack(spacing: NookDesign.Spacing.lg) {
+            Image(systemName: "person.crop.circle.fill")
+                .font(.system(size: 28))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: NookDesign.Spacing.xxs) {
-                TextField("Profile name", text: Binding(
-                    get: { profile.name },
-                    set: { tabs.renameProfile(profile.id, to: $0) }
-                ))
-                .textFieldStyle(.plain)
-                .labelsHidden()
-                .accessibilityLabel("Profile name")
-                Text(([profile.spaceIDs.compactMap { tabs.space($0)?.name }.joined(separator: ", ")]
-                      + [stats[profile.id] ?? "Checking…"]).joined(separator: " · "))
+                Text(profile.name)
+                    .font(NookDesign.Font.body)
+                Text("\(count) \(count == 1 ? "space" : "spaces")")
                     .font(NookDesign.Font.secondary)
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Menu {
-                Button("Clear Website Data", systemImage: "trash") {
-                    Task { await clearData(profile) }
-                }
+            Button {
+                detailsFor = profile.id
             } label: {
-                Image(systemName: "ellipsis")
+                Image(systemName: "info.circle")
+                    .font(.system(size: 15))
             }
-            // FORK: System Settings' row menu: a round "…" button with no disclosure arrow.
-            .menuStyle(.button)
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
-            .menuIndicator(.hidden)
-            .fixedSize()
+            .buttonStyle(.borderless)
+            .foregroundStyle(.secondary)
+            .help("Profile Details")
+            .accessibilityLabel("Details for \(profile.name)")
         }
+        .padding(.vertical, NookDesign.Spacing.xs)
     }
 
     private func profilePicker(_ space: SpaceRecord) -> some View {
@@ -171,32 +199,32 @@ public struct SpacesSettingsView: View {
                 ), onSelect: { showIconPickerFor = nil })
             }
 
-            VStack(alignment: .leading, spacing: NookDesign.Spacing.xxs) {
-                TextField("Space name", text: Binding(
-                    get: { space.name },
-                    set: { tabs.updateSpace(space.id, name: $0, icon: nil, accentHex: nil) }
-                ))
-                .textFieldStyle(.plain)
-                .labelsHidden()
-                .accessibilityLabel("Space name")
-            }
+            // FORK: the name as text, renamed from the menu. A live field took focus when the page
+            // opened, with its text selected, and the next keys typed anywhere replaced the name.
+            Text(space.name)
+                .font(NookDesign.Font.body)
             Spacer()
             profilePicker(space)
-            if spaces.count > 1 {
-                Menu {
+            Menu {
+                Button("Rename…", systemImage: "pencil") {
+                    renamingSpace = (space.id, space.name)
+                }
+                if spaces.count > 1 {
+                    Divider()
                     Button("Delete Space…", systemImage: "trash", role: .destructive) {
                         showDeleteDialog(space)
                     }
-                } label: {
-                    Image(systemName: "ellipsis")
                 }
-                // FORK: System Settings' row menu: a round "…" button with no disclosure arrow.
-                .menuStyle(.button)
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.circle)
-                .menuIndicator(.hidden)
-                .fixedSize()
+            } label: {
+                Image(systemName: "ellipsis")
             }
+            // FORK: System Settings' row menu: a round "…" button with no disclosure arrow.
+            .menuStyle(.button)
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .accessibilityLabel("More for \(space.name)")
         }
     }
 
@@ -237,5 +265,72 @@ public struct SpacesSettingsView: View {
             isLastSpace: spaces.count <= 1,
             onDelete: { tabs.deleteSpace(space.id) }
         )
+    }
+}
+
+/// The ⓘ sheet for a profile, laid out like an account sheet in System Settings: an editable name,
+/// what uses it, how much it stores, and the destructive action last, behind a confirmation.
+private struct ProfileDetailsSheet: View {
+    let profile: ProfileSummary
+    let spaceNames: [String]
+    let dataSize: String?
+    let rename: (String) -> Void
+    let clearData: () -> Void
+    let done: () -> Void
+
+    @State private var name = ""
+    @State private var confirmingClear = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Form {
+                Section {
+                    VStack(spacing: NookDesign.Spacing.sm) {
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 56))
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.secondary)
+                        Text(name.isEmpty ? profile.name : name)
+                            .font(.system(size: 17, weight: .semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, NookDesign.Spacing.md)
+                    .accessibilityHidden(true)
+                }
+
+                Section {
+                    TextField("Name", text: $name)
+                    LabeledContent("Spaces", value: spaceNames.joined(separator: ", "))
+                    LabeledContent("Website data", value: dataSize ?? "Checking…")
+                }
+
+                Section {
+                    Button("Clear Website Data…", role: .destructive) { confirmingClear = true }
+                } footer: {
+                    Text("Signs every space in this profile out of all websites.")
+                }
+            }
+            .formStyle(.grouped)
+
+            HStack {
+                Spacer()
+                Button("Done") { commit(); done() }
+                    .keyboardShortcut(.defaultAction)
+            }
+            .padding(NookDesign.Spacing.xl)
+        }
+        .frame(width: 420)
+        .onAppear { name = profile.name }
+        .confirmationDialog("Clear website data for \u{201C}\(profile.name)\u{201D}?", isPresented: $confirmingClear) {
+            Button("Clear Website Data", role: .destructive, action: clearData)
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Logins, cookies and site data in this profile are deleted. You can't undo this.")
+        }
+    }
+
+    private func commit() {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        if !trimmed.isEmpty, trimmed != profile.name { rename(trimmed) }
     }
 }

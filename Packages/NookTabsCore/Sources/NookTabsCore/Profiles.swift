@@ -29,7 +29,8 @@ extension TabTree {
         return order.map { store in
             let spaces = members[store] ?? []
             // ponytail: each space carries the name; the first set one wins if two disagree after a sync.
-            let name = spaces.lazy.compactMap(\.profileName).first ?? spaces.first?.name ?? ""
+            // FORK: an empty name counts as none, so a cleared name never leaves the profile blank.
+            let name = spaces.lazy.compactMap(\.profileName).first { !$0.trimmingCharacters(in: .whitespaces).isEmpty } ?? spaces.first?.name ?? ""
             return ProfileSummary(id: store, name: name, spaceIDs: spaces.map(\.id))
         }
     }

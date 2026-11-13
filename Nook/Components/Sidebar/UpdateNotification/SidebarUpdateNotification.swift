@@ -50,40 +50,34 @@ struct SidebarUpdateNotification: View {
     var body: some View {
         if let availability, shouldShowNotification {
             VStack(spacing: 0) {
-                VStack(spacing: 0) {
-                    Label("Vega \(availability.shortVersion) is available", systemImage: "arrow.down.circle.fill")
+                // FORK: one stack with even spacing. The title used to slide 25 pt up and out of the
+                // card to make room, which left it hidden once a second link was added.
+                VStack(spacing: NookDesign.Spacing.md) {
+                    Label {
+                        Text("Vega \(availability.shortVersion) is available")
+                    } icon: {
+                        Image(systemName: "arrow.down.circle.fill").foregroundStyle(.green)
+                    }
                         .font(NookDesign.Font.secondary)
                         .foregroundStyle(.primary)
-                        .symbolRenderingMode(.multicolor)
-                        .offset(y: isExpanded ? -25 : 0)
-                        .zIndex(2)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity)
 
                     if isExpanded {
-                        // FORK: what changed, before restarting.
-                        Button("What's New") { browserManager.openSettings(tab: .updates) }
-                            .buttonStyle(.plain)
-                            .font(NookDesign.Font.secondary)
-                            .foregroundStyle(.secondary)
-                            .padding(.top, NookDesign.Spacing.md)
                         Button(action: {
                             installUpdate(wasDownloaded: availability.isDownloaded)
                         }) {
                             Text("Restart and Update")
                                 .font(NookDesign.Font.secondary)
+                                .fontWeight(.medium)
                                 .foregroundColor(.black)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
                                 .frame(maxWidth: .infinity)
+                                .frame(height: NookDesign.Size.iconButton)
                                 .background(
                                     NookDesign.Radius.shape(NookDesign.Radius.md)
                                         .fill(
                                             LinearGradient(
-                                                gradient: Gradient(colors: [
-                                                    Color.green,
-                                                    Color.white,
-                                                    Color.green,
-                                                    Color.white
-                                                ]),
+                                                gradient: Gradient(colors: [Color.green, Color.white, Color.green, Color.white]),
                                                 startPoint: UnitPoint(x: gradientPhase, y: gradientPhase),
                                                 endPoint: UnitPoint(x: gradientPhase + 1.0, y: gradientPhase + 1.0)
                                             )
@@ -91,15 +85,18 @@ struct SidebarUpdateNotification: View {
                                 )
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .transition(.asymmetric(
-                            insertion: .scale(scale: 0.8).combined(with: .opacity),
-                            removal: .scale(scale: 0.8).combined(with: .opacity)
-                        ))
-                        .zIndex(1)
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+
+                        // What changed, before restarting.
+                        Button("What's New") { browserManager.openSettings(tab: .updates) }
+                            .buttonStyle(.plain)
+                            .font(NookDesign.Font.secondary)
+                            .foregroundStyle(.secondary)
+                            .transition(.opacity)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, NookDesign.Spacing.lg)
+                .padding(.vertical, NookDesign.Spacing.lg)
                 .nookFloatingSurface(in: NookDesign.Radius.shape(NookDesign.Radius.lg))
                 .frame(maxWidth: .infinity)
                 .onHoverTracking { hovering in

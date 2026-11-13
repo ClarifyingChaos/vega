@@ -15,6 +15,7 @@ import Foundation
 import NookTabsCore
 import Observation
 import Security
+import os
 
 @MainActor @Observable
 public final class SyncCoordinator {
@@ -47,6 +48,7 @@ public final class SyncCoordinator {
         public var title: String { self == .iCloud ? "iCloud Drive" : "Google account" }
     }
 
+    private static let logger = Logger(subsystem: "com.vega.browser", category: "sync")
     private static let passwordsKey = "fork.sync.passwords"
     private static let backendKey = "fork.sync.backend"
     private static let enabledKey = "fork.sync.enabled"
@@ -236,6 +238,9 @@ public final class SyncCoordinator {
             }
             try await writeOwn(store: store)
             await syncPasswords(store: store)
+            // Names only: which devices have a snapshot in the store, so a failed sync can be told from an empty one.
+            let present = (try? await store.list("devices").names) ?? []
+            Self.logger.notice("synced via \(self.backend.rawValue, privacy: .public): \(present.count) device file(s) in the store, \(snapshots.count) from other Macs")
             status = .idle(lastSync: Date(), otherMacs: snapshots.count, waitingForDownload: pending)
         } catch {
             status = .failed(error.localizedDescription)

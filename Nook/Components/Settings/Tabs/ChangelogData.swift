@@ -6,6 +6,27 @@ let vegaChangelogMarkdown = #"""
 
 What Vega changes on top of [Nook](https://github.com/nook-browser/Nook). Nook's own changes reach Vega through the daily upstream sync; they're in [CHANGELOG.md](CHANGELOG.md) and [Nook's releases](https://github.com/nook-browser/Nook/releases).
 
+## Vega 1.7.0 (2026-11-13)
+
+Your passwords, and your setup on every Mac.
+
+### Passwords
+- **Save and fill logins.** Vega offers to save a login after you sign in, and lists your saved logins under a login field. Nothing is filled until you click one. Private windows never save or fill.
+- **Kept in your Mac's Keychain.** The new Passwords page in Settings opens only after Touch ID or your Mac's password, every time.
+- **Manage them:** search, copy, edit, delete, add by hand, and import a file exported from Chrome or Safari.
+
+### Sync between your Macs
+- **Sync my Macs** keeps your spaces, favorites and pinned tabs the same everywhere. Open tabs stay on each Mac.
+- **Choose where it syncs:** iCloud Drive, or a Google account (the files go in a hidden folder of your Google Drive that only Vega can open). Both work without any paid account.
+- **Passwords sync too, encrypted** with a passphrase only you know, so neither iCloud nor Google can read them.
+
+### Updates
+- A new **Updates** page shows your version, an automatic-update switch, Check for Updates, and what changed in every version.
+- The sidebar notice names the new version and links to What's New.
+
+### Also
+- File › New Little Window (renamed from its old name).
+
 ## Vega 1.6.0 (2026-11-13)
 
 The first public Vega release, built on Nook 1.6.0.
@@ -51,5 +72,5 @@ The first public Vega release, built on Nook 1.6.0.
 - One-command releases (`scripts/release.sh`, see [docs/RELEASING.md](docs/RELEASING.md)) and a daily sync with upstream Nook.
 
 ### Not yet
-- Notarization (no "Open Anyway" step), web push notifications and password autofill: they need the paid Apple Developer Program; the release script turns them on once it's set up.
+- Notarization (no "Open Anyway" step) and web push notifications need the paid Apple Developer Program; the release script turns them on once it's set up.
 """#

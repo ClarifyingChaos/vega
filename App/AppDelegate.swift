@@ -54,14 +54,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
     /// Sparkle updater controller for automatic app updates
     lazy var updaterController: SPUStandardUpdaterController = {
         return SPUStandardUpdaterController(
-            // FORK: the updater stays off. Its feed and signing key are upstream Nook's, and an update would
-            // replace this fork with upstream. Turn it back on with our own feed, key and bundle ID.
-            startingUpdater: false, updaterDelegate: self, userDriverDelegate: nil)
+            // FORK: on, with Vega's own feed (GitHub Pages) and EdDSA key; releases come from
+            // scripts/release.sh, so an update never brings upstream Nook in.
+            startingUpdater: true, updaterDelegate: self, userDriverDelegate: nil)
     }()
 
     // MARK: - Application Lifecycle
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // FORK: create the updater now so its scheduled checks run; it was only made on demand.
+        _ = updaterController
         setupURLEventHandling()
         setupMouseButtonHandling()
         setupSleepWakeHandling()

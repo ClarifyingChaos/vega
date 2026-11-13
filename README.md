@@ -1,31 +1,35 @@
 <div align="center">
-  <img width="230" height="230" src="/assets/icon.png" alt="Nook Logo">
-  <h1><b>Nook</b></h1>
+  <h1><b>Vega</b></h1>
   <p>
-    A fast, minimal browser with a sidebar-first design for macOS.
-    <br>
+    An Arc-style, sidebar-first browser for macOS. A fork of <a href="https://github.com/nook-browser/Nook">Nook</a>.
   </p>
 </div>
 
 <p align="center">
-  <a href="https://www.apple.com/macos/"><img src="https://img.shields.io/badge/macOS-15.5+-blue" alt="macOS 15.5+"></a>
-  <a href="https://swift.org/"><img src="https://img.shields.io/badge/Swift-5-orange" alt="Swift"></a>
+  <a href="https://www.apple.com/macos/"><img src="https://img.shields.io/badge/macOS-15.5+%20·%20Apple%20Silicon-blue" alt="macOS 15.5+, Apple Silicon"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-green" alt="GPL-3.0"></a>
-  <a href="https://github.com/nook-browser/Nook/pulls"><img src="https://img.shields.io/github/issues-pr/nook-browser/Nook" alt="Open pull requests"></a>
-  <a href="https://github.com/nook-browser/Nook/issues"><img src="https://img.shields.io/github/issues/nook-browser/Nook" alt="Open issues"></a>
-  <a href="https://github.com/nook-browser/Nook/graphs/contributors"><img src="https://img.shields.io/github/contributors/nook-browser/Nook" alt="Contributors"></a>
-</p>
-
-
-<p align="center">
-  <a href="https://github.com/nook-browser/Nook/releases/latest"><img src="https://img.shields.io/github/v/release/nook-browser/Nook?label=release" alt="Latest release"></a>
+  <a href="https://github.com/ClarifyingChaos/vega/releases/latest"><img src="https://img.shields.io/github/v/release/ClarifyingChaos/vega?label=release" alt="Latest release"></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/nook-browser/Nook/releases/latest"><img src="https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS"></a>
+  <a href="https://github.com/ClarifyingChaos/vega/releases/latest"><img src="https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS"></a>
 </p>
 
-> **Status:** Development started back up in September 2026 under a new maintainer. See [Releases](https://github.com/nook-browser/Nook/releases) for the current download.
+## Install
+
+1. Download `Vega-X.Y.Z.dmg` from the [latest release](https://github.com/ClarifyingChaos/vega/releases/latest) and drag Vega to Applications.
+2. Test builds aren't notarized yet, so the first open is blocked once: open Vega, then System Settings › Privacy & Security › **Open Anyway**.
+3. After that Vega updates itself (Vega › Check for Updates… checks now).
+
+Feedback and bugs: [Issues](https://github.com/ClarifyingChaos/vega/issues).
+
+## How this fork is kept
+
+- `main` is Vega. `develop` mirrors upstream Nook and is synced daily; changes arrive as a pull request into `main`.
+- Fork-specific code is marked `// FORK:` so upstream merges stay readable.
+- Releasing an update is one command: see [docs/RELEASING.md](docs/RELEASING.md).
+
+Vega builds on Nook's work by its maintainers and contributors. What follows is Nook's own description, most of which applies to Vega too.
 
 ## Features  
 

@@ -3,9 +3,9 @@
 //  SidebarPiPPanel.swift
 //  Nook
 //
-//  Picture-in-picture pinned to the sidebar: when a playing video's tab is left, its live web
-//  view moves into the sidebar directly above the media controls bar, and can be dragged out
-//  into a floating panel and back. The page is not cloned: one live view changes superview.
+//  Picture-in-picture: when a playing video's tab is left, its live web view opens in a floating
+//  panel (or in the sidebar above the media controls, if that is where it was last put) and can
+//  be dragged between the two. The page is not cloned: one live view changes superview.
 //
 
 import AppKit
@@ -41,6 +41,12 @@ final class SidebarPiPController: PictureInPictureHolder {
     private static var lastFloatOrigin: CGPoint? {
         get { UserDefaults.standard.string(forKey: "sidebarPiP.floatOrigin").map(NSPointFromString) }
         set { UserDefaults.standard.set(newValue.map(NSStringFromPoint), forKey: "sidebarPiP.floatOrigin") }
+    }
+    /// FORK: where a video goes when picture-in-picture starts: afloat (the default) or in the
+    /// sidebar. Docking it sets the sidebar, pulling it out sets afloat again.
+    private static var prefersFloat: Bool {
+        get { UserDefaults.standard.object(forKey: "sidebarPiP.prefersFloat") as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: "sidebarPiP.prefersFloat") }
     }
     /// Bumped on every enter and exit, so a late script reply for an earlier video is dropped.
     @ObservationIgnored private var generation = 0
@@ -127,6 +133,8 @@ final class SidebarPiPController: PictureInPictureHolder {
                 guard let self, self.generation == generation else { return }
                 withAnimation(NookDesign.Motion.spring) { self.isReady = true }
                 self.follow(webView)
+                // Starts afloat unless the person last put the video in the sidebar.
+                if Self.prefersFloat, !self.isFloating { self.popOut() }
             }
         }
     }
@@ -240,13 +248,19 @@ final class SidebarPiPController: PictureInPictureHolder {
     /// Called mid-drag from the sidebar: the panel appears under the pointer and keeps following.
     func popOut() {
         guard let webView, isReady, !isFloating else { return }
+        Self.prefersFloat = true
         let size = CGSize(width: Self.lastFloatWidth, height: Self.lastFloatWidth / aspect)
         let mouse = NSEvent.mouseLocation
         var free = CGRect(origin: CGPoint(x: mouse.x - size.width / 2, y: mouse.y - size.height / 2), size: size)
-        // Back where it last floated, unless that screen is gone.
-        if let origin = Self.lastFloatOrigin {
-            let last = CGRect(origin: origin, size: size)
-            if NSScreen.screens.contains(where: { $0.visibleFrame.intersects(last) }) { free = last }
+        // Back where it last floated, unless that screen is gone. The first time, the bottom right
+        // corner of the window's screen, where system picture-in-picture opens.
+        if let origin = Self.lastFloatOrigin,
+           NSScreen.screens.contains(where: { $0.visibleFrame.intersects(CGRect(origin: origin, size: size)) }) {
+            free = CGRect(origin: origin, size: size)
+        } else if NSEvent.pressedMouseButtons & 1 == 0,
+                  let screen = (webView.window?.screen ?? NSScreen.main)?.visibleFrame {
+            let margin: CGFloat = 24
+            free = CGRect(x: screen.maxX - size.width - margin, y: screen.minY + margin, width: size.width, height: size.height)
         }
         // Opens over the docked video: a drag starts snapped into the dock box it is leaving.
         let docked = webView.superview.flatMap { view in
@@ -284,6 +298,7 @@ final class SidebarPiPController: PictureInPictureHolder {
     /// `remember` is false when the panel sits snapped in the dock box, which is not its place.
     func dock(remember: Bool = true) {
         guard isFloating, windowState?.isSidebarVisible == true else { return }
+        Self.prefersFloat = false
         closeFloat(remember: remember)
         isFloating = false
     }

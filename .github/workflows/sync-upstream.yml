@@ -1,0 +1,37 @@
+name: Sync upstream
+
+# FORK: keeps `develop` an exact mirror of nook-browser/Nook and offers its new commits to
+# `main` as a pull request. Merging stays a human decision.
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: develop
+          fetch-depth: 0
+      - name: Fast-forward develop from upstream
+        run: |
+          git remote add upstream https://github.com/nook-browser/Nook.git
+          git fetch upstream develop
+          git merge --ff-only upstream/develop
+          git push origin develop
+      - name: Open or refresh the pull request into main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch origin main
+          if [ "$(git rev-list --count origin/main..develop)" = "0" ]; then echo "main is up to date"; exit 0; fi
+          if gh pr list --base main --head develop --state open --json number --jq 'length' | grep -q '^0$'; then
+            gh pr create --base main --head develop --title "Sync upstream Nook" \
+              --body "New commits from nook-browser/Nook. Review, resolve conflicts (keep com.vega.browser and // FORK: code), merge, then run scripts/release.sh."
+          fi

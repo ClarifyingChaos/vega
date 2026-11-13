@@ -146,3 +146,6 @@ build-ios/
 CLAUDE.md
 Nook/Managers/ExtensionManager/CLAUDE.md
 ASSESSMENT.md
+
+# FORK: Developer ID provisioning profile (scripts/release.sh)
+scripts/signing/

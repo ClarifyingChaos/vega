@@ -1,0 +1,30 @@
+Vega: test build
+
+Thanks for trying Vega. It's an early build, shared for day-to-day testing and feedback.
+
+NEEDS
+  A Mac with Apple Silicon (M1 or later), macOS 15.5 or later.
+
+INSTALL
+  1. Drag Vega into the Applications folder in this window.
+  2. Eject the Vega disk.
+
+FIRST OPEN (once)
+  Vega isn't from the App Store and isn't notarized by Apple yet, so macOS stops it the first time.
+  1. Open Vega from Applications. macOS says it can't verify the developer. Click Done.
+  2. Open System Settings > Privacy & Security, scroll down, and click "Open Anyway" next to Vega.
+  3. Confirm with your password or Touch ID. After this it opens normally.
+
+  If macOS instead says Vega "is damaged", run this once in Terminal, then open it again:
+      xattr -dr com.apple.quarantine /Applications/Vega.app
+
+GOOD TO KNOW
+  - Vega updates itself: it checks for a new version in the background and installs it on
+    the next relaunch. Vega menu > Check for Updates… checks now.
+  - Not in this build: password autofill from the Passwords app, and web push notifications.
+  - Import from another browser: Vega menu > Import from Another Browser.
+  - Everything stays on your Mac. Nothing is sent to us.
+
+FEEDBACK
+  Anything that breaks, feels slow, or that you wish it did. A screenshot helps.
+  Issues: https://github.com/ClarifyingChaos/vega/issues

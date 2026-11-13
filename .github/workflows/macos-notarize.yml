@@ -1,8 +1,8 @@
 name: macOS Build, Sign, Notarize & Release
 
+# FORK: manual only. Upstream signs with its own Apple team's secrets, which this fork doesn't
+# have; Vega releases come from scripts/release.sh (docs/RELEASING.md).
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
 
 jobs:

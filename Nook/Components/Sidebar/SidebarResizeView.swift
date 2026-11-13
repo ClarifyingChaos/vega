@@ -29,6 +29,7 @@ struct SidebarResizeView: View {
     var body: some View {
         SidebarResizeHandle(
             color: indicatorColor,
+            sidebarOnLeft: settings.sidebarPosition != .right,
             onHover: { windowState.isSidebarResizeHovered = $0 },
             onStart: {
                 guard windowState.isSidebarVisible,
@@ -80,7 +81,11 @@ struct SidebarResizeView: View {
                 browserManager.saveSidebarWidthToDefaults()
             }
         )
-        .frame(width: 8)
+        // FORK: the handle spans the 8 pt gap between sidebar and page plus 4 pt of the sidebar.
+        // It sat only inside the sidebar, so a press on the visible gap landed on the window
+        // background's drag surface and moved the whole window instead of resizing.
+        .frame(width: 12)
+        .offset(x: settings.sidebarPosition == .right ? -8 : 8)
         .padding(.vertical, 10)
         .onDisappear {
             windowState.isSidebarResizeHovered = false
@@ -91,6 +96,7 @@ struct SidebarResizeView: View {
 
 private struct SidebarResizeHandle: NSViewRepresentable {
     var color: NSColor
+    var sidebarOnLeft: Bool
     var onHover: (Bool) -> Void
     var onStart: () -> Bool
     var onDrag: (CGFloat, CGFloat) -> Void
@@ -100,11 +106,14 @@ private struct SidebarResizeHandle: NSViewRepresentable {
     func makeNSView(context: Context) -> Handle { Handle() }
     func updateNSView(_ view: Handle, context: Context) {
         view.callbacks = self
+        view.isRightOfSidebar = sidebarOnLeft
         view.updateIndicator()
     }
 
     final class Handle: NSView {
         var callbacks: SidebarResizeHandle?
+        /// The handle's gap half is on its trailing side when the sidebar is on the left.
+        var isRightOfSidebar = true
         private var tracking: NSTrackingArea?
         private var hovered = false
         private var dragging = false
@@ -132,7 +141,9 @@ private struct SidebarResizeHandle: NSViewRepresentable {
         func updateIndicator() {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            indicator.frame = bounds.insetBy(dx: 2, dy: 0)
+            // A 4 pt line in the middle of the gap, whatever the handle's hit width.
+            let gapMid = bounds.midX + (bounds.width / 2 - 4) * (isRightOfSidebar ? 1 : -1)
+            indicator.frame = NSRect(x: gapMid - 2, y: bounds.minY, width: 4, height: bounds.height)
             indicator.backgroundColor = callbacks?.color.cgColor
             CATransaction.commit()
         }

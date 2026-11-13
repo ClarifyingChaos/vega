@@ -29,12 +29,14 @@ struct AISidebarResizeView: View {
         nookSettings.sidebarPosition == .left
     }
 
+    // FORK: over the 8 pt gap beside the page, not inside the panel. The gap is the window
+    // background's drag surface, so a press on the visible edge moved the window.
     private var indicatorOffset: CGFloat {
-        aiSitsOnRight ? 3 : -3
+        aiSitsOnRight ? -4 : 4
     }
 
     private var hitAreaOffset: CGFloat {
-        aiSitsOnRight ? 5 : -5
+        aiSitsOnRight ? -4 : 4
     }
 
     var body: some View {

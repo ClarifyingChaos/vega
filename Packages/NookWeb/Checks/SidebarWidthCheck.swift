@@ -7,14 +7,14 @@ import Foundation
 struct SidebarWidthCheck {
     static func main() {
         precondition(SidebarWidth.resolve(proposed: 80) == 0, "below 82 hides")
-        precondition(SidebarWidth.resolve(proposed: 82) == 164)
-        precondition(SidebarWidth.resolve(proposed: 100) == 164)
+        precondition(SidebarWidth.resolve(proposed: 82) == 220)
+        precondition(SidebarWidth.resolve(proposed: 100) == 220)
         precondition(SidebarWidth.resolve(proposed: 600) == 500)
         precondition(SidebarWidth.resolve(proposed: 259) == 247, "snaps within 14 of the default")
         precondition(SidebarWidth.resolve(proposed: 261) == 247)
         precondition(SidebarWidth.resolve(proposed: 233) == 247)
         precondition(SidebarWidth.resolve(proposed: 262) == 262)
-        precondition(SidebarWidth.resolve(proposed: 200) == 200)
+        precondition(SidebarWidth.resolve(proposed: 225) == 225)
         precondition(SidebarWidth.snapped(proposed: 259) && !SidebarWidth.snapped(proposed: 262))
 
         precondition(SpaceSwitcher.itemSize(available: 160, count: 20) == 8, "floor")
@@ -31,7 +31,7 @@ struct SidebarWidthCheck {
         precondition(d.update(raw: 244, velocity: -20, now: 0.2) == .init(width: 247, haptic: false), "slow stays")
         precondition(d.update(raw: 239, velocity: -60, now: 0.3) == .init(width: 239, haptic: false), "fast frees, inside the debounce")
         precondition(d.update(raw: 245, velocity: 10, now: 0.4).width == 245, "no re-snap until out of the zone")
-        precondition(d.update(raw: 190, velocity: -10, now: 0.5).width == 190)
+        precondition(d.update(raw: 225, velocity: -10, now: 0.5).width == 225)
         precondition(d.update(raw: 80, velocity: -10, now: 0.6).width == 0, "hides")
         var e = SidebarDrag(startingWidth: 247)
         precondition(e.update(raw: 251, velocity: 5, now: 0).width == 247, "starts snapped")

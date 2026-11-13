@@ -11,7 +11,7 @@ import Foundation
 
 public enum SidebarWidth {
     public static let hide: CGFloat = 82
-    public static let min: CGFloat = 164
+    public static let min: CGFloat = 220   // FORK: the title row (traffic lights, toggle, back, forward, reload) needs 217 pt; at 164 the history buttons dropped out
     public static let max: CGFloat = 500
     public static let standard: CGFloat = 247   // FORK: Arc's width; four 52 pt favorite tiles: 8 + 8 + 4 * 52 + 3 * 8 (was 260)
     public static let snap: CGFloat = 14

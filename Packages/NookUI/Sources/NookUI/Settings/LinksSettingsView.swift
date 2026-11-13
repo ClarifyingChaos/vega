@@ -178,9 +178,9 @@ private struct RuleEditSheet: View {
             Form {
                 Section("Website") {
                     TextField("Domain (e.g. github.com)", text: $domain)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.settings)
                     TextField("Path prefix (optional, e.g. /myorg)", text: $pathPrefix)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.settings)
                 }
 
                 Section("Destination") {

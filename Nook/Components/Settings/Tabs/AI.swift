@@ -185,7 +185,7 @@ struct SettingsAITab: View {
                 // Add by ID
                 HStack {
                     TextField("Add model by ID (e.g., gpt-4o)", text: $addModelId)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.settings)
                         .font(NookDesign.Font.secondary)
                     Button("Add") {
                         guard !addModelId.isEmpty,
@@ -203,7 +203,7 @@ struct SettingsAITab: View {
                     DisclosureGroup("Fetch from OpenRouter", isExpanded: $showFetchedModels) {
                         HStack {
                             TextField("Search models...", text: $openRouterSearch)
-                                .textFieldStyle(.roundedBorder)
+                                .textFieldStyle(.settings)
                                 .font(NookDesign.Font.secondary)
                             Button("Fetch") {
                                 Task {
@@ -295,7 +295,9 @@ struct SettingsAITab: View {
                             configService.generationConfig = config
                         }
                     ), format: .number)
-                    .textFieldStyle(.roundedBorder)
+                    .labelsHidden()
+                    .multilineTextAlignment(.trailing)
+                    .textFieldStyle(.settings)
                     .frame(width: NookDesign.Size.fieldNarrow)
                 }
 
@@ -322,8 +324,11 @@ struct SettingsAITab: View {
                         }
                     ))
                     .font(NookDesign.Font.secondary)
+                    // FORK: the same filled, rounded surface as the other fields, not a square border.
+                    .scrollContentBackground(.hidden)
+                    .padding(NookDesign.Spacing.md)
                     .frame(height: NookDesign.Size.textEditorHeight)
-                    .border(.quaternary)
+                    .nookControlSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
                 }
 
                 // Streaming
@@ -359,7 +364,7 @@ struct SettingsAITab: View {
                         Text("Native").tag("native")
                         Text("Exa").tag("exa")
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
 
                     Picker("Context Size", selection: Binding(
                         get: { configService.generationConfig.webSearchContextSize },
@@ -373,7 +378,7 @@ struct SettingsAITab: View {
                         Text("Medium").tag("medium")
                         Text("High").tag("high")
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
 
                     Picker("Max Results", selection: Binding(
                         get: { configService.generationConfig.webSearchMaxResults },
@@ -387,7 +392,7 @@ struct SettingsAITab: View {
                         Text("5").tag(5)
                         Text("10").tag(10)
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
                 }
             }
 
@@ -405,28 +410,31 @@ struct SettingsAITab: View {
                         Text(mode.displayName).tag(mode)
                     }
                 }
-                .pickerStyle(.segmented)
+                .pickerStyle(.menu)
 
-                ForEach(Array(BrowserToolsConfig.allToolNames.sorted()), id: \.self) { toolName in
-                    Toggle(isOn: Binding(
-                        get: { configService.browserToolsConfig.enabledTools.contains(toolName) },
-                        set: { enabled in
-                            var config = configService.browserToolsConfig
-                            if enabled {
-                                config.enabledTools.insert(toolName)
-                            } else {
-                                config.enabledTools.remove(toolName)
+                // FORK: forty raw tool names behind one disclosure; most people never touch them.
+                DisclosureGroup("Individual Tools") {
+                    ForEach(Array(BrowserToolsConfig.allToolNames.sorted()), id: \.self) { toolName in
+                        Toggle(isOn: Binding(
+                            get: { configService.browserToolsConfig.enabledTools.contains(toolName) },
+                            set: { enabled in
+                                var config = configService.browserToolsConfig
+                                if enabled {
+                                    config.enabledTools.insert(toolName)
+                                } else {
+                                    config.enabledTools.remove(toolName)
+                                }
+                                configService.browserToolsConfig = config
                             }
-                            configService.browserToolsConfig = config
-                        }
-                    )) {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(toolName)
-                                .font(NookDesign.Font.secondary)
-                            if let tool = BrowserTools.toolsByName[toolName] {
-                                Text(tool.description)
-                                    .font(NookDesign.Font.caption)
-                                    .foregroundStyle(.secondary)
+                        )) {
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(toolName)
+                                    .font(NookDesign.Font.secondary)
+                                if let tool = BrowserTools.toolsByName[toolName] {
+                                    Text(tool.description)
+                                        .font(NookDesign.Font.caption)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                         }
                     }
@@ -524,7 +532,7 @@ struct SettingsAITab: View {
                             configService.updateProvider(provider, apiKey: newValue)
                         }
                     ))
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.settings)
                     .font(NookDesign.Font.secondary)
 
                     if !provider.apiKey.isEmpty {
@@ -548,7 +556,7 @@ struct SettingsAITab: View {
                         configService.updateProvider(updated)
                     }
                 ))
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.settings)
                 .font(NookDesign.Font.secondary)
             }
 

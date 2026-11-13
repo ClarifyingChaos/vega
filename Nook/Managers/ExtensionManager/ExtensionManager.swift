@@ -80,6 +80,7 @@ final class ExtensionManager: NSObject, ObservableObject,
     var installingIDs: Set<String> = []
 
     private override init() {
+        _ = Self.launchIsFirstOfThisBuild   // decided at launch, before any extension can ask for a tab
         self.context = Persistence.shared.container.mainContext
         self.isExtensionSupportAvailable =
             ExtensionUtils.isExtensionSupportAvailable

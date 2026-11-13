@@ -15,6 +15,7 @@ Icons that move, a calmer AI chat, and a reader view.
 - **Lighter ad blocker.** Vega now hands the web engine at most 150,000 blocking rules, so pages open faster. The 108,000-rule malware list is optional.
 
 ### Fixes
+- Extensions no longer open their welcome or what's-new tabs each time Vega updates.
 - A page's own HTML no longer downloads when Vega reopens with a tab restored, or when you Option-click a link inside Peek.
 - A download with no address no longer sits in the library keeping its ring on the library button.
 - The Peek card's site name and buttons stay readable over any window; the buttons are now round glass buttons beside the card.

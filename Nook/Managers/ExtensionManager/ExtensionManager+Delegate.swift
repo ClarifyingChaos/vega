@@ -282,6 +282,28 @@ extension ExtensionManager {
         return registry.allWindows.first { $0.privateTree == nil }
     }
 
+    /// True for the first run of a new build of the app (or of one that never recorded a build). WebKit tells every
+    /// extension "the browser updated" then, with the same event as a first install, and extensions that open a
+    /// welcome or what's-new page on it opened a tab per extension at each launch after an update. Read once, at
+    /// launch, and recorded so only that one run is quiet.
+    static let launchIsFirstOfThisBuild: Bool = {
+        let defaults = UserDefaults.standard
+        let key = "ExtensionLastLaunchedBuild"
+        let build = (Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String) ?? ""
+        let last = defaults.string(forKey: key)
+        defaults.set(build, forKey: key)
+        return last != build
+    }()
+    private static let launchDate = Date()
+    /// How long extensions may not open tabs by themselves after an update.
+    private static let quietPeriodAfterUpdate: TimeInterval = 120
+
+    /// An extension asking for a tab while the browser is still settling after an update. A person who installs an
+    /// extension and sees its welcome page does so well after this.
+    static func extensionTabIsUpdateNoise() -> Bool {
+        launchIsFirstOfThisBuild && Date().timeIntervalSince(launchDate) < quietPeriodAfterUpdate
+    }
+
     private static func noWindowError() -> NSError {
         NSError(domain: "ExtensionManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "No browser window available"])
     }
@@ -322,6 +344,11 @@ extension ExtensionManager {
             return
         }
         let url = configuration.url ?? TabsController.homeURL
+        if Self.extensionTabIsUpdateNoise() {
+            Self.logger.info("Held back a tab from '\(extensionContext.webExtension.displayName ?? "an extension", privacy: .public)' right after an update: \(url.absoluteString, privacy: .public)")
+            completionHandler(nil, NSError(domain: "ExtensionManager", code: 4, userInfo: [NSLocalizedDescriptionKey: "Not opened: the browser has just updated"]))
+            return
+        }
         guard Self.extensionMayOpen(url, for: extensionContext) else {
             completionHandler(nil, Self.disallowedURLError(url))
             return

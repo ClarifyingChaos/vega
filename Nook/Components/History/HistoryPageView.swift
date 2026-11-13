@@ -66,7 +66,7 @@ struct HistoryPageView: View {
                 Text("History")
                     .font(NookDesign.Font.display)
                 Spacer()
-                Button("Close", systemImage: "xmark", action: close)
+                Button("Close", nookIcon: "xmark", action: close)
                     .labelStyle(.iconOnly)
                     .nookIconButtons()
                     .help("Close History")
@@ -119,7 +119,7 @@ struct HistoryPageView: View {
                 Spacer()
                 Button("Cancel") { withAnimation(NookDesign.Motion.standard) { selection.removeAll() } }
                     .buttonStyle(RectNavButtonStyle())
-                Button("Delete", systemImage: "trash", action: deleteSelected)
+                Button("Delete", nookIcon: "trash", action: deleteSelected)
                     .buttonStyle(RectNavButtonStyle())
             }
             .padding(.horizontal, NookDesign.Spacing.lg)

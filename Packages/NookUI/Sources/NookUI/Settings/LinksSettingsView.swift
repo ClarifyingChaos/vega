@@ -60,7 +60,7 @@ public struct LinksSettingsView: View {
                     Button {
                         showingAddSheet = true
                     } label: {
-                        Label("Add Rule", systemImage: "plus")
+                        Label("Add Rule", nookIcon: "plus")
                     }
                     .buttonStyle(.borderless)
 

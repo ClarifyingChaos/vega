@@ -34,7 +34,7 @@ public struct ShortcutConflictToast: View {
         ToastView {
             HStack(spacing: 10) {
                 // Keyboard icon
-                Image(systemName: "keyboard")
+                NookSymbol("keyboard", size: 16)
                     .font(NookDesign.Font.body)
                     .foregroundStyle(.primary)
                     .frame(width: 18, height: 18)

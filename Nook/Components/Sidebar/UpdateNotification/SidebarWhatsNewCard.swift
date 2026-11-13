@@ -43,7 +43,7 @@ struct SidebarWhatsNewCard: View {
                     Button {
                         browserManager.whatsNewVersion = nil
                     } label: {
-                        Image(systemName: "xmark")
+                        NookSymbol("xmark", size: 12)
                             .font(NookDesign.Font.micro)
                             .foregroundStyle(.secondary)
                             .frame(width: NookDesign.Size.cornerButton, height: NookDesign.Size.cornerButton)

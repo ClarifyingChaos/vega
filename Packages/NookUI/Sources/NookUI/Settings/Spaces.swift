@@ -64,7 +64,7 @@ public struct SpacesSettingsView: View {
             }
 
             Section {
-                Button("New Space…", systemImage: "plus", action: showCreateDialog)
+                Button("New Space…", nookIcon: "plus", action: showCreateDialog)
             }
         }
         .formStyle(.grouped)
@@ -124,7 +124,7 @@ public struct SpacesSettingsView: View {
             Button {
                 detailsFor = profile.id
             } label: {
-                Image(systemName: "info.circle")
+                NookSymbol("info.circle", size: 19)
                     .font(.system(size: 15))
             }
             .buttonStyle(.borderless)
@@ -209,12 +209,12 @@ public struct SpacesSettingsView: View {
             Spacer()
             profilePicker(space)
             Menu {
-                Button("Rename…", systemImage: "pencil") {
+                Button("Rename…", nookIcon: "pencil") {
                     renamingSpace = (space.id, space.name)
                 }
                 if spaces.count > 1 {
                     Divider()
-                    Button("Delete Space…", systemImage: "trash", role: .destructive) {
+                    Button("Delete Space…", nookIcon: "trash", role: .destructive) {
                         showDeleteDialog(space)
                     }
                 }

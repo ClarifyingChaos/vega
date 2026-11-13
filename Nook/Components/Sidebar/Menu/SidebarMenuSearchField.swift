@@ -6,6 +6,7 @@
 
 import SwiftUI
 import NookDesign
+import NookUI
 
 /// The history and downloads search field: a filled squircle the height of the sidebar's controls.
 struct SidebarMenuSearchField: View {
@@ -15,7 +16,7 @@ struct SidebarMenuSearchField: View {
 
     var body: some View {
         HStack(spacing: NookDesign.Spacing.sm) {
-            Image(systemName: "magnifyingglass")
+            NookSymbol("magnifyingglass", size: 16)
                 .font(NookDesign.Font.body)
                 .foregroundStyle(.secondary)
             TextField(prompt, text: $text)

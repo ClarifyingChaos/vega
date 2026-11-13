@@ -24,7 +24,7 @@ struct ExtensionsSettingsView: View {
             SettingsHero(symbol: "puzzlepiece.extension", title: "Extensions", detail: "Add, turn off or remove browser extensions.")
 
             Section {
-                Button("Install Extension…", systemImage: "plus") {
+                Button("Install Extension…", nookIcon: "plus") {
                     browserManager.showExtensionInstallDialog()
                 }
                 .buttonStyle(.borderedProminent)
@@ -35,7 +35,7 @@ struct ExtensionsSettingsView: View {
             if extensionManager.installedExtensions.isEmpty && !showSafariSection {
                 Section {
                     VStack(spacing: NookDesign.Spacing.lg) {
-                        Image(systemName: "puzzlepiece.extension")
+                        NookSymbol("puzzlepiece.extension", size: 60)
                             .font(NookDesign.Font.hero)
                             .foregroundStyle(.secondary)
                         Text("No Extensions Installed")
@@ -250,7 +250,7 @@ private struct ExtensionRowView: View {
                         )
                     )
                     Divider()
-                    Button("Remove", systemImage: "trash", role: .destructive) {
+                    Button("Remove", nookIcon: "trash", role: .destructive) {
                         browserManager.uninstallExtension(`extension`.id)
                     }
                 } label: {

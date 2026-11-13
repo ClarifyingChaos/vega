@@ -75,6 +75,7 @@ struct SidebarMenu: View {
                     image: "clock",
                     activeImage: "clock.fill",
                     title: "History",
+                    animation: "clock",
                     isActive: windowState.sidebarMenuSelectedTab == .history,
                     action: {
                         windowState.sidebarMenuSelectedTab = .history
@@ -85,6 +86,7 @@ struct SidebarMenu: View {
                     image: "archivebox",
                     activeImage: "archivebox.fill",
                     title: "Archive",
+                    animation: "archive",
                     isActive: windowState.sidebarMenuSelectedTab == .archive,
                     action: {
                         windowState.sidebarMenuSelectedTab = .archive
@@ -95,6 +97,7 @@ struct SidebarMenu: View {
                     image: "square.on.square",
                     activeImage: "square.fill.on.square.fill",
                     title: "Spaces",
+                    animation: "grid",
                     isActive: windowState.sidebarMenuSelectedTab == .spaces,
                     action: {
                         windowState.sidebarMenuSelectedTab = .spaces
@@ -104,6 +107,7 @@ struct SidebarMenu: View {
                     image: "photo.on.rectangle",
                     activeImage: "photo.on.rectangle.fill",
                     title: "Media",
+                    animation: "image",
                     isActive: windowState.sidebarMenuSelectedTab == .media,
                     action: {
                         windowState.sidebarMenuSelectedTab = .media
@@ -113,6 +117,7 @@ struct SidebarMenu: View {
                     image: "arrow.down.circle",
                     activeImage: "arrow.down.circle.fill",
                     title: "Downloads",
+                    animation: "download",
                     isActive: windowState.sidebarMenuSelectedTab == .downloads,
                     action: {
                         windowState.sidebarMenuSelectedTab = .downloads
@@ -122,7 +127,7 @@ struct SidebarMenu: View {
             
             Spacer()
             HStack {
-                Button("Back", systemImage: "arrow.backward", action: close)
+                Button("Back", nookIcon: "arrow.backward", action: close)
                 .nookIconButtons()
                 Spacer()
             }

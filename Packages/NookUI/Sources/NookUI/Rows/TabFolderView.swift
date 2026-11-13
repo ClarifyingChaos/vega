@@ -46,7 +46,7 @@ public struct TabFolderView: View {
             }
         }) {
             HStack(spacing: NookDesign.Spacing.md) {
-                Image(systemName: "chevron.right")
+                NookSymbol("chevron.right", size: 15)
                     .font(.system(size: NookDesign.Size.rowGlyph - 1, weight: .semibold))
                     .foregroundStyle(.tertiary)
                     .rotationEffect(.degrees(isOpen ? 90 : 0))
@@ -80,7 +80,7 @@ public struct TabFolderView: View {
                 Spacer(minLength: NookDesign.Spacing.xs)
 
                 if let status = tabs.liveStatus[item.id] {
-                    Image(systemName: "exclamationmark.triangle")
+                    NookSymbol("exclamationmark.triangle", size: 14)
                         .font(NookDesign.Font.caption)
                         .foregroundStyle(.secondary)
                         .help(liveStatusHelp(status))

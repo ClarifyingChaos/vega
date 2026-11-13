@@ -214,21 +214,21 @@ struct DownloadItem: View {
                         Label("Open", systemImage: "doc")
                     }
                     Button(action: copyFile) {
-                        Label("Copy", systemImage: "doc.on.doc")
+                        Label("Copy", nookIcon: "doc.on.doc")
                     }
                     Button(action: showInFinder) {
-                        Label("Show in Finder", systemImage: "folder")
+                        Label("Show in Finder", nookIcon: "folder")
                     }
                     Divider()
                     if download.renamedFrom != nil {
                         Button {
                             browserManager.downloadManager.undoTidy(download)
                         } label: {
-                            Label("Restore Original Name", systemImage: "arrow.uturn.backward")
+                            Label("Restore Original Name", nookIcon: "arrow.uturn.backward")
                         }
                     }
                     Button(action: moveToTrash) {
-                        Label("Move to Trash", systemImage: "trash")
+                        Label("Move to Trash", nookIcon: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis")

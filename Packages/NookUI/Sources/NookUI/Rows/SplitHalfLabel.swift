@@ -41,7 +41,7 @@ public struct SplitHalfLabel: View {
                 Spacer(minLength: NookDesign.Spacing.xs)
                 if isHovering {
                     Button(action: { tabs.close(item.id) }) {
-                        Image(systemName: "xmark")
+                        NookSymbol("xmark", size: 15)
                             .font(NookDesign.Font.secondary)
                             .foregroundColor(.primary)
                             .frame(width: NookDesign.Size.rowButton, height: NookDesign.Size.rowButton)

@@ -66,7 +66,7 @@ struct SidebarMenuArchiveTab: View {
 
     private var empty: some View {
         VStack(spacing: NookDesign.Spacing.md) {
-            Image(systemName: "archivebox")
+            NookSymbol("archivebox", size: 25)
                 .font(NookDesign.Font.titleLarge)
                 .foregroundStyle(.tertiary)
             Text("Tabs you close show up here for 30 days.")

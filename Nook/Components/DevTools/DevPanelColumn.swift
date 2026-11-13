@@ -69,7 +69,7 @@ struct DevPanelColumn: View {
                 .buttonStyle(.plain)
             }
             Spacer()
-            Button("Close", systemImage: "xmark") {
+            Button("Close", nookIcon: "xmark") {
                 withAnimation(NookDesign.Motion.standard) {
                     windowState.isSidebarAIChatVisible = false
                 }

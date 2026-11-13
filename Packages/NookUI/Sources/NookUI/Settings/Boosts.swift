@@ -170,7 +170,7 @@ public struct BoostPanel: View {
                 boostMenu
             }
             Spacer(minLength: 0)
-            Button { draft.resetVisuals() } label: { Image(systemName: "arrow.counterclockwise") }
+            Button { draft.resetVisuals() } label: { NookSymbol("arrow.counterclockwise", size: 19) }
                 .buttonStyle(.plain)
                 .font(NookDesign.Font.title)
                 .foregroundStyle(.secondary)
@@ -191,7 +191,7 @@ public struct BoostPanel: View {
                 } label: {
                     let title = boost.name.isEmpty ? boost.host : boost.name
                     let text = boost.isEnabled ? title : "\(title) (off)"
-                    if boost.id == draft.id { Label(text, systemImage: "checkmark") } else { Text(text) }
+                    if boost.id == draft.id { Label(text, nookIcon: "checkmark") } else { Text(text) }
                 }
             }
             Button("New Boost") {
@@ -218,7 +218,7 @@ public struct BoostPanel: View {
                     .font(NookDesign.Font.label)
                     .lineLimit(1)
                     .opacity(draft.isEnabled ? 1 : 0.5)
-                Image(systemName: "chevron.down")
+                NookSymbol("chevron.down", size: 14)
                     .font(NookDesign.Font.caption)
                     .foregroundStyle(.secondary)
             }
@@ -476,7 +476,7 @@ public struct BoostPanel: View {
     private var library: some View {
         VStack(alignment: .leading, spacing: NookDesign.Spacing.md) {
             HStack {
-                Button { showingLibrary = false } label: { Label("Back", systemImage: "chevron.left") }
+                Button { showingLibrary = false } label: { Label("Back", nookIcon: "chevron.left") }
                     .buttonStyle(.plain)
                 Spacer()
                 Text("All Boosts").font(NookDesign.Font.body)

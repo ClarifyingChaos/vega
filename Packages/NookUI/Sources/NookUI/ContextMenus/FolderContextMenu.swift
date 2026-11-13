@@ -34,30 +34,30 @@ struct FolderContextMenu: View {
                 Button {
                     tabs.refreshLiveFolder(itemID, force: true)
                 } label: {
-                    Label("Refresh", systemImage: "arrow.clockwise")
+                    Label("Refresh", nookIcon: "arrow.clockwise")
                 }
                 Divider()
             }
             Button(action: onRename) {
-                Label("Rename Folder", systemImage: "pencil")
+                Label("Rename Folder", nookIcon: "pencil")
             }
             Button {
                 guard let windowState else { return }
                 tabs.open(url: TabsController.homeURL, in: windowState, placement: .newTab, parent: .folder(itemID: itemID))
             } label: {
-                Label("Add Tab to Folder", systemImage: "plus")
+                Label("Add Tab to Folder", nookIcon: "plus")
             }
             if let item = tabs.item(itemID) {
                 Button {
                     tabs.createFolderForRename(in: item.parent, after: itemID)
                 } label: {
-                    Label("New Folder", systemImage: "folder.badge.plus")
+                    Label("New Folder", nookIcon: "folder.badge.plus")
                 }
             }
             Button {
                 tabs.createFolderForRename(in: .folder(itemID: itemID), after: nil)
             } label: {
-                Label("New Folder Inside", systemImage: "folder.badge.plus")
+                Label("New Folder Inside", nookIcon: "folder.badge.plus")
             }
             Divider()
             Button(action: alphabetize) {
@@ -79,7 +79,7 @@ struct FolderContextMenu: View {
             Button(role: .destructive) {
                 tabs.close(itemID)
             } label: {
-                Label("Delete Folder", systemImage: "trash")
+                Label("Delete Folder", nookIcon: "trash")
             }
         }
     }

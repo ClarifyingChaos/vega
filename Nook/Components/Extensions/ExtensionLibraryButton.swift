@@ -15,7 +15,7 @@ struct ExtensionLibraryButton: View {
 
     var body: some View {
         // Arc's site controls button; the panel springs out of it.
-        Button("Site Controls", systemImage: "slider.horizontal.3") {
+        Button("Site Controls", nookIcon: "slider.horizontal.3") {
             withAnimation(.interpolatingSpring(Spring(response: 0.3, dampingRatio: 0.86))) {
                 windowState.isExtensionLibraryVisible.toggle()
             }

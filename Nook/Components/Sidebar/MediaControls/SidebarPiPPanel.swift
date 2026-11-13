@@ -896,12 +896,21 @@ private struct PiPControls: View {
         Duration.seconds(Int(seconds)).formatted(.time(pattern: seconds >= 3600 ? .hourMinuteSecond : .minuteSecond))
     }
 
+    private static let animatedIcons = ["pip.exit": "pip-exit", "xmark": "error", "arrow.up.forward.app": "external-link"]
+
     private func button(_ label: String, _ symbol: String, _ diameter: CGFloat,
                         action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: diameter * 0.4, weight: .semibold))
-                .contentTransition(.symbolEffect(.replace))
+            Group {
+                // Vega's own animated icons where there is one; the rest stay SF Symbols.
+                if let animation = Self.animatedIcons[symbol] {
+                    AnimatedIcon(animation, fallback: symbol, size: diameter * 0.5, ink: .white)
+                } else {
+                    Image(systemName: symbol)
+                        .font(.system(size: diameter * 0.4, weight: .medium))
+                        .contentTransition(.symbolEffect(.replace))
+                }
+            }
                 .frame(width: diameter, height: diameter)
                 .contentShape(NookDesign.Radius.shape(NookDesign.Radius.lg))
         }

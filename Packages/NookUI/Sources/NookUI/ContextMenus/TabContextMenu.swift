@@ -78,14 +78,14 @@ public struct TabContextMenu: View {
                 windowState.multiSelection.clear()
                 tabs.unpin(group)
             } label: {
-                Label("Unpin \(n) Tabs", systemImage: "pin.slash")
+                Label("Unpin \(n) Tabs", nookIcon: "pin.slash")
             }
         } else if let spaceID {
             Button {
                 windowState.multiSelection.clear()
                 tabs.pin(unpinned, to: .pinned(spaceID: spaceID))
             } label: {
-                Label("Pin \(unpinned.count) Tabs", systemImage: "pin")
+                Label("Pin \(unpinned.count) Tabs", nookIcon: "pin")
             }
         }
 
@@ -110,7 +110,7 @@ public struct TabContextMenu: View {
                 SidebarRenameState.shared.itemID = folder
             }
         } label: {
-            Label("New Folder with \(n) Tabs", systemImage: "folder.badge.plus")
+            Label("New Folder with \(n) Tabs", nookIcon: "folder.badge.plus")
         }
 
         Button {
@@ -118,7 +118,7 @@ public struct TabContextMenu: View {
             let links = group.compactMap { tabs.item($0).flatMap(tabs.currentURL(for:))?.absoluteString }
             actions?.copyToPasteboard(links.joined(separator: "\n"))
         } label: {
-            Label("Copy \(n) Links", systemImage: "link")
+            Label("Copy \(n) Links", nookIcon: "link")
         }
 
         Divider()
@@ -127,7 +127,7 @@ public struct TabContextMenu: View {
             windowState.multiSelection.clear()
             tabs.close(group)
         } label: {
-            Label("Close \(n) Tabs", systemImage: "xmark")
+            Label("Close \(n) Tabs", nookIcon: "xmark")
         }
     }
 
@@ -143,7 +143,7 @@ public struct TabContextMenu: View {
             Button {
                 tabs.pin(itemID, to: .pinned(spaceID: spaceID))
             } label: {
-                Label("Pin to Space", systemImage: "pin")
+                Label("Pin to Space", nookIcon: "pin")
             }
         }
 
@@ -151,7 +151,7 @@ public struct TabContextMenu: View {
             Button {
                 tabs.unpin(itemID)
             } label: {
-                Label("Unpin from Space", systemImage: "pin.slash")
+                Label("Unpin from Space", nookIcon: "pin.slash")
             }
         }
 
@@ -165,7 +165,7 @@ public struct TabContextMenu: View {
             Button {
                 tabs.pin(itemID, to: .favorites(spaceID: spaceID))
             } label: {
-                Label("Add to Favorites", systemImage: "star")
+                Label("Add to Favorites", nookIcon: "star")
             }
         }
 
@@ -175,7 +175,7 @@ public struct TabContextMenu: View {
             Button {
                 tabs.createFolderForRename(in: item.parent, after: itemID)
             } label: {
-                Label("New Folder", systemImage: "folder.badge.plus")
+                Label("New Folder", nookIcon: "folder.badge.plus")
             }
         }
 
@@ -198,7 +198,7 @@ public struct TabContextMenu: View {
                     .disabled(item.parent == .folder(itemID: folder.item.id))
                 }
             } label: {
-                Label("Add to Folder", systemImage: "folder.badge.plus")
+                Label("Add to Folder", nookIcon: "folder.badge.plus")
             }
         }
     }
@@ -232,7 +232,7 @@ public struct TabContextMenu: View {
             Button {
                 SidebarRenameState.shared.itemID = itemID
             } label: {
-                Label("Rename", systemImage: "pencil")
+                Label("Rename", nookIcon: "pencil")
             }
         }
 
@@ -240,7 +240,7 @@ public struct TabContextMenu: View {
             Button {
                 tabs.rename(itemID, nil)
             } label: {
-                Label("Reset Tab Name", systemImage: "arrow.uturn.backward")
+                Label("Reset Tab Name", nookIcon: "arrow.uturn.backward")
             }
         }
 
@@ -248,14 +248,14 @@ public struct TabContextMenu: View {
             guard let windowState else { return }
             tabs.duplicate(itemID, in: windowState)
         } label: {
-            Label("Duplicate", systemImage: "plus.square.on.square")
+            Label("Duplicate", nookIcon: "plus.square.on.square")
         }
 
         if let url = tabs.currentURL(for: item) {
             Button {
                 actions?.copyToPasteboard(url.absoluteString)
             } label: {
-                Label("Copy Link", systemImage: "link")
+                Label("Copy Link", nookIcon: "link")
             }
 
             Button {
@@ -263,13 +263,13 @@ public struct TabContextMenu: View {
                     .replacingOccurrences(of: "[", with: "\\[").replacingOccurrences(of: "]", with: "\\]")
                 actions?.copyToPasteboard("[\(title)](\(url.absoluteString))")
             } label: {
-                Label("Copy Link as Markdown", systemImage: "link")
+                Label("Copy Link as Markdown", nookIcon: "link")
             }
 
             Button {
                 actions?.share(url)
             } label: {
-                Label("Share", systemImage: "square.and.arrow.up")
+                Label("Share", nookIcon: "square.and.arrow.up")
             }
         }
 
@@ -288,7 +288,7 @@ public struct TabContextMenu: View {
                     Label("Left", systemImage: "rectangle.lefthalf.filled")
                 }
             } label: {
-                Label("Open in Split View", systemImage: "rectangle.split.2x1")
+                Label("Open in Split View", nookIcon: "rectangle.split.2x1")
             }
         }
 
@@ -297,13 +297,13 @@ public struct TabContextMenu: View {
                 Button {
                     tabs.resetToHome(itemID)
                 } label: {
-                    Label("Reset to Pinned URL", systemImage: "arrow.counterclockwise")
+                    Label("Reset to Pinned URL", nookIcon: "arrow.counterclockwise")
                 }
 
                 Button {
                     tabs.setHomeToCurrent(itemID)
                 } label: {
-                    Label("Replace Pinned URL with Current", systemImage: "pin")
+                    Label("Replace Pinned URL with Current", nookIcon: "pin")
                 }
             }
 
@@ -360,7 +360,7 @@ public struct TabContextMenu: View {
         Button(role: .destructive) {
             tabs.close(itemID)
         } label: {
-            Label("Close Tab", systemImage: "xmark")
+            Label("Close Tab", nookIcon: "xmark")
         }
         .keyboardShortcut("w", modifiers: .command)
 
@@ -368,7 +368,7 @@ public struct TabContextMenu: View {
             Button(role: .destructive) {
                 tabs.remove(itemID)
             } label: {
-                Label("Remove from Space", systemImage: "trash")
+                Label("Remove from Space", nookIcon: "trash")
             }
         }
 

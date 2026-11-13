@@ -15,6 +15,8 @@ struct SidebarMenuTab: View {
     var image: String
     var activeImage: String
     var title: String
+    /// useAnimations icon (Resources/UseAnimations); plays on hover. Falls back to the SF Symbols above.
+    var animation: String? = nil
     var isActive: Bool = true
     let action: () -> Void
     @State private var isHovering: Bool = false
@@ -37,12 +39,18 @@ struct SidebarMenuTab: View {
 
     private var label: some View {
         VStack(spacing: NookDesign.Spacing.md) {
-            Image(systemName: isActive ? activeImage : image)
-                .font(NookDesign.Font.titleLarge)
-                .foregroundStyle(isActive ? .green : .primary)
-                .symbolRenderingMode(.hierarchical)
-                .symbolEffect(.wiggle, value: shouldWiggle)
-                .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer), options: .nonRepeating))
+            Group {
+                if let animation {
+                    AnimatedIcon(animation, fallback: isActive ? activeImage : image, size: 28, ink: isActive ? .green : nil)
+                } else {
+                    Image(systemName: isActive ? activeImage : image)
+                        .font(NookDesign.Font.titleLarge)
+                        .foregroundStyle(isActive ? .green : .primary)
+                        .symbolRenderingMode(.hierarchical)
+                        .symbolEffect(.wiggle, value: shouldWiggle)
+                        .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer), options: .nonRepeating))
+                }
+            }
 
             Text(title)
                 .font(NookDesign.Font.secondary)

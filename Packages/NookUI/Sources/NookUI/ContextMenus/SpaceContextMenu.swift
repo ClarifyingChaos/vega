@@ -58,7 +58,7 @@ struct SpaceContextMenu: View {
                 Button(role: .destructive) {
                     showDeleteConfirmation()
                 } label: {
-                    Label("Delete Space", systemImage: "trash")
+                    Label("Delete Space", nookIcon: "trash")
                 }
             }
         }

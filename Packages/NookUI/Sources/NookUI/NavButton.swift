@@ -14,7 +14,10 @@ import NookDesign
 /// Pass size: or radius: only where a call site needs a non-default (media controls 24, URL bar and space title 28, space switcher radius lg).
 public struct NookIconButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovering = false
+    /// Counts hover entries; SF Symbols animate when it changes (not on leaving).
+    @State private var hoverTicks = 0
 
     let size: CGFloat
     let radius: CGFloat
@@ -31,6 +34,9 @@ public struct NookIconButtonStyle: ButtonStyle {
                 .frame(width: size, height: size)
             configuration.label
                 .foregroundStyle(.primary)
+                .environment(\.nookIconHovering, isHovering)
+                // FORK: the glyph bounces when the pointer arrives. Reduce Motion turns it off.
+                .symbolEffect(.bounce, options: .speed(1.4), value: reduceMotion ? 0 : hoverTicks)
         }
         .frame(width: size, height: size)
         .opacity(isEnabled ? 1.0 : 0.3)
@@ -38,7 +44,10 @@ public struct NookIconButtonStyle: ButtonStyle {
         .scaleEffect(configuration.isPressed && isEnabled ? 0.95 : 1.0)
         .animation(NookDesign.Motion.quick, value: configuration.isPressed)
         .animation(NookDesign.Motion.hover(isHovering), value: isHovering)
-        .onHoverTracking { hovering in isHovering = hovering }
+        .onHoverTracking { hovering in
+            isHovering = hovering
+            if hovering, isEnabled { hoverTicks += 1 }
+        }
     }
 
     private func fill(isPressed: Bool) -> Color {
@@ -53,7 +62,7 @@ public extension View {
     /// Larger navigation and footer symbols, without changing tab or URL-bar controls.
     func nookSidebarIconButtons() -> some View {
         labelStyle(.iconOnly)
-            .font(.system(size: NookDesign.SidebarChrome.icon, weight: .regular)) // FORK: Arc's light glyphs
+            .font(.system(size: NookDesign.SidebarChrome.icon, weight: .medium)) // FORK: medium matches the 2 px lines of the animated icons
             .buttonStyle(NookIconButtonStyle(size: NookDesign.SidebarChrome.button))
             .foregroundStyle(.primary)
     }
@@ -185,7 +194,7 @@ public struct RectNavButtonStyle: ButtonStyle {
         // Icon with text
         Button {
         } label: {
-            Label("New Space", systemImage: "plus")
+            Label("New Space", nookIcon: "plus")
         }
         .buttonStyle(RectNavButtonStyle())
         .foregroundStyle(Color.primary)
@@ -200,21 +209,21 @@ public struct RectNavButtonStyle: ButtonStyle {
 
         // Different sizes
         VStack(spacing: 12) {
-            Button { } label: { Label("Mini", systemImage: "star") }
+            Button { } label: { Label("Mini", nookIcon: "star") }
                 .buttonStyle(RectNavButtonStyle())
                 .foregroundStyle(Color.pink)
                 .controlSize(.mini)
 
-            Button { } label: { Label("Small", systemImage: "star") }
+            Button { } label: { Label("Small", nookIcon: "star") }
                 .buttonStyle(RectNavButtonStyle())
                 .foregroundStyle(Color.purple)
                 .controlSize(.small)
 
-            Button { } label: { Label("Regular", systemImage: "star") }
+            Button { } label: { Label("Regular", nookIcon: "star") }
                 .buttonStyle(RectNavButtonStyle())
                 .foregroundStyle(Color.yellow)
 
-            Button { } label: { Label("Large", systemImage: "star") }
+            Button { } label: { Label("Large", nookIcon: "star") }
                 .buttonStyle(RectNavButtonStyle())
                 .foregroundStyle(Color.orange)
                 .controlSize(.large)
@@ -223,7 +232,7 @@ public struct RectNavButtonStyle: ButtonStyle {
         // Disabled
         Button {
         } label: {
-            Label("Disabled", systemImage: "xmark")
+            Label("Disabled", nookIcon: "xmark")
         }
         .buttonStyle(RectNavButtonStyle())
         .foregroundStyle(Color.primary)

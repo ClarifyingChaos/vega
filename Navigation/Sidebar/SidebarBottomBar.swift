@@ -25,58 +25,48 @@ struct SidebarBottomBar: View {
     let onMenuHover: (Bool) -> Void
     
     var body: some View {
-        GeometryReader { geo in
-            let reserve = sideReserve
-            ZStack {
-                // The space dots sit on the bar's center line whatever the side clusters hold.
-                if !windowState.isIncognito {
-                    SpacesList()
-                        .frame(width: max(geo.size.width - 2 * reserve, 0))
-                        .environmentObject(browserManager)
-                        .environment(windowState)
+        // One row, as Arc's dock: library, assistant, the space dots, then create. The dots take
+        // what the buttons leave, so adding the assistant button costs them no more than its width.
+        HStack(alignment: .center, spacing: NookDesign.SidebarChrome.gap) {
+            // Above the space dots, so its hint draws over them.
+            menuButton
+                .zIndex(1)
+
+            if nookSettings.showAIAssistant {
+                Button {
+                    browserManager.toggleAISidebar(for: windowState)
+                } label: {
+                    AnimatedIcon("message-circle", fallback: "message")
                 }
-
-                HStack(alignment: .center, spacing: NookDesign.SidebarChrome.gap) {
-                    // Above the space dots, so its hint draws over them.
-                    menuButton
-                        .zIndex(1)
-
-                    if false, nookSettings.showAIAssistant { // FORK: Arc's bar has none; View > Show AI Assistant
-                        Button("Toggle AI Assistant", systemImage: "sparkle") {
-                            browserManager.toggleAISidebar(for: windowState)
-                        }
-                        .nookSidebarIconButtons()
-                        .help("Toggle AI Assistant")
-                    }
-
-                    Spacer(minLength: 0)
-
-                    // Hide new space button in incognito windows
-                    if !windowState.isIncognito {
-                        newSpaceButton
-                    }
-                }
+                .nookSidebarIconButtons()
+                .accessibilityLabel("Toggle AI Assistant")
+                .help("Toggle AI Assistant")
             }
-            .frame(width: geo.size.width, height: geo.size.height)
+
+            if windowState.isIncognito {
+                Spacer(minLength: 0)
+            } else {
+                SpacesList()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .environmentObject(browserManager)
+                    .environment(windowState)
+
+                // Hide new space button in incognito windows
+                newSpaceButton
+            }
         }
         .frame(height: NookDesign.Size.bottomBar)
         .padding(.horizontal, NookDesign.Spacing.sidebarInset)
     }
 
-    /// Room kept clear on each side of the dots: the wider cluster plus a gap.
-    private var sideReserve: CGFloat {
-        let button = NookDesign.SidebarChrome.button, gap = NookDesign.SidebarChrome.gap
-        let left = button // FORK: AI button removed above
-        return left + gap
-    }
-
     private var menuButton: some View {
         ZStack {
-            Button("Menu", systemImage: "archivebox") {
+            Button {
                 onMenuTap()
+            } label: {
+                AnimatedIcon("inbox", fallback: "archivebox")
             }
-            // A finished download bounces the button its icon flew into.
-            .symbolEffect(.bounce, value: browserManager.downloadManager.completedCount)
+            .accessibilityLabel("Menu")
             .opacity(browserManager.downloadManager.activeDownloads.isEmpty ? 1 : 0)
             .nookSidebarIconButtons()
             .anchorPreference(key: DownloadsButtonAnchorKey.self, value: .bounds) { $0 }
@@ -111,15 +101,15 @@ struct SidebarBottomBar: View {
     /// Arc's create menu: space and folder, then page tools, then panes and tabs.
     private var newSpaceButton: some View {
         Menu {
-            Button("New Space", systemImage: "plus.square.on.square") {
+            Button("New Space", nookIcon: "plus.square.on.square") {
                 onNewSpaceTap()
             }
 
-            Button("New Note", systemImage: "note.text.badge.plus") {
+            Button("New Note", nookIcon: "note.text.badge.plus") {
                 browserManager.newNote()
             }
 
-            Button("New Folder", systemImage: "folder.badge.plus") {
+            Button("New Folder", nookIcon: "folder.badge.plus") {
                 if let spaceID = windowState.spaceID {
                     tabs.createFolderForRename(in: .tabs(spaceID: spaceID), after: nil)
                 }
@@ -144,25 +134,25 @@ struct SidebarBottomBar: View {
 
             Divider()
 
-            Button("New Boost", systemImage: "wand.and.stars") {
+            Button("New Boost", nookIcon: "wand.and.stars") {
                 browserManager.openBoostPanel(in: windowState)
             }
             .disabled(!selectedPageIsWeb)
 
             Divider()
 
-            Button("New Split", systemImage: "rectangle.split.2x1") {
+            Button("New Split", nookIcon: "rectangle.split.2x1") {
                 if let itemID = tabs.open(url: TabsController.homeURL, in: windowState, placement: .background) {
                     browserManager.splitManager.enterSplit(with: itemID, in: windowState)
                 }
             }
             .disabled(windowState.selectedItemID == nil || windowState.split != nil)
 
-            Button("New Tab", systemImage: "plus.square") {
+            Button("New Tab", nookIcon: "plus.square") {
                 commandPalette.open()
             }
         } label: {
-            Label("Actions", systemImage: "plus")
+            AnimatedIcon("plus-to-x", fallback: "plus", holdWhileHovered: true)
         }
         .menuStyle(.button)
         .nookSidebarIconButtons()
@@ -186,4 +176,25 @@ struct LiveFolderMenuItem {
         LiveFolderMenuItem(title: "New Notifications Folder", symbol: "bell", source: .githubNotifications),
         LiveFolderMenuItem(title: "New Asana Tasks Folder", symbol: "checkmark.circle", source: .asanaTasks),
     ]
+}
+
+/// Vega's AI mark from the brand sheet: four pixels around an empty centre, on a 3 x 3 grid.
+/// Filled (the centre pixel too) while the chat panel is open. Drawn, not an SF Symbol, so it
+/// stays on the pixel grid and takes the button's colour.
+struct VegaAIGlyph: View {
+    var filled = false
+
+    var body: some View {
+        Canvas { context, size in
+            let cell = (min(size.width, size.height) / 3).rounded(.down)
+            let origin = CGPoint(x: (size.width - cell * 3) / 2, y: (size.height - cell * 3) / 2)
+            var cells = [(1, 0), (0, 1), (2, 1), (1, 2)]
+            if filled { cells.append((1, 1)) }
+            for (x, y) in cells {
+                let rect = CGRect(x: origin.x + CGFloat(x) * cell, y: origin.y + CGFloat(y) * cell, width: cell, height: cell)
+                context.fill(Path(rect), with: .foreground)
+            }
+        }
+        .frame(width: 13, height: 13)
+    }
 }

@@ -19,7 +19,7 @@ struct SidebarWidthCheck {
 
         precondition(SpaceSwitcher.itemSize(available: 160, count: 20) == 8, "floor")
         precondition(SpaceSwitcher.itemSize(available: 160, count: 3) == 34, "ceiling")
-        precondition(SpaceSwitcher.itemSize(available: 160, count: 5) == 25.6)
+        precondition(SpaceSwitcher.itemSize(available: 160, count: 5) == 28.8)
         precondition(SpaceSwitcher.itemSize(available: 160, count: 0) == 34, "no spaces")
         precondition(SpaceSwitcher.isCompact(itemSize: 21))
         precondition(!SpaceSwitcher.isCompact(itemSize: 22))

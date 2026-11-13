@@ -112,11 +112,11 @@ private struct PasswordsContent: View {
                         }
                         Spacer()
                         Menu {
-                            Button("Copy Username", systemImage: "doc.on.doc") { copy(login.username) }
-                            Button("Copy Password", systemImage: "key") { reveal(login) { copy($0) } }
+                            Button("Copy Username", nookIcon: "doc.on.doc") { copy(login.username) }
+                            Button("Copy Password", nookIcon: "key") { reveal(login) { copy($0) } }
                             Divider()
-                            Button("Edit…", systemImage: "pencil") { reveal(login) { _ in editing = login } }
-                            Button("Delete…", systemImage: "trash", role: .destructive) { deleting = login }
+                            Button("Edit…", nookIcon: "pencil") { reveal(login) { _ in editing = login } }
+                            Button("Delete…", nookIcon: "trash", role: .destructive) { deleting = login }
                         } label: {
                             Image(systemName: "ellipsis")
                         }
@@ -130,7 +130,7 @@ private struct PasswordsContent: View {
                     .padding(.vertical, NookDesign.Spacing.xxs)
                 }
                 HStack {
-                    Button("Add Password…", systemImage: "plus") { adding = true }
+                    Button("Add Password…", nookIcon: "plus") { adding = true }
                     Spacer()
                     Button("Import from CSV…") { importCSV() }
                 }

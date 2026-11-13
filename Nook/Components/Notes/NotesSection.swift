@@ -45,7 +45,7 @@ struct NotesSection: View {
             store.openNote[windowState.id] = note.id
         } label: {
             HStack(spacing: NookDesign.Spacing.md) {
-                Image(systemName: "note.text")
+                NookSymbol("note.text", size: 16)
                     .font(.system(size: NookDesign.Size.rowGlyph))
                     .foregroundStyle(.secondary)
                     .frame(width: NookDesign.Size.favicon)
@@ -54,7 +54,7 @@ struct NotesSection: View {
                     .lineLimit(1)
                 Spacer(minLength: 0)
                 if hovered == note.id {
-                    Button("Delete Note", systemImage: "xmark") { confirmDelete(note) }
+                    Button("Delete Note", nookIcon: "xmark") { confirmDelete(note) }
                         .labelStyle(.iconOnly)
                         .buttonStyle(NookIconButtonStyle(size: NookDesign.Size.rowButton, radius: NookDesign.Radius.sm))
                         .foregroundStyle(.secondary)
@@ -67,7 +67,7 @@ struct NotesSection: View {
         }
         .buttonStyle(.plain)
         .onHover { hovered = $0 ? note.id : (hovered == note.id ? nil : hovered) }
-        .contextMenu { Button("Delete Note", systemImage: "trash") { confirmDelete(note) } }
+        .contextMenu { Button("Delete Note", nookIcon: "trash") { confirmDelete(note) } }
         .accessibilityLabel(note.displayTitle)
     }
 

@@ -68,7 +68,7 @@ public struct SpaceSeparator: View {
                 } else if let onOrganize {
                     Button(action: onOrganize) {
                         HStack(spacing: NookDesign.Spacing.xs) {
-                            Image(systemName: "wand.and.stars")
+                            NookSymbol("wand.and.stars", size: 14)
                                 .font(NookDesign.Font.caption)
                             Text("Organize")
                                 .font(NookDesign.Font.caption)

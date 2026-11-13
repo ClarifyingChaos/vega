@@ -62,7 +62,7 @@ struct PortraitCaptureView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading, NookDesign.Spacing.sm)
                     Button(action: save) {
-                        Label("Save…", systemImage: "square.and.arrow.down")
+                        Label("Save…", nookIcon: "square.and.arrow.down")
                             .font(NookDesign.Font.label)
                             .padding(.horizontal, NookDesign.Spacing.md)
                             .frame(height: NookDesign.Size.row)

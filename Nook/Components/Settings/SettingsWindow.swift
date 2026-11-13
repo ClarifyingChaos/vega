@@ -138,9 +138,9 @@ private struct HistoryToolbar: ViewModifier {
 
     private var navigationPair: some View {
         ControlGroup {
-            Button("Back", systemImage: "chevron.backward", action: goBack)
+            Button("Back", nookIcon: "chevron.backward", action: goBack)
                 .disabled(!canGoBack)
-            Button("Forward", systemImage: "chevron.forward", action: goForward)
+            Button("Forward", nookIcon: "chevron.forward", action: goForward)
                 .disabled(!canGoForward)
         }
         .controlGroupStyle(.navigation)
@@ -198,8 +198,7 @@ private struct SettingsSidebar: View {
                                 Text(tab.name)
                             } icon: {
                                 // macOS 27 System Settings: symbols in the label colour, not the accent.
-                                Image(systemName: tab.icon)
-                                    .foregroundStyle(.primary)
+                                AnimatedIcon(tab.animatedIcon, fallback: tab.icon, size: 18)
                             }
                             .tag(tab)
                             .listItemTint(.fixed(Color(nsColor: .labelColor)))

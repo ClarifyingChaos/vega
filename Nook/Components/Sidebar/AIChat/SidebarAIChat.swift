@@ -149,16 +149,16 @@ struct SidebarAIChat: View {
             Spacer()
 
             HStack(spacing: NookDesign.Spacing.xxs) {
-                Button("Settings", systemImage: "gearshape") {
+                Button("Settings", nookIcon: "gearshape") {
                     showSettings()
                 }
-                Button("Clear Messages", systemImage: "trash") {
+                Button("Clear Messages", nookIcon: "trash") {
                     showClearMessagesDialog()
                 }
                 .disabled(aiService.messages.isEmpty)
                 // With Developer Mode on, the panel's tab bar has the close button.
                 if !nookSettings.developerModeEnabled {
-                    Button("Close", systemImage: "xmark") {
+                    Button("Close", nookIcon: "xmark") {
                         withAnimation(NookDesign.Motion.standard) {
                             windowState.isSidebarAIChatVisible = false
                         }
@@ -249,12 +249,12 @@ struct SidebarAIChat: View {
 
             if configService.activeProviderType != .appleIntelligence {
                 Button(action: { showAddModelPopover = true }) {
-                    Label("Add Model...", systemImage: "plus.circle")
+                    Label("Add Model...", nookIcon: "plus.circle")
                 }
             }
 
             Button(action: { showSettings() }) {
-                Label("Manage Models...", systemImage: "gearshape")
+                Label("Manage Models...", nookIcon: "gearshape")
             }
         }
         .menuStyle(.button)
@@ -492,7 +492,7 @@ struct MessageBubble: View {
                     VStack(alignment: .leading, spacing: 0) {
                         if message.usedWebSearch {
                             HStack(spacing: 4) {
-                                Image(systemName: "globe")
+                                NookSymbol("globe", size: 14)
                                     .font(NookDesign.Font.caption)
                                 Text("Web Search")
                                     .font(NookDesign.Font.caption)
@@ -738,7 +738,7 @@ struct CitationView: View {
             }
         }) {
             HStack(spacing: 6) {
-                Image(systemName: "link")
+                NookSymbol("link", size: 14)
                     .font(NookDesign.Font.caption)
                     .foregroundStyle(.tertiary)
 
@@ -758,7 +758,7 @@ struct CitationView: View {
 
                 Spacer()
 
-                Image(systemName: "arrow.up.forward")
+                NookSymbol("arrow.up.forward", size: 14)
                     .font(NookDesign.Font.caption)
                     .foregroundStyle(isHovered ? .secondary : .tertiary)
             }

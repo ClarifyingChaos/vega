@@ -224,7 +224,7 @@ struct PrivacySettingsView: View {
                 .menuStyle(.button)
                 .fixedSize()
                 .disabled(isClearing)
-            Image(systemName: "chevron.right")
+            NookSymbol("chevron.right", size: 16)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.tertiary)
                 .accessibilityHidden(true)

@@ -48,7 +48,7 @@ struct DevConsoleView: View {
                 .padding(.horizontal, NookDesign.Spacing.sm)
                 .frame(height: NookDesign.Size.iconButton)
                 .nookControlSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
-            Button("Clear", systemImage: "trash") { capture.clearConsole() }
+            Button("Clear", nookIcon: "trash") { capture.clearConsole() }
                 .nookIconButtons()
         }
         .padding(NookDesign.Spacing.md)
@@ -93,7 +93,7 @@ struct DevConsoleView: View {
 
     private var inputField: some View {
         HStack(spacing: NookDesign.Spacing.sm) {
-            Image(systemName: "chevron.right")
+            NookSymbol("chevron.right", size: 14)
                 .font(NookDesign.Font.caption)
                 .foregroundStyle(.tertiary)
             TextField("", text: $input)

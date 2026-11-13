@@ -124,7 +124,7 @@ struct SidebarMenuHistoryTab: View {
                 .padding()
             } else if groupedHistoryEntries.isEmpty {
                 VStack(spacing: NookDesign.Spacing.md) {
-                    Image(systemName: "clock")
+                    NookSymbol("clock", size: 25)
                         .font(NookDesign.Font.titleLarge)
                         .foregroundStyle(.tertiary)
 

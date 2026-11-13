@@ -61,14 +61,14 @@ struct ExtensionLibraryView: View {
     private var actionTiles: some View {
         HStack(spacing: NookDesign.Spacing.sm) {
             Menu {
-                Button("Copy Link", systemImage: "link") {
+                Button("Copy Link", nookIcon: "link") {
                     guard let url = currentTab?.url.absoluteString else { return }
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(url, forType: .string)
                     onDismiss()
                 }
                 if let url = currentTab?.url {
-                    ShareLink(item: url) { Label("Share", systemImage: "square.and.arrow.up") }
+                    ShareLink(item: url) { Label("Share", nookIcon: "square.and.arrow.up") }
                 }
             } label: {
                 ActionTileLabel(systemImage: "square.and.arrow.up")
@@ -257,7 +257,7 @@ struct ExtensionLibraryView: View {
                 Divider()
                 Button("All Site Settings…", action: onShowMoreMenu)
             } label: {
-                Image(systemName: "ellipsis")
+                NookSymbol("ellipsis", size: 18)
                     .font(.system(size: NookDesign.Size.spaceIcon, weight: .semibold))
                     .frame(width: NookDesign.Size.iconButton + NookDesign.Spacing.xs,
                            height: NookDesign.Size.iconButton + NookDesign.Spacing.xs)
@@ -382,7 +382,7 @@ private struct ExtensionGridItem: View {
                         .scaledToFit()
                         .frame(width: NookDesign.Size.essentialsFavicon + 2, height: NookDesign.Size.essentialsFavicon + 2)
                 } else {
-                    Image(systemName: "puzzlepiece.extension")
+                    NookSymbol("puzzlepiece.extension", size: 19)
                         .font(NookDesign.Font.title)
                         .foregroundStyle(.secondary)
                 }

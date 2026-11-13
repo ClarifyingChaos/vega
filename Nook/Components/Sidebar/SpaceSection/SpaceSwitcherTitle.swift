@@ -60,7 +60,7 @@ struct SpaceSwitcherTitle: View {
                         Menu {
                             menuContent(current: space)
                         } label: {
-                            Image(systemName: "ellipsis")
+                            NookSymbol("ellipsis", size: 16)
                                 .font(.system(size: NookDesign.Size.rowGlyph, weight: .medium))
                                 .foregroundStyle(.secondary)
                                 .frame(width: NookDesign.Size.favicon, height: NookDesign.Size.favicon)
@@ -137,15 +137,15 @@ struct SpaceSwitcherTitle: View {
                 tabs.setSpace(space.id, in: windowState)
             } label: {
                 if space.id == current.id {
-                    Label(space.name, systemImage: "checkmark")
+                    Label(space.name, nookIcon: "checkmark")
                 } else {
                     Text(space.name)
                 }
             }
         }
         Divider()
-        Button("New Space…", systemImage: "plus", action: onNewSpace)
-        Button("Space Settings", systemImage: "gearshape") {
+        Button("New Space…", nookIcon: "plus", action: onNewSpace)
+        Button("Space Settings", nookIcon: "gearshape") {
             SettingsNavigation.shared.currentSettingsTab = .spaces
             openSettings()
         }

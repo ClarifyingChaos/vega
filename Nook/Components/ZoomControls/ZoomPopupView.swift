@@ -8,6 +8,7 @@
 
 import SwiftUI
 import NookDesign
+import NookUI
 
 struct ZoomPopupView: View {
     var zoomManager: ZoomManager
@@ -27,7 +28,7 @@ struct ZoomPopupView: View {
                 onZoomOut()
                 resetHideTimer()
             }) {
-                Image(systemName: "minus")
+                NookSymbol("minus", size: 15)
                     .font(NookDesign.Font.secondary)
                     .foregroundStyle(.primary)
                     .frame(width: 28, height: 28)
@@ -69,7 +70,7 @@ struct ZoomPopupView: View {
                 onZoomIn()
                 resetHideTimer()
             }) {
-                Image(systemName: "plus")
+                NookSymbol("plus", size: 15)
                     .font(NookDesign.Font.secondary)
                     .foregroundStyle(.primary)
                     .frame(width: 28, height: 28)

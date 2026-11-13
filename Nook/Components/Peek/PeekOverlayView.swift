@@ -46,7 +46,7 @@ struct PeekOverlayView: View {
     }
 
     private var backgroundOverlay: some View {
-        Color.black.opacity(0.3)
+        Color.black.opacity(0.4)
             .contentShape(Rectangle()) // Ensure proper hit testing
             .onTapGesture { peek.dismissPeek() }
     }
@@ -75,14 +75,15 @@ struct PeekOverlayView: View {
                 }
             }
             .frame(width: frame.width, height: frame.height)
-            // The buttons sit in the margin left of the card, level with its top.
-            .overlay(alignment: .topLeading) {
+            // The buttons sit in the margin right of the card, level with its top.
+            .overlay(alignment: .topTrailing) {
                 actionButtons
-                    .alignmentGuide(.leading) { $0[.trailing] + NookDesign.Spacing.lg }
+                    .alignmentGuide(.trailing) { $0[.leading] - NookDesign.Spacing.lg }
             }
             // The site sits in the margin above, where the page cannot draw over it.
             .overlay(alignment: .topLeading) {
                 siteLabel(page: page)
+                    .environment(\.colorScheme, .dark)
                     .frame(maxWidth: frame.width, alignment: .leading)
                     .alignmentGuide(.top) { $0[.bottom] + NookDesign.Spacing.sm }
             }
@@ -93,6 +94,8 @@ struct PeekOverlayView: View {
         }
     }
 
+    // Both pieces float over the dimmed window, which is dark in either appearance: they are drawn
+    // as dark glass with white content so they never depend on the colour scheme of what is behind.
     /// The card's site, drawn as the address bar draws it: the URL bar still names the tab under Peek.
     private func siteLabel(page: PageSession) -> some View {
         HStack(spacing: NookDesign.Spacing.xs) {
@@ -113,24 +116,27 @@ struct PeekOverlayView: View {
         .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
     }
 
-    /// Close, split and new tab: standalone icon buttons on one floating card, readable over any page.
+    /// Close, open as a tab and split: round dark-glass buttons beside the card, like the site name.
     private var actionButtons: some View {
-        VStack(spacing: NookDesign.Spacing.xxs) {
-            Button(action: { peek.dismissPeek() }) {
-                Image(systemName: "xmark")
-            }
-            // Disabled while the window is already split.
-            Button(action: { peek.moveToSplitView() }) {
-                Image(systemName: "square.split.2x1")
-            }
-            .disabled(!peek.canEnterSplitView)
-            Button(action: { peek.moveToNewTab() }) {
-                Image(systemName: "plus.square.on.square")
-            }
+        VStack(spacing: NookDesign.Spacing.sm) {
+            circleButton("error", fallback: "xmark", help: "Close", action: peek.dismissPeek)
+            circleButton("maximize-2", fallback: "arrow.up.left.and.arrow.down.right", help: "Open as a tab", action: peek.moveToNewTab)
+            circleButton("columns", fallback: "square.split.2x1", help: "Open in split view", action: peek.moveToSplitView)
+                .disabled(!peek.canEnterSplitView)
         }
-        .nookIconButtons()
-        .padding(NookDesign.Spacing.xxs)
-        .nookGlassSurface(in: NookDesign.Radius.shape(NookDesign.Radius.md))
+    }
+
+    private func circleButton(_ animation: String, fallback: String, help: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            AnimatedIcon(animation, fallback: fallback, size: 20, ink: .white)
+                .foregroundStyle(.white)
+                .frame(width: 36, height: 36)
+                .nookGlassSurface(in: Circle())
+        }
+        .buttonStyle(.plain)
+        .environment(\.colorScheme, .dark)
+        .help(help)
+        .accessibilityLabel(help)
     }
 
 

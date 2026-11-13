@@ -20,7 +20,7 @@ struct CastBar: View {
 
     var body: some View {
         HStack(spacing: NookDesign.Spacing.md) {
-            Image(systemName: "airplayvideo")
+            NookSymbol("airplayvideo", size: 19)
                 .font(NookDesign.Font.title)
                 .foregroundStyle(.white)
             Text("Cast to…")
@@ -29,7 +29,7 @@ struct CastBar: View {
             Spacer(minLength: 0)
             RoutePicker { close() }
                 .frame(width: 28, height: 28)
-            Button("Close", systemImage: "xmark", action: close)
+            Button("Close", nookIcon: "xmark", action: close)
                 .labelStyle(.iconOnly)
                 .buttonStyle(NookIconButtonStyle(size: 24))
                 .foregroundStyle(.white)

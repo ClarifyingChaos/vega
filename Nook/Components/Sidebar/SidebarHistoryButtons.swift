@@ -19,19 +19,25 @@ struct SidebarHistoryButtons: View {
 
     var body: some View {
         HStack(spacing: NookDesign.SidebarChrome.gap) {
-            Button("Go Back", systemImage: "arrow.left", action: goBack)
+            Button(action: goBack) { AnimatedIcon("arrow-left", fallback: "arrow.left") }
+                .accessibilityLabel("Go Back")
                 .disabled(!canGoBack)
                 .contextMenu {
                     NavigationHistoryContextMenu(historyType: .back, windowState: windowState)
                 }
-            Button("Go Forward", systemImage: "arrow.right", action: goForward)
+            Button(action: goForward) { AnimatedIcon("arrow-right", fallback: "arrow.right") }
+                .accessibilityLabel("Go Forward")
                 .disabled(!canGoForward)
                 .contextMenu {
                     NavigationHistoryContextMenu(historyType: .forward, windowState: windowState)
                 }
             Button(action: reloadOrStop) {
                 // No `.symbolEffect(.replace)` here: it held the main thread about 130 ms at each end of a load.
-                Image(systemName: session?.isLoading == true ? "xmark" : "arrow.clockwise")
+                if session?.isLoading == true {
+                    AnimatedIcon("error", fallback: "xmark")
+                } else {
+                    AnimatedIcon("rotate-cw", fallback: "arrow.clockwise")
+                }
             }
             .accessibilityLabel(session?.isLoading == true ? "Stop Loading" : "Reload")
         }

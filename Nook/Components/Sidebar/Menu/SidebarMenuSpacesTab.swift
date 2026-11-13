@@ -36,7 +36,7 @@ struct SidebarMenuSpacesTab: View {
                     .frame(maxHeight: .infinity)
                 }
                 Button(action: onNewSpace) {
-                    Image(systemName: "plus")
+                    NookSymbol("plus", size: 18)
                         .font(.system(size: NookDesign.Size.spaceIcon, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(width: addSize, height: addSize)
@@ -132,7 +132,7 @@ private struct SpaceColumn: View {
                 .lineLimit(1)
             Spacer(minLength: 0)
             if let profile = tabs.profiles.first(where: { $0.spaceIDs.contains(space.id) }) {
-                Label(profile.name, systemImage: "person.crop.circle")
+                Label(profile.name, nookIcon: "person.crop.circle")
                     .font(NookDesign.Font.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)

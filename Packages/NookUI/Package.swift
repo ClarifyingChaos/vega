@@ -15,6 +15,8 @@ let package = Package(
         .package(path: "../NookTabsCore"),
         .package(path: "../NookTweaks"),
         .package(path: "../NookWeb"),
+        // FORK: plays the useAnimations icons (MIT, Lottie JSON) on hover.
+        .package(url: "https://github.com/airbnb/lottie-ios", from: "4.5.0"),
     ],
     targets: [
         .target(
@@ -26,7 +28,9 @@ let package = Package(
                 .product(name: "NookTabsCore", package: "NookTabsCore"),
                 .product(name: "NookTweaks", package: "NookTweaks"),
                 .product(name: "NookWeb", package: "NookWeb"),
+                .product(name: "Lottie", package: "lottie-ios"),
             ],
+            resources: [.copy("Resources/UseAnimations")],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
     ]

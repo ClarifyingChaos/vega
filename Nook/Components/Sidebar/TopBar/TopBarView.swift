@@ -115,7 +115,7 @@ struct TopBarView: View {
 
     private var navigationControls: some View {
         HStack(spacing: 4) {
-            Button("Go Back", systemImage: "chevron.backward", action: goBack)
+            Button("Go Back", nookIcon: "chevron.backward", action: goBack)
                 .labelStyle(.iconOnly)
                 .buttonStyle(NookIconButtonStyle())
                 .foregroundStyle(navButtonColor)
@@ -134,7 +134,7 @@ struct TopBarView: View {
 
             Button(
                 "Go Forward",
-                systemImage: "chevron.right",
+                nookIcon: "chevron.right",
                 action: goForward
             )
             .labelStyle(.iconOnly)

@@ -24,6 +24,11 @@ private let cbLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Nook", ca
 final class ContentRuleListCompiler {
 
     private static let chunkSize = 30_000
+    // FORK: WebKit checks every request against every compiled rule, so past about this many pages
+    // load visibly slower (Safari itself caps its blockers at 150,000). Rules come in list order,
+    // default lists first, so the optional lists give way. Cosmetic filtering does not use these
+    // rules: BlockerEngine looks it up per page.
+    private static let maxEntries = 150_000
     // Bumped for the adblock-rust swap so the first launch after it recompiles
     // rather than adopting rule lists SafariConverterLib produced.
     private static let storeIdentifierPrefix = "NookAdBlockerRust"
@@ -47,7 +52,7 @@ final class ContentRuleListCompiler {
     private static var chunkCountFile: URL { cacheDir.appendingPathComponent("chunk-count.txt") }
     /// Written only by saveCache. Its absence means the cache predates the adblock-rust swap.
     /// The hash is over the input rules, so bump this name when the converter's output changes.
-    private static var converterStampFile: URL { cacheDir.appendingPathComponent("converter-adblock-rust-v3") }
+    private static var converterStampFile: URL { cacheDir.appendingPathComponent("converter-adblock-rust-v4") }
 
     // MARK: - Public API
 
@@ -82,7 +87,10 @@ final class ContentRuleListCompiler {
 
         cbLog.info("adblock-rust: \(rules.count) source, \(converted.ruleCount) safari, \(converted.skippedCount) skipped (cancel other rules), \(converted.unconvertedCount) no Safari equivalent")
 
-        let allEntries = converted.entries
+        let allEntries = Array(converted.entries.prefix(maxEntries))
+        if converted.entries.count > maxEntries {
+            cbLog.info("Capped network rules at \(maxEntries) of \(converted.entries.count)")
+        }
 
         // Remove old rule lists
         await removeOldRuleLists(store: store)

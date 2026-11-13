@@ -35,9 +35,9 @@ struct TidyDownloadToast: View {
                 }
             }
             HStack(spacing: NookDesign.Spacing.xxs) {
-                Button("Undo", systemImage: "arrow.uturn.backward") { downloads.undoTidy(download) }
+                Button("Undo", nookIcon: "arrow.uturn.backward") { downloads.undoTidy(download) }
                     .help("Undo")
-                Button("Close", systemImage: "xmark") { downloads.dismissTidyToast() }
+                Button("Close", nookIcon: "xmark") { downloads.dismissTidyToast() }
                     .help("Close")
             }
             .labelStyle(.iconOnly)

@@ -29,21 +29,21 @@ struct PDFControlsView: View {
 
     var body: some View {
         HStack(spacing: NookDesign.Spacing.xxs) {
-            Button("Zoom Out", systemImage: "minus.magnifyingglass") {
+            Button("Zoom Out", nookIcon: "minus.magnifyingglass") {
                 browserManager.zoomManager.zoomOut(for: webView)
                 browserManager.shouldShowZoomPopup = true
             }
-            Button("Zoom In", systemImage: "plus.magnifyingglass") {
+            Button("Zoom In", nookIcon: "plus.magnifyingglass") {
                 browserManager.zoomManager.zoomIn(for: webView)
                 browserManager.shouldShowZoomPopup = true
             }
-            Button("Open in Preview", systemImage: "arrow.up.forward.app") {
+            Button("Open in Preview", nookIcon: "arrow.up.forward.app") {
                 session.openPDFInDefaultApp(from: webView)
             }
-            Button("Print", systemImage: "printer") {
+            Button("Print", nookIcon: "printer") {
                 webView.nookPrint()
             }
-            Button("Save PDF", systemImage: "arrow.down.circle") {
+            Button("Save PDF", nookIcon: "arrow.down.circle") {
                 session.savePDF(from: webView)
             }
         }

@@ -8,6 +8,7 @@
 
 import SwiftUI
 import NookDesign
+import NookUI
 
 struct SpaceDeleteConfirmationDialog: DialogPresentable {
     let spaceName: String
@@ -32,7 +33,7 @@ struct SpaceDeleteConfirmationDialog: DialogPresentable {
                 .padding(.bottom, 4)
 
             HStack(spacing: 8) {
-                Label("\(tabsCount) tabs", systemImage: "rectangle.stack")
+                Label("\(tabsCount) tabs", nookIcon: "rectangle.stack")
             }
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -40,7 +41,7 @@ struct SpaceDeleteConfirmationDialog: DialogPresentable {
             Divider().opacity(0.4)
 
             VStack(alignment: .leading, spacing: 6) {
-                Label("All tabs in this space will be permanently deleted.", systemImage: "exclamationmark.triangle.fill")
+                Label("All tabs in this space will be permanently deleted.", nookIcon: "exclamationmark.triangle.fill")
                     .foregroundStyle(.orange)
                     .font(.caption)
                 if isLastSpace {

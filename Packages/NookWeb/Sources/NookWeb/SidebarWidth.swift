@@ -97,7 +97,7 @@ public enum SpaceSwitcher {
     public static let compactBelow: CGFloat = 22
 
     /// Space between items before the row has to squeeze them.
-    public static let gap: CGFloat = 8
+    public static let gap: CGFloat = 4   // FORK: tighter dots (was 8)
 
     /// Arc's dock: `(available - spacing) / count` clamped to 8...34, spacing being the gaps.
     public static func itemSize(available: CGFloat, count: Int) -> CGFloat {

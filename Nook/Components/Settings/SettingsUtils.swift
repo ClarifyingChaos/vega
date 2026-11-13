@@ -59,6 +59,25 @@ enum SettingsTabs: String, Hashable, CaseIterable {
         }
     }
 
+    /// The useAnimations icon for the settings sidebar; plays when the pointer is on it.
+    var animatedIcon: String {
+        switch self {
+        case .general: return "settings"
+        case .appearance: return "moon"
+        case .ai: return "message-circle"
+        case .privacy: return "lock"
+        case .passwords: return "key"
+        case .adBlocker: return "shield"
+        case .tweaks: return "zap"
+        case .links: return "link"
+        case .spaces: return "grid"
+        case .shortcuts: return "command"
+        case .extensions: return "package"
+        case .updates: return "download-cloud"
+        case .developer: return "code"
+        }
+    }
+
     /// Extra search terms, so a pane is findable by what it holds rather than only its name.
     var searchKeywords: [String] {
         switch self {

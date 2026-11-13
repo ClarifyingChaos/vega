@@ -42,7 +42,7 @@ public struct SettingsTweaksTab: View {
                 Button {
                     showingAddSite = true
                 } label: {
-                    Label("Add Site", systemImage: "plus")
+                    Label("Add Site", nookIcon: "plus")
                 }
             } header: {
                 Text("Download Button")

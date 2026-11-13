@@ -19,7 +19,7 @@ public struct TabClosureToast: View {
     public var body: some View {
         ToastView {
             HStack(spacing: 8) {
-                Image(systemName: "arrow.counterclockwise")
+                NookSymbol("arrow.counterclockwise", size: 15)
                     .font(NookDesign.Font.secondary)
                     .foregroundStyle(.primary)
                     .frame(width: 14, height: 14)

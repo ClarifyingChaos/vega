@@ -192,7 +192,7 @@ struct SpaceView: View {
                 Button {
                     tabs.createFolderForRename(in: section, after: tabs.children(of: section).last?.id)
                 } label: {
-                    Label("New Folder", systemImage: "folder.badge.plus")
+                    Label("New Folder", nookIcon: "folder.badge.plus")
                 }
             }
         }
@@ -310,7 +310,7 @@ struct SpaceView: View {
             commandPalette.open()
         } label: {
             HStack(spacing: NookDesign.Spacing.md) {
-                Image(systemName: "plus")
+                NookSymbol("plus", size: 20)
                     .font(.system(size: NookDesign.Size.favicon, weight: .medium))
                 Text("New Tab")
                     .font(NookDesign.Tab.font)

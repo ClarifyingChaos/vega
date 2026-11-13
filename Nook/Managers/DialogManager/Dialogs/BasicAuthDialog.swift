@@ -9,6 +9,7 @@
 import SwiftUI
 import NookDesign
 import Observation
+import NookUI
 
 @Observable
 final class BasicAuthDialogModel {
@@ -80,7 +81,7 @@ struct BasicAuthDialog: DialogPresentable {
                             .foregroundStyle(.secondary)
                     }
                     if model.isInsecure {
-                        Label("Your password will be sent unencrypted.", systemImage: "exclamationmark.triangle.fill")
+                        Label("Your password will be sent unencrypted.", nookIcon: "exclamationmark.triangle.fill")
                             .foregroundStyle(.orange)
                     }
                 }

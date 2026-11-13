@@ -81,6 +81,10 @@ public struct SettingsGeneralTab: View {
                 Text("Search")
             }
 
+            #if os(macOS)
+            SyncSection()
+            #endif
+
             // FORK: grouped by what they are about, most-used first: search, tabs, startup, performance.
             Section {
                 Toggle("Nest tabs opened from links", isOn: $settings.nestTabsFromLinks)
@@ -243,3 +247,43 @@ struct CustomSearchEngineEditor: View {
         .frame(width: NookDesign.Size.sheetSmallWidth)
     }
 }
+
+#if os(macOS)
+/// FORK: spaces, favorites and pinned tabs shared between your Macs through iCloud Drive.
+private struct SyncSection: View {
+    @State private var sync = SyncCoordinator.shared
+
+    private var detail: String {
+        switch sync.status {
+        case .off: return "Keeps spaces, favorites and pinned tabs the same on your Macs. Open tabs stay on each Mac."
+        case .noICloudDrive: return "Turn on iCloud Drive in System Settings › Apple Account › iCloud, then try again."
+        case .syncing: return "Syncing…"
+        case .idle(let last, let others, let waiting):
+            let found = others == 0 ? "No other Mac found yet" : "\(others) other \(others == 1 ? "Mac" : "Macs")"
+            return "\(found) · synced \(last.formatted(.relative(presentation: .named)))"
+                + (waiting > 0 ? " · waiting for iCloud to download \(waiting) \(waiting == 1 ? "file" : "files")" : "")
+        case .failed(let message): return "Couldn't sync: \(message)"
+        }
+    }
+
+    var body: some View {
+        Section {
+            Toggle("Sync with iCloud Drive", isOn: Binding(get: { sync.isEnabled }, set: { sync.isEnabled = $0 }))
+            if sync.isEnabled {
+                HStack {
+                    Text(detail)
+                        .font(NookDesign.Font.secondary)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Sync Now") { sync.syncNow() }
+                        .disabled(sync.status == .syncing || sync.status == .noICloudDrive)
+                }
+            }
+        } header: {
+            Text("Sync")
+        } footer: {
+            if !sync.isEnabled { Text(detail) }
+        }
+    }
+}
+#endif

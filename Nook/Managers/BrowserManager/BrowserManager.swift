@@ -455,6 +455,8 @@ class BrowserManager: ObservableObject {
             legacyProfiles: Self.legacyProfileRecords(in: modelContext),
             legacyTree: { [modelContext] in LegacyTabImport.tree(from: modelContext) })
         self.tabs = tabs
+        // FORK: spaces and favorites sync through iCloud Drive when the person turns it on.
+        SyncCoordinator.shared.start(tabs: tabs)
         // The first space's data store is the one the app starts on.
         let initialProfile = tabs.orderedSpaces.first.flatMap { tabs.profile(forSpace: $0.id) }
         self.currentProfileSubject = CurrentValueSubject(initialProfile)
